@@ -1164,14 +1164,23 @@ Les applications qui génèrent ou lisent des fichiers directement côté base d
 
 En revanche, si votre application gère les fichiers côté serveur applicatif (Java, .NET, PHP...) après avoir récupéré les données en SQL, il n'y a aucun impact.
 
+DIRECTORIES ORACLE EXISTANTS :
+
+Voici la liste des directories Oracle actuellement configurés sur notre base :
+
+   - DIR_EXPORT      → /u01/app/oracle/exports/
+   - DIR_LOGS        → /u01/app/oracle/logs/
+   - DIR_INTERFACE   → /u01/app/oracle/interface/
+   [Adapter selon le résultat de votre requête all_directories]
+
 NOTRE DEMANDE :
 
-Pourriez-vous nous confirmer si votre application utilise le package UTL_FILE ou tout autre mécanisme d'écriture/lecture de fichiers côté base de données ?
+Parmi ces directories, lesquels sont utilisés par votre application ?
 
-Si c'est le cas, merci de nous indiquer :
+Si votre application utilise UTL_FILE, merci de nous indiquer :
 - Les fonctionnalités concernées (exports, interfaces, logs...)
-- Les noms des directories Oracle utilisés (ex: EXPORT_DIR, DATA_DIR...)
-- Ou les chemins physiques si codés en dur dans votre code (ex: /u01/app/...)
+- Les directories utilisés parmi la liste ci-dessus
+- Ou les chemins physiques si codés en dur dans votre code
 - Si vous disposez d'une version compatible Cloud/ExaCC
 
 Nous restons disponibles pour en discuter.
