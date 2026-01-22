@@ -1117,7 +1117,7 @@ ORDER BY directory_name;</code></pre>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>-- ============================================
--- LISTER TOUS LES DIRECTORIES ORACLE APPLICATIFS
+-- LISTER TOUS LES DIRECTORIES ORACLE
 -- ============================================
 -- Formatage pour affichage lisible
 SET LINESIZE 200
@@ -1125,23 +1125,11 @@ SET PAGESIZE 100
 COLUMN directory_name FORMAT A30
 COLUMN directory_path FORMAT A60
 
--- Liste tous les directories (hors directories système Oracle)
+-- Liste TOUS les directories Oracle
 SELECT
     directory_name,
     directory_path
 FROM all_directories
-WHERE directory_name NOT IN (
-    -- Directories système Oracle à exclure
-    'DATA_PUMP_DIR',
-    'ORACLE_OCM_CONFIG_DIR',
-    'OPATCH_INST_DIR',
-    'OPATCH_LOG_DIR',
-    'OPATCH_SCRIPT_DIR',
-    'XSDDIR',
-    'XMLDIR',
-    'ORACLE_BASE',
-    'ADMIN_DIR'
-)
 ORDER BY directory_name;</code></pre>
         </div>
 
