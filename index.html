@@ -363,50 +363,120 @@
         <div class="alert alert-success">
             <span class="alert-icon">💡</span>
             <div>
-                <strong>Tous les scripts utilisent automatiquement le schéma courant (USER)</strong><br>
-                Tu n'as pas besoin de modifier les scripts ! Connecte-toi simplement au schéma à migrer et exécute les scripts.
+                <strong>Connecté en DBA ? Utilise les vues DBA_ pour tout voir d'un coup !</strong><br>
+                Pas besoin de te connecter schéma par schéma. Les vues <code>dba_source</code> te permettent d'auditer tous les schémas en une seule requête.
             </div>
         </div>
 
-        <h3>Comment migrer plusieurs schémas ?</h3>
+        <!-- Explication des vues Oracle -->
+        <h3>📊 Les 3 vues Oracle pour voir le code source</h3>
         <div style="background: white; border-radius: 10px; padding: 20px; margin: 15px 0;">
-            <p><strong>Répète ces étapes pour chaque schéma :</strong></p>
+            <table style="width: 100%; margin: 0;">
+                <thead>
+                    <tr>
+                        <th style="background: #1565c0;">Vue</th>
+                        <th style="background: #1565c0;">Ce qu'elle montre</th>
+                        <th style="background: #1565c0;">Qui peut l'utiliser</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>user_source</code></td>
+                        <td>Code source <strong>du schéma courant uniquement</strong></td>
+                        <td>Tout le monde</td>
+                    </tr>
+                    <tr>
+                        <td><code>all_source</code></td>
+                        <td>Code source <strong>des schémas auxquels tu as accès</strong></td>
+                        <td>Tout le monde</td>
+                    </tr>
+                    <tr style="background: #e8f5e9;">
+                        <td><code><strong>dba_source</strong></code></td>
+                        <td>Code source <strong>de TOUS les schémas</strong></td>
+                        <td><strong>DBA uniquement</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>🔍 Audit global - Tous les schémas d'un coup (recommandé)</h3>
+        <div class="alert alert-info">
+            <span class="alert-icon">⚡</span>
+            <div>
+                <strong>Connecté en DBA sur SQL Developer ?</strong><br>
+                Utilise ce script pour voir tous les schémas qui utilisent UTL_FILE en une seule requête !
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Audit GLOBAL UTL_FILE (tous schémas) - Connexion DBA</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- AUDIT GLOBAL UTL_FILE - TOUS LES SCHÉMAS
+-- ============================================
+-- Exécute ce script connecté en DBA sur SQL Developer
+-- Tu verras TOUS les schémas qui utilisent UTL_FILE
+
+-- 1. Résumé par schéma : combien de références UTL_FILE ?
+SELECT
+    owner AS schema_name,
+    COUNT(*) AS nb_references_utl_file
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+GROUP BY owner
+ORDER BY nb_references_utl_file DESC;
+
+
+-- 2. Détail : quels objets utilisent UTL_FILE dans chaque schéma ?
+SELECT
+    owner AS schema_name,
+    name AS object_name,
+    type AS object_type,
+    COUNT(*) AS nb_lignes
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+GROUP BY owner, name, type
+ORDER BY owner, nb_lignes DESC;
+
+
+-- 3. Total global
+SELECT
+    COUNT(DISTINCT owner) AS nb_schemas_impactes,
+    COUNT(*) AS total_references_utl_file
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS');</code></pre>
+        </div>
+
+        <h3>🔄 Alternative : Audit schéma par schéma</h3>
+        <div style="background: white; border-radius: 10px; padding: 20px; margin: 15px 0;">
+            <p>Si tu préfères auditer un schéma spécifique, tu peux :</p>
             <ol style="padding-left: 20px; margin: 15px 0;">
-                <li style="margin: 10px 0;">Connecte-toi au schéma : <code>CONNECT mon_schema/password@mabase</code></li>
-                <li style="margin: 10px 0;">Exécute l'audit (les scripts utilisent <code>USER</code> automatiquement)</li>
-                <li style="margin: 10px 0;">Crée la table de mapping (si pas déjà faite)</li>
-                <li style="margin: 10px 0;">Déploie le wrapper</li>
-                <li style="margin: 10px 0;">Crée le synonyme</li>
-                <li style="margin: 10px 0;">Teste</li>
-                <li style="margin: 10px 0;">Passe au schéma suivant</li>
+                <li style="margin: 10px 0;"><strong>Option 1 :</strong> Te connecter directement au schéma dans SQL Developer et utiliser <code>user_source</code></li>
+                <li style="margin: 10px 0;"><strong>Option 2 :</strong> Rester en DBA et filtrer avec <code>WHERE owner = 'NOM_SCHEMA'</code></li>
+                <li style="margin: 10px 0;"><strong>Option 3 :</strong> Changer de schéma courant : <code>ALTER SESSION SET CURRENT_SCHEMA = nom_schema;</code></li>
             </ol>
         </div>
 
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Exemple de migration pour 3 schémas</span>
+                <span>SQL - Audit d'UN schéma spécifique (depuis connexion DBA)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>-- Schéma 1
-CONNECT schema_app1/password@mabase
-@audit_utl_file.sql
-@deploy_wrapper.sql
-@create_synonym.sql
-@test_migration.sql
-
--- Schéma 2
-CONNECT schema_app2/password@mabase
-@audit_utl_file.sql
-@deploy_wrapper.sql
-@create_synonym.sql
-@test_migration.sql
-
--- Schéma 3
-CONNECT schema_batch/password@mabase
-@audit_utl_file.sql
-@deploy_wrapper.sql
-@create_synonym.sql
-@test_migration.sql</code></pre>
+            <pre><code>-- Remplace 'MON_SCHEMA' par le nom du schéma à auditer
+SELECT
+    name AS object_name,
+    type AS object_type,
+    line,
+    text AS code_line
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner = 'MON_SCHEMA'  -- ← Modifier ici
+ORDER BY name, type, line;</code></pre>
         </div>
     </section>
 
