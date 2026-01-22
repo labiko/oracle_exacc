@@ -1037,18 +1037,9 @@ Cordialement,
                 <span>SQL - Lister les directories utilisés par UTL_FILE</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>-- Trouver tous les directories référencés dans le code UTL_FILE
-SELECT DISTINCT
-    REGEXP_SUBSTR(text, '''([A-Z_]+)''', 1, 1, 'i', 1) AS directory_name
-FROM dba_source
-WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
-  AND REGEXP_SUBSTR(text, '''([A-Z_]+)''', 1, 1, 'i', 1) IS NOT NULL
-ORDER BY 1;
-
--- Ou lister tous les directories Oracle existants
+            <pre><code>-- Lister tous les directories Oracle
 SELECT directory_name, directory_path
-FROM dba_directories
-WHERE owner NOT IN ('SYS', 'SYSTEM')
+FROM all_directories
 ORDER BY directory_name;</code></pre>
         </div>
     </section>
