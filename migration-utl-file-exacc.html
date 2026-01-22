@@ -1,0 +1,3841 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration UTL_FILE vers ExaCC - Guide Complet</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --success: #0f9d58;
+            --warning: #f9ab00;
+            --danger: #ea4335;
+            --dark: #202124;
+            --gray: #5f6368;
+            --light-gray: #f1f3f4;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: var(--light-gray);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--white);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: var(--light-gray);
+        }
+
+        /* Sections */
+        section {
+            background: var(--white);
+            margin: 20px 0;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        section h3 {
+            color: var(--dark);
+            margin: 25px 0 15px 0;
+            font-size: 1.3rem;
+        }
+
+        section h4 {
+            color: var(--gray);
+            margin: 20px 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        /* Code blocks */
+        .code-container {
+            position: relative;
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .code-header {
+            background: var(--dark);
+            color: var(--white);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .code-header span {
+            opacity: 0.8;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-height: 500px;
+        }
+
+        pre code {
+            color: inherit;
+        }
+
+        /* SQL Syntax highlighting */
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: var(--primary);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: var(--light-gray);
+        }
+
+        tr:hover {
+            background: #e8f0fe;
+        }
+
+        /* Alert boxes */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .alert-info {
+            background: #e8f0fe;
+            border-left: 4px solid var(--primary);
+        }
+
+        .alert-warning {
+            background: #fef7e0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-danger {
+            background: #fce8e6;
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-success {
+            background: #e6f4ea;
+            border-left: 4px solid var(--success);
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step;
+        }
+
+        .step {
+            position: relative;
+            padding-left: 60px;
+            margin: 25px 0;
+        }
+
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .step h4 {
+            margin-top: 0;
+            color: var(--dark);
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: var(--white);
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .card h4 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Progress tracker */
+        .progress-tracker {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .progress-tracker::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .progress-step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .progress-step .circle {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .progress-step.completed .circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: var(--white);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            section {
+                padding: 20px;
+            }
+
+            .step {
+                padding-left: 50px;
+            }
+
+            pre {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            nav, .copy-btn {
+                display: none;
+            }
+
+            section {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🔄 Migration UTL_FILE vers ExaCC</h1>
+    <p>Guide complet pour migrer les opérations fichiers vers Oracle Exadata Cloud at Customer</p>
+    <span class="badge">Oracle Database • DBMS_CLOUD • Object Storage</span>
+</header>
+
+<nav>
+    <ul>
+        <li><a href="#docs">📚 Comprendre</a></li>
+        <li><a href="#contexte">📋 Contexte</a></li>
+        <li><a href="#audit">🔍 Audit</a></li>
+        <li><a href="#prerequis">⚙️ Prérequis</a></li>
+        <li><a href="#wrapper">📦 Package Wrapper</a></li>
+        <li><a href="#remplacement">🔄 Remplacement</a></li>
+        <li><a href="#tests">✅ Tests</a></li>
+        <li><a href="#rollback">↩️ Rollback</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+
+    <!-- Section Documentation Pédagogique -->
+    <section id="docs">
+        <h2>📚 Comprendre la Migration - Guide Pédagogique</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">🎓</span>
+            <div>
+                <strong>Cette section explique simplement</strong><br>
+                Tous les concepts techniques sont expliqués avec des analogies simples pour bien comprendre avant de commencer.
+            </div>
+        </div>
+
+        <h3>🤔 C est quoi UTL_FILE ?</h3>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">📁</div>
+                <h4>UTL_FILE en simple</h4>
+                <p><strong>UTL_FILE</strong> est un outil Oracle qui permet à ta base de données de <strong>lire et écrire des fichiers</strong> sur le serveur.</p>
+                <p style="margin-top:10px;"><em>Exemple :</em> Ton application génère un rapport CSV et l enregistre dans un dossier.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🏠</div>
+                <h4>Comment ça marche (On-Premise)</h4>
+                <p>Sur un serveur classique, Oracle écrit directement sur le disque dur :</p>
+                <p style="margin-top:10px;font-family:monospace;background:#f5f5f5;padding:5px;">Base Oracle → Disque → /data/fichier.csv</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">☁️</div>
+                <h4>Le problème avec ExaCC</h4>
+                <p>Sur <strong>ExaCC</strong>, tu n as <strong>plus accès</strong> au disque du serveur !</p>
+                <p style="margin-top:10px;">Oracle gère les serveurs → le filesystem est bloqué → <strong>UTL_FILE ne marche plus !</strong></p>
+            </div>
+        </div>
+
+        <h3>🏗️ L Architecture de la Solution - Schéma Simplifié</h3>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>L idée</strong><br>
+                Au lieu d écrire sur le disque local (impossible), on envoie les fichiers dans le <strong>Cloud Oracle</strong> via Internet.
+            </div>
+        </div>
+
+        <div style="background: linear-gradient(to bottom, #f8f9fa, #e9ecef); padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+            <h4 style="color: #1a73e8; margin-bottom: 20px;">Flux de données : Du code PL/SQL au Cloud</h4>
+
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                <div style="background: #1a73e8; color: white; padding: 15px 30px; border-radius: 10px; min-width: 300px;">
+                    <strong>1. 📝 Ton code PL/SQL</strong><br>
+                    <small>UTL_FILE_WRAPPER.PUT_LINE(...)</small>
+                </div>
+
+                <div style="font-size: 30px;">⬇️</div>
+
+                <div style="background: #0f9d58; color: white; padding: 15px 30px; border-radius: 10px; min-width: 300px;">
+                    <strong>2. 📦 UTL_FILE_WRAPPER</strong><br>
+                    <small>Notre package traducteur</small>
+                </div>
+
+                <div style="font-size: 30px;">⬇️</div>
+
+                <div style="background: #f9ab00; color: white; padding: 15px 30px; border-radius: 10px; min-width: 300px;">
+                    <strong>3. ⚙️ DBMS_CLOUD</strong><br>
+                    <small>Package Oracle pour parler au cloud</small>
+                </div>
+
+                <div style="font-size: 30px;">⬇️ <span style="font-size:16px;">🔐 HTTPS (sécurisé)</span></div>
+
+                <div style="background: #ea4335; color: white; padding: 15px 30px; border-radius: 10px; min-width: 300px;">
+                    <strong>4. ☁️ Object Storage OCI</strong><br>
+                    <small>Stockage cloud Oracle (comme Google Drive pro)</small>
+                </div>
+            </div>
+        </div>
+
+        <h4>Les 5 composants expliqués avec des analogies</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Composant</th>
+                    <th>C est quoi ?</th>
+                    <th>Analogie simple</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>UTL_FILE_WRAPPER</strong></td>
+                    <td>Package qu on crée pour remplacer UTL_FILE. Mêmes fonctions mais envoie vers le cloud.</td>
+                    <td>🔌 <strong>Adaptateur de prise</strong> - branche l ancien appareil sur la nouvelle prise</td>
+                </tr>
+                <tr>
+                    <td><strong>DBMS_CLOUD</strong></td>
+                    <td>Package Oracle pré-installé sur ExaCC. Sait communiquer avec le cloud Oracle.</td>
+                    <td>📞 <strong>Téléphone</strong> - pour appeler le cloud</td>
+                </tr>
+                <tr>
+                    <td><strong>Credentials</strong></td>
+                    <td>Identifiants stockés dans la base pour s authentifier auprès d Oracle Cloud.</td>
+                    <td>🔑 <strong>Badge d accès + code PIN</strong> - prouve ton identité</td>
+                </tr>
+                <tr>
+                    <td><strong>Object Storage</strong></td>
+                    <td>Service cloud Oracle pour stocker des fichiers. Chaque fichier a une URL unique.</td>
+                    <td>📦 <strong>Entrepôt de stockage</strong> - garde tes cartons en sécurité</td>
+                </tr>
+                <tr>
+                    <td><strong>Table de Mapping</strong></td>
+                    <td>Table qui traduit : ancien dossier DATA_EXPORT = cette URL cloud</td>
+                    <td>📍 <strong>GPS</strong> - traduit l ancienne adresse en nouvelle</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>📋 La Checklist des Prérequis - Expliquée pas à pas</h3>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">👥</span>
+            <div>
+                <strong>2 personnes impliquées :</strong><br>
+                • <strong>Admin OCI</strong> = gère le cloud Oracle (console web)<br>
+                • <strong>DBA</strong> = gère la base de données Oracle
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:5%">#</th>
+                    <th style="width:20%">Étape</th>
+                    <th style="width:60%">Explication simple</th>
+                    <th style="width:15%">Qui</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>1</strong></td>
+                    <td>Accès console OCI</td>
+                    <td>
+                        <strong>Quoi :</strong> Se connecter à cloud.oracle.com<br>
+                        <strong>Analogie :</strong> Comme se connecter à ton compte bancaire en ligne<br>
+                        <strong>Besoin :</strong> Un compte avec droits administrateur
+                    </td>
+                    <td>Admin OCI</td>
+                </tr>
+                <tr>
+                    <td><strong>2</strong></td>
+                    <td>Création compartiment</td>
+                    <td>
+                        <strong>Quoi :</strong> Un dossier dans le cloud pour organiser tes ressources<br>
+                        <strong>Analogie :</strong> Comme un dossier sur ton PC : Projet-Migration<br>
+                        <strong>Note :</strong> Si tu en as déjà un, réutilise-le
+                    </td>
+                    <td>Admin OCI</td>
+                </tr>
+                <tr>
+                    <td><strong>3</strong></td>
+                    <td>Création bucket</td>
+                    <td>
+                        <strong>Quoi :</strong> Un conteneur pour stocker tes fichiers dans le cloud<br>
+                        <strong>Analogie :</strong> Comme un dossier Google Drive nommé db-files<br>
+                        <strong>Dedans :</strong> Tu crées des sous-dossiers (DATA_EXPORT/, LOGS/, etc.)
+                    </td>
+                    <td>Admin OCI</td>
+                </tr>
+                <tr>
+                    <td><strong>4</strong></td>
+                    <td>Génération API Keys</td>
+                    <td>
+                        <strong>Quoi :</strong> Créer une paire de clés (publique + privée) pour l authentification<br>
+                        <strong>Analogie :</strong> Badge d accès (clé publique) + code secret (clé privée)<br>
+                        <strong>⚠️ Important :</strong> La clé privée est SECRÈTE, ne jamais la partager !
+                    </td>
+                    <td>Admin OCI</td>
+                </tr>
+                <tr>
+                    <td><strong>5</strong></td>
+                    <td>Configuration IAM Policies</td>
+                    <td>
+                        <strong>Quoi :</strong> Règles qui disent qui a le droit de faire quoi<br>
+                        <strong>Analogie :</strong> Liste des employés autorisés à entrer dans un bâtiment<br>
+                        <strong>Exemple :</strong> User X peut lire/écrire dans bucket Y
+                    </td>
+                    <td>Admin OCI</td>
+                </tr>
+                <tr>
+                    <td><strong>6</strong></td>
+                    <td>Vérification DBMS_CLOUD</td>
+                    <td>
+                        <strong>Quoi :</strong> Vérifier que le package DBMS_CLOUD est installé sur ExaCC<br>
+                        <strong>Analogie :</strong> Vérifier qu une app est installée avant de l utiliser<br>
+                        <strong>Note :</strong> Normalement pré-installé sur ExaCC
+                    </td>
+                    <td>DBA</td>
+                </tr>
+                <tr>
+                    <td><strong>7</strong></td>
+                    <td>Création credentials en base</td>
+                    <td>
+                        <strong>Quoi :</strong> Enregistrer la clé API (étape 4) dans Oracle<br>
+                        <strong>Analogie :</strong> Enregistrer un mot de passe dans un coffre-fort<br>
+                        <strong>Résultat :</strong> La base peut s authentifier automatiquement
+                    </td>
+                    <td>DBA</td>
+                </tr>
+                <tr>
+                    <td><strong>8</strong></td>
+                    <td>Configuration ACL réseau</td>
+                    <td>
+                        <strong>Quoi :</strong> Autoriser la base à accéder à Internet (vers Oracle Cloud)<br>
+                        <strong>Analogie :</strong> Ouvrir une porte dans le pare-feu<br>
+                        <strong>Détail :</strong> Autoriser HTTPS vers *.oraclecloud.com
+                    </td>
+                    <td>DBA</td>
+                </tr>
+                <tr>
+                    <td><strong>9</strong></td>
+                    <td>Création table mapping</td>
+                    <td>
+                        <strong>Quoi :</strong> Table de correspondance ancien dossier → nouvelle URL<br>
+                        <strong>Analogie :</strong> Annuaire téléphonique (nom → numéro)<br>
+                        <strong>Exemple :</strong> DATA_EXPORT → https://objectstorage.../DATA_EXPORT/
+                    </td>
+                    <td>DBA</td>
+                </tr>
+                <tr>
+                    <td><strong>10</strong></td>
+                    <td>Attribution grants</td>
+                    <td>
+                        <strong>Quoi :</strong> Donner les permissions aux utilisateurs Oracle<br>
+                        <strong>Analogie :</strong> Donner les clés du bureau aux employés<br>
+                        <strong>Exemple :</strong> GRANT EXECUTE ON DBMS_CLOUD TO APP_USER
+                    </td>
+                    <td>DBA</td>
+                </tr>
+                <tr>
+                    <td><strong>11</strong></td>
+                    <td>Test de connectivité</td>
+                    <td>
+                        <strong>Quoi :</strong> Tester écriture/lecture d un fichier vers le cloud<br>
+                        <strong>Analogie :</strong> Envoyer un SMS de test pour vérifier que ça marche<br>
+                        <strong>Si OK :</strong> Tout est bien configuré !
+                    </td>
+                    <td>DBA</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>📖 Glossaire - Les termes techniques</h3>
+
+        <div class="card-grid">
+            <div class="card">
+                <h4>OCI</h4>
+                <p><strong>Oracle Cloud Infrastructure</strong><br>La plateforme cloud d Oracle (comme AWS ou Azure).</p>
+            </div>
+            <div class="card">
+                <h4>ExaCC</h4>
+                <p><strong>Exadata Cloud at Customer</strong><br>Serveur Exadata chez toi mais géré par Oracle.</p>
+            </div>
+            <div class="card">
+                <h4>Object Storage</h4>
+                <p>Service cloud pour stocker des fichiers. Chaque fichier a une URL unique.</p>
+            </div>
+            <div class="card">
+                <h4>Bucket</h4>
+                <p>Conteneur (dossier racine) dans Object Storage.</p>
+            </div>
+            <div class="card">
+                <h4>OCID</h4>
+                <p><strong>Oracle Cloud Identifier</strong><br>ID unique pour chaque ressource OCI.</p>
+            </div>
+            <div class="card">
+                <h4>Namespace</h4>
+                <p>Identifiant unique de ton compte OCI pour Object Storage.</p>
+            </div>
+            <div class="card">
+                <h4>API Key</h4>
+                <p>Paire de clés (publique + privée) pour s authentifier sans mot de passe.</p>
+            </div>
+            <div class="card">
+                <h4>Fingerprint</h4>
+                <p>Empreinte unique de ta clé publique (format aa:bb:cc:...)</p>
+            </div>
+            <div class="card">
+                <h4>IAM Policy</h4>
+                <p>Règles de permissions : qui peut faire quoi dans OCI.</p>
+            </div>
+            <div class="card">
+                <h4>Credential</h4>
+                <p>Objet Oracle qui stocke les infos d authentification en base.</p>
+            </div>
+            <div class="card">
+                <h4>ACL</h4>
+                <p><strong>Access Control List</strong><br>Règles réseau Oracle (pare-feu interne).</p>
+            </div>
+            <div class="card">
+                <h4>Directory Oracle</h4>
+                <p>Objet Oracle pointant vers un dossier serveur (utilisé par UTL_FILE).</p>
+            </div>
+        </div>
+
+        <h3>❓ Questions Fréquentes</h3>
+
+        <details style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #1a73e8;">
+            <summary style="cursor: pointer; font-weight: bold; color: #1a73e8;">Dois-je modifier tout mon code PL/SQL ?</summary>
+            <p style="margin-top: 10px;"><strong>Non !</strong> Tu remplaces juste UTL_FILE par UTL_FILE_WRAPPER. Les fonctions ont la même signature. Ou crée un synonyme et tu ne changes rien !</p>
+        </details>
+
+        <details style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #1a73e8;">
+            <summary style="cursor: pointer; font-weight: bold; color: #1a73e8;">Est-ce que les performances seront impactées ?</summary>
+            <p style="margin-top: 10px;">Légèrement oui. HTTPS vers le cloud est plus lent qu écrire sur disque local. Mais pour des fichiers normaux (quelques Mo), c est imperceptible.</p>
+        </details>
+
+        <details style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #1a73e8;">
+            <summary style="cursor: pointer; font-weight: bold; color: #1a73e8;">Combien coûte Object Storage ?</summary>
+            <p style="margin-top: 10px;">Très économique : ~0.02 euros/Go/mois. Les premiers 20 Go sont gratuits (Free Tier).</p>
+        </details>
+
+        <details style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #1a73e8;">
+            <summary style="cursor: pointer; font-weight: bold; color: #1a73e8;">Puis-je tester gratuitement ?</summary>
+            <p style="margin-top: 10px;"><strong>Oui !</strong> OCI Free Tier offre gratuitement : 20 Go Object Storage + 2 bases Autonomous Database.</p>
+        </details>
+
+        <h3>🧪 Environnement de Test Gratuit</h3>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">🎁</span>
+            <div>
+                <strong>OCI Free Tier</strong> - Oracle offre un compte cloud gratuit permanent :<br>
+                • 20 Go Object Storage<br>
+                • 2 bases Autonomous Database<br>
+                → Inscription : <a href="https://cloud.oracle.com/free" target="_blank">cloud.oracle.com/free</a>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Section Contexte -->
+    <section id="contexte">
+        <h2>📋 Contexte de la Migration</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Pourquoi migrer UTL_FILE ?</strong><br>
+                UTL_FILE utilise le système de fichiers local du serveur, ce qui n'est pas compatible avec l'architecture ExaCC où l'accès direct au filesystem est restreint.
+            </div>
+        </div>
+
+        <h3>Comparaison des approches</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Critère</th>
+                    <th>UTL_FILE (On-Premise)</th>
+                    <th>DBMS_CLOUD (ExaCC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Stockage</td>
+                    <td>Filesystem local</td>
+                    <td>Oracle Object Storage</td>
+                </tr>
+                <tr>
+                    <td>Accès</td>
+                    <td>Directory Oracle</td>
+                    <td>URI Object Storage</td>
+                </tr>
+                <tr>
+                    <td>Sécurité</td>
+                    <td>UTL_FILE_DIR (faible)</td>
+                    <td>Credentials OCI (forte)</td>
+                </tr>
+                <tr>
+                    <td>Scalabilité</td>
+                    <td>Limitée au serveur</td>
+                    <td>Illimitée (cloud)</td>
+                </tr>
+                <tr>
+                    <td>Haute disponibilité</td>
+                    <td>Non</td>
+                    <td>Oui (réplication)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Étapes de migration</h3>
+        <div class="progress-tracker">
+            <div class="progress-step">
+                <div class="circle">1</div>
+                <div>Audit</div>
+            </div>
+            <div class="progress-step">
+                <div class="circle">2</div>
+                <div>Prérequis</div>
+            </div>
+            <div class="progress-step">
+                <div class="circle">3</div>
+                <div>Wrapper</div>
+            </div>
+            <div class="progress-step">
+                <div class="circle">4</div>
+                <div>Remplacement</div>
+            </div>
+            <div class="progress-step">
+                <div class="circle">5</div>
+                <div>Tests</div>
+            </div>
+            <div class="progress-step">
+                <div class="circle">6</div>
+                <div>Déploiement</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Audit -->
+    <section id="audit">
+        <h2>🔍 Scripts d'Audit UTL_FILE</h2>
+
+        <h3>1. Rechercher toutes les utilisations de UTL_FILE</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Recherche globale UTL_FILE</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- AUDIT COMPLET UTL_FILE
+-- Rechercher toutes les références dans le code PL/SQL
+-- ============================================
+
+SELECT
+    owner,
+    name,
+    type,
+    line,
+    TRIM(text) AS code_line
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+ORDER BY owner, name, type, line;</code></pre>
+        </div>
+
+        <h3>2. Compter les références par objet</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Comptage par objet</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- COMPTAGE DES RÉFÉRENCES UTL_FILE PAR OBJET
+-- ============================================
+
+SELECT
+    owner,
+    name,
+    type,
+    COUNT(*) AS nb_references
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+GROUP BY owner, name, type
+ORDER BY nb_references DESC;</code></pre>
+        </div>
+
+        <h3>3. Catégoriser les opérations UTL_FILE</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Catégorisation des opérations</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- CATÉGORISATION DES OPÉRATIONS UTL_FILE
+-- Identifier les types d'opérations: lecture, écriture, etc.
+-- ============================================
+
+SELECT
+    owner,
+    name,
+    type,
+    CASE
+        WHEN UPPER(text) LIKE '%UTL_FILE.FOPEN%' THEN 'OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT_LINE%' THEN 'WRITE_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT%' AND UPPER(text) NOT LIKE '%PUT_LINE%' THEN 'WRITE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.NEW_LINE%' THEN 'NEW_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.GET_LINE%' THEN 'READ_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE%' THEN 'CLOSE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE_ALL%' THEN 'CLOSE_ALL'
+        WHEN UPPER(text) LIKE '%UTL_FILE.IS_OPEN%' THEN 'CHECK_OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FFLUSH%' THEN 'FLUSH'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FCOPY%' THEN 'COPY'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FRENAME%' THEN 'RENAME'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FREMOVE%' THEN 'DELETE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FGETATTR%' THEN 'GET_ATTR'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FILE_TYPE%' THEN 'TYPE_DECLARATION'
+        ELSE 'OTHER'
+    END AS operation_type,
+    line,
+    TRIM(text) AS code_line
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+ORDER BY owner, name, type, line;</code></pre>
+        </div>
+
+        <h3>4. Résumé statistique par type d'opération</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Statistiques des opérations</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- STATISTIQUES PAR TYPE D'OPÉRATION
+-- Vue d'ensemble pour estimer l'effort de migration
+-- ============================================
+
+SELECT
+    CASE
+        WHEN UPPER(text) LIKE '%UTL_FILE.FOPEN%' THEN 'OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT_LINE%' THEN 'WRITE_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT%' AND UPPER(text) NOT LIKE '%PUT_LINE%' THEN 'WRITE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.NEW_LINE%' THEN 'NEW_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.GET_LINE%' THEN 'READ_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE%' THEN 'CLOSE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.IS_OPEN%' THEN 'CHECK_OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FFLUSH%' THEN 'FLUSH'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FILE_TYPE%' THEN 'TYPE_DECLARATION'
+        ELSE 'OTHER'
+    END AS operation_type,
+    COUNT(*) AS nb_occurrences,
+    COUNT(DISTINCT owner || '.' || name) AS nb_objets_distincts
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+GROUP BY
+    CASE
+        WHEN UPPER(text) LIKE '%UTL_FILE.FOPEN%' THEN 'OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT_LINE%' THEN 'WRITE_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT%' AND UPPER(text) NOT LIKE '%PUT_LINE%' THEN 'WRITE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.NEW_LINE%' THEN 'NEW_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.GET_LINE%' THEN 'READ_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE%' THEN 'CLOSE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.IS_OPEN%' THEN 'CHECK_OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FFLUSH%' THEN 'FLUSH'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FILE_TYPE%' THEN 'TYPE_DECLARATION'
+        ELSE 'OTHER'
+    END
+ORDER BY nb_occurrences DESC;</code></pre>
+        </div>
+
+        <h3>5. Lister les DIRECTORY Oracle utilisés</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Directories Oracle</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- LISTE DES DIRECTORY ORACLE
+-- Identifier les répertoires à migrer vers Object Storage
+-- ============================================
+
+SELECT
+    owner,
+    directory_name,
+    directory_path,
+    origin_con_id
+FROM dba_directories
+ORDER BY directory_name;
+
+-- Privilèges sur les directories
+SELECT
+    grantee,
+    table_name AS directory_name,
+    privilege,
+    grantor
+FROM dba_tab_privs
+WHERE table_name IN (SELECT directory_name FROM dba_directories)
+ORDER BY table_name, grantee;</code></pre>
+        </div>
+
+        <h3>6. Export complet de l'audit en CSV</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Export audit complet</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- EXPORT AUDIT COMPLET POUR ANALYSE
+-- Génère un rapport CSV pour Excel/analyse
+-- ============================================
+
+SET MARKUP CSV ON
+SET LINESIZE 32767
+SET PAGESIZE 0
+SET FEEDBACK OFF
+SET TRIMSPOOL ON
+
+SPOOL utl_file_audit_report.csv
+
+SELECT
+    owner,
+    name,
+    type,
+    line,
+    CASE
+        WHEN UPPER(text) LIKE '%UTL_FILE.FOPEN%' THEN 'OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT_LINE%' THEN 'WRITE_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.PUT%' AND UPPER(text) NOT LIKE '%PUT_LINE%' THEN 'WRITE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.GET_LINE%' THEN 'READ_LINE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE%' THEN 'CLOSE'
+        WHEN UPPER(text) LIKE '%UTL_FILE.IS_OPEN%' THEN 'CHECK_OPEN'
+        WHEN UPPER(text) LIKE '%UTL_FILE.FFLUSH%' THEN 'FLUSH'
+        ELSE 'OTHER'
+    END AS operation_type,
+    REPLACE(REPLACE(TRIM(text), CHR(10), ' '), CHR(13), ' ') AS code_line
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+ORDER BY owner, name, type, line;
+
+SPOOL OFF
+SET MARKUP CSV OFF</code></pre>
+        </div>
+    </section>
+
+    <!-- Section Prérequis -->
+    <section id="prerequis">
+        <h2>⚙️ Prérequis ExaCC - Guide Complet</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">ℹ️</span>
+            <div>
+                <strong>Configuration nécessaire</strong><br>
+                Avant de déployer le wrapper, vous devez configurer l'accès à Oracle Object Storage via DBMS_CLOUD. Cette section détaille toutes les étapes nécessaires.
+            </div>
+        </div>
+
+        <!-- Checklist des prérequis -->
+        <h3>📋 Checklist des Prérequis</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Étape</th>
+                    <th>Description</th>
+                    <th>Responsable</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Accès console OCI avec droits suffisants</td>
+                    <td>Admin OCI</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Création du compartiment OCI (si nécessaire)</td>
+                    <td>Admin OCI</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Création du bucket Object Storage</td>
+                    <td>Admin OCI</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Génération des API Keys OCI</td>
+                    <td>Admin OCI</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Configuration des IAM Policies</td>
+                    <td>Admin OCI</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Installation/vérification DBMS_CLOUD sur ExaCC</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Création des credentials dans la base</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Configuration ACL réseau (si nécessaire)</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Création de la table de mapping</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Attribution des grants aux schémas</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>Test de connectivité Object Storage</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Architecture -->
+        <h3>🏗️ Architecture de la Solution</h3>
+        <div class="alert alert-success">
+            <span class="alert-icon">📊</span>
+            <div>
+                <strong>Flux de données</strong><br>
+                <code>Application PL/SQL → UTL_FILE_WRAPPER → DBMS_CLOUD → HTTPS → OCI Object Storage</code>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Composant</th>
+                    <th>Rôle</th>
+                    <th>Localisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>UTL_FILE_WRAPPER</strong></td>
+                    <td>Package PL/SQL qui émule UTL_FILE</td>
+                    <td>Base de données ExaCC</td>
+                </tr>
+                <tr>
+                    <td><strong>DBMS_CLOUD</strong></td>
+                    <td>Package Oracle pour accès cloud</td>
+                    <td>Base de données ExaCC</td>
+                </tr>
+                <tr>
+                    <td><strong>Credentials</strong></td>
+                    <td>Authentification OCI (API Key)</td>
+                    <td>Base de données ExaCC</td>
+                </tr>
+                <tr>
+                    <td><strong>Object Storage</strong></td>
+                    <td>Stockage des fichiers</td>
+                    <td>OCI Cloud</td>
+                </tr>
+                <tr>
+                    <td><strong>Table de Mapping</strong></td>
+                    <td>Correspondance Directory → URI</td>
+                    <td>Base de données ExaCC</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Étape 1: Console OCI -->
+        <h3>1️⃣ Accès Console OCI et Informations Requises</h3>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Prérequis</strong><br>
+                Vous devez avoir un compte OCI avec les droits pour créer des buckets et gérer les IAM policies.
+            </div>
+        </div>
+
+        <h4>Informations à collecter</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>Informations OCI à noter</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code># ============================================
+# INFORMATIONS OCI À COLLECTER
+# Notez ces valeurs, elles seront utilisées plus tard
+# ============================================
+
+# 1. TENANCY OCID (Console OCI → Administration → Tenancy Details)
+TENANCY_OCID="ocid1.tenancy.oc1..aaaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# 2. USER OCID (Console OCI → Identity → Users → Votre utilisateur)
+USER_OCID="ocid1.user.oc1..aaaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# 3. COMPARTMENT OCID (Console OCI → Identity → Compartments)
+COMPARTMENT_OCID="ocid1.compartment.oc1..aaaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# 4. REGION (ex: eu-paris-1, eu-frankfurt-1, us-ashburn-1)
+REGION="eu-paris-1"
+
+# 5. NAMESPACE (Console OCI → Object Storage → Bucket → Namespace)
+# Ou via CLI: oci os ns get
+NAMESPACE="votre_namespace"
+
+# 6. Format de l'URI Object Storage
+# https://objectstorage.{REGION}.oraclecloud.com/n/{NAMESPACE}/b/{BUCKET}/o/{OBJECT_PATH}</code></pre>
+        </div>
+
+        <h4>Obtenir les OCIDs via Console OCI</h4>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">🏢</div>
+                <h4>Tenancy OCID</h4>
+                <p><strong>Navigation:</strong> Console OCI → Menu ☰ → Governance & Administration → Tenancy Details</p>
+                <p>Copier l'OCID affiché en haut de la page</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">👤</div>
+                <h4>User OCID</h4>
+                <p><strong>Navigation:</strong> Console OCI → Menu ☰ → Identity & Security → Users → [Votre User]</p>
+                <p>Copier l'OCID dans les détails de l'utilisateur</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📁</div>
+                <h4>Compartment OCID</h4>
+                <p><strong>Navigation:</strong> Console OCI → Menu ☰ → Identity & Security → Compartments</p>
+                <p>Sélectionner le compartment et copier l'OCID</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🌍</div>
+                <h4>Namespace</h4>
+                <p><strong>Navigation:</strong> Console OCI → Menu ☰ → Storage → Object Storage → Buckets</p>
+                <p>Le namespace est affiché en haut de la page</p>
+            </div>
+        </div>
+
+        <!-- Étape 2: Création Bucket -->
+        <h3>2️⃣ Création du Bucket Object Storage</h3>
+
+        <h4>Option A: Via Console OCI (Recommandé pour débutants)</h4>
+        <div class="steps">
+            <div class="step">
+                <h4>Accéder à Object Storage</h4>
+                <p>Console OCI → Menu ☰ → Storage → Object Storage → Buckets</p>
+            </div>
+            <div class="step">
+                <h4>Créer le Bucket</h4>
+                <p>Cliquer sur "Create Bucket" et remplir:</p>
+                <ul>
+                    <li><strong>Bucket Name:</strong> db-file-storage</li>
+                    <li><strong>Default Storage Tier:</strong> Standard</li>
+                    <li><strong>Encryption:</strong> Encrypt using Oracle managed keys</li>
+                    <li><strong>Emit Object Events:</strong> Désactivé (sauf si monitoring requis)</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h4>Créer les dossiers</h4>
+                <p>Dans le bucket, créer des "prefixes" (dossiers virtuels) pour chaque directory Oracle:</p>
+                <ul>
+                    <li>DATA_EXPORT/</li>
+                    <li>LOG_FILES/</li>
+                    <li>REPORTS/</li>
+                    <li>TEMP/</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4>Option B: Via OCI CLI</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>OCI CLI - Création complète du bucket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code># ============================================
+# CRÉATION DU BUCKET OBJECT STORAGE VIA CLI
+# Exécuter depuis une machine avec OCI CLI configuré
+# ============================================
+
+# Variables - ADAPTER CES VALEURS
+COMPARTMENT_ID="ocid1.compartment.oc1..xxxxxxxxxxxx"
+BUCKET_NAME="db-file-storage"
+REGION="eu-paris-1"
+
+# Récupérer le namespace automatiquement
+NAMESPACE=$(oci os ns get --query 'data' --raw-output)
+echo "Namespace: $NAMESPACE"
+
+# Créer le bucket
+oci os bucket create \
+    --compartment-id $COMPARTMENT_ID \
+    --name $BUCKET_NAME \
+    --storage-tier Standard \
+    --public-access-type NoPublicAccess \
+    --versioning Disabled
+
+# Vérifier la création
+oci os bucket get --bucket-name $BUCKET_NAME --query 'data.{name:name,namespace:namespace,"time-created":"time-created"}'
+
+# Créer les dossiers (prefixes) pour chaque directory Oracle
+# Note: Object Storage utilise des prefixes, pas de vrais dossiers
+# On crée un fichier .keep pour matérialiser le dossier
+
+echo "" | oci os object put --bucket-name $BUCKET_NAME --name "DATA_EXPORT/.keep" --file -
+echo "" | oci os object put --bucket-name $BUCKET_NAME --name "LOG_FILES/.keep" --file -
+echo "" | oci os object put --bucket-name $BUCKET_NAME --name "REPORTS/.keep" --file -
+echo "" | oci os object put --bucket-name $BUCKET_NAME --name "TEMP/.keep" --file -
+echo "" | oci os object put --bucket-name $BUCKET_NAME --name "ARCHIVES/.keep" --file -
+
+# Lister les objets pour vérifier
+oci os object list --bucket-name $BUCKET_NAME --query 'data[*].name'
+
+# Afficher l'URI de base
+echo ""
+echo "============================================"
+echo "URI de base pour Object Storage:"
+echo "https://objectstorage.${REGION}.oraclecloud.com/n/${NAMESPACE}/b/${BUCKET_NAME}/o/"
+echo "============================================"</code></pre>
+        </div>
+
+        <!-- Étape 3: API Keys -->
+        <h3>3️⃣ Génération des API Keys OCI</h3>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🔐</span>
+            <div>
+                <strong>Sécurité</strong><br>
+                La clé privée ne doit JAMAIS être partagée ou stockée dans un endroit non sécurisé.
+                Elle sera utilisée pour créer les credentials dans la base de données.
+            </div>
+        </div>
+
+        <h4>Option A: Via Console OCI</h4>
+        <div class="steps">
+            <div class="step">
+                <h4>Accéder aux API Keys</h4>
+                <p>Console OCI → Menu ☰ → Identity & Security → Users → [Votre User] → API Keys</p>
+            </div>
+            <div class="step">
+                <h4>Générer une nouvelle clé</h4>
+                <p>Cliquer sur "Add API Key" → "Generate API Key Pair"</p>
+                <p><strong>IMPORTANT:</strong> Télécharger la clé privée immédiatement, elle ne sera plus accessible après!</p>
+            </div>
+            <div class="step">
+                <h4>Noter le fingerprint</h4>
+                <p>Après ajout, copier le fingerprint affiché (format: aa:bb:cc:dd:...)</p>
+            </div>
+            <div class="step">
+                <h4>Copier le Configuration File Preview</h4>
+                <p>OCI affiche un aperçu de configuration - le sauvegarder pour référence</p>
+            </div>
+        </div>
+
+        <h4>Option B: Via OCI CLI</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>OCI CLI - Génération des API Keys</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code># ============================================
+# GÉNÉRATION DES API KEYS VIA CLI
+# ============================================
+
+# Créer un répertoire sécurisé pour les clés
+mkdir -p ~/.oci
+chmod 700 ~/.oci
+
+# Générer la paire de clés RSA 2048 bits
+openssl genrsa -out ~/.oci/oci_api_key.pem 2048
+chmod 600 ~/.oci/oci_api_key.pem
+
+# Générer la clé publique
+openssl rsa -pubout -in ~/.oci/oci_api_key.pem -out ~/.oci/oci_api_key_public.pem
+
+# Calculer le fingerprint
+openssl rsa -pubout -outform DER -in ~/.oci/oci_api_key.pem | openssl md5 -c
+# Format attendu: aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99
+
+# Afficher la clé publique (à uploader sur OCI Console)
+cat ~/.oci/oci_api_key_public.pem
+
+# Uploader la clé publique via CLI
+USER_OCID="ocid1.user.oc1..aaaaaaaaxxxx"
+oci iam user api-key upload --user-id $USER_OCID --key-file ~/.oci/oci_api_key_public.pem
+
+# Afficher la clé privée (à utiliser pour CREATE_CREDENTIAL)
+echo "============================================"
+echo "CLÉ PRIVÉE (à copier pour DBMS_CLOUD.CREATE_CREDENTIAL):"
+echo "============================================"
+cat ~/.oci/oci_api_key.pem</code></pre>
+        </div>
+
+        <!-- Étape 4: IAM Policies -->
+        <h3>4️⃣ Configuration des IAM Policies OCI</h3>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Permissions requises</strong><br>
+                L'utilisateur ou le groupe doit avoir les permissions pour lire/écrire dans le bucket Object Storage.
+            </div>
+        </div>
+
+        <h4>Policies nécessaires</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>OCI IAM Policies</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code># ============================================
+# IAM POLICIES POUR OBJECT STORAGE
+# À créer dans: Identity & Security → Policies
+# ============================================
+
+# Policy 1: Permettre à un groupe de gérer Object Storage dans un compartment
+Allow group DBAdmins to manage objects in compartment MyCompartment
+
+# Policy 2: Plus restrictif - lecture/écriture seulement sur un bucket spécifique
+Allow group DBAdmins to manage objects in compartment MyCompartment where target.bucket.name='db-file-storage'
+
+# Policy 3: Pour un utilisateur spécifique (moins recommandé)
+Allow user john.doe@company.com to manage objects in compartment MyCompartment
+
+# Policy 4: Permissions détaillées (granulaire)
+Allow group DBAdmins to read objects in compartment MyCompartment where target.bucket.name='db-file-storage'
+Allow group DBAdmins to manage objects in compartment MyCompartment where all {target.bucket.name='db-file-storage', any {request.permission='OBJECT_CREATE', request.permission='OBJECT_OVERWRITE', request.permission='OBJECT_DELETE'}}
+
+# ============================================
+# VÉRIFICATION DES POLICIES VIA CLI
+# ============================================
+# Lister les policies du compartment
+oci iam policy list --compartment-id $COMPARTMENT_ID --query 'data[*].{name:name,statements:statements}'</code></pre>
+        </div>
+
+        <!-- Étape 5: DBMS_CLOUD -->
+        <h3>5️⃣ Vérification et Installation de DBMS_CLOUD sur ExaCC</h3>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">ℹ️</span>
+            <div>
+                <strong>Note ExaCC</strong><br>
+                Sur Exadata Cloud at Customer (ExaCC), DBMS_CLOUD est généralement pré-installé.
+                Ces scripts permettent de vérifier et configurer si nécessaire.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Vérification DBMS_CLOUD</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- VÉRIFICATION DE DBMS_CLOUD
+-- Exécuter en tant que SYS ou utilisateur avec DBA
+-- ============================================
+
+-- 1. Vérifier si DBMS_CLOUD existe
+SELECT owner, object_name, object_type, status
+FROM dba_objects
+WHERE object_name = 'DBMS_CLOUD'
+ORDER BY owner, object_type;
+
+-- Résultat attendu:
+-- OWNER    OBJECT_NAME   OBJECT_TYPE      STATUS
+-- -------- ------------- ---------------- ------
+-- C##CLOUD DBMS_CLOUD    PACKAGE          VALID
+-- C##CLOUD DBMS_CLOUD    PACKAGE BODY     VALID
+-- PUBLIC   DBMS_CLOUD    SYNONYM          VALID
+
+-- 2. Vérifier la version
+SELECT * FROM dba_registry WHERE comp_name LIKE '%CLOUD%';
+
+-- 3. Vérifier les grants existants
+SELECT grantee, privilege, grantable
+FROM dba_tab_privs
+WHERE table_name = 'DBMS_CLOUD'
+ORDER BY grantee;
+
+-- 4. Tester l'accès (en tant qu'utilisateur normal)
+-- Si erreur ORA-00942 ou ORA-06550: le package n'est pas accessible
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('DBMS_CLOUD version: ' || DBMS_CLOUD.VERSION);
+END;
+/</code></pre>
+        </div>
+
+        <h4>Installation de DBMS_CLOUD (si non présent)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Installation DBMS_CLOUD</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- INSTALLATION DE DBMS_CLOUD
+-- ⚠️ À exécuter UNIQUEMENT si DBMS_CLOUD n'existe pas
+-- Exécuter en tant que SYS AS SYSDBA
+-- ============================================
+
+-- Note: Sur ExaCC moderne, DBMS_CLOUD devrait être pré-installé
+-- Ces scripts sont fournis à titre de référence
+
+-- 1. Vérifier la version de la base
+SELECT banner FROM v$version WHERE banner LIKE 'Oracle%';
+
+-- 2. Pour Oracle 19c+, DBMS_CLOUD peut être installé via:
+-- Option A: Via le répertoire $ORACLE_HOME/rdbms/admin
+@?/rdbms/admin/dbms_cloud_install.sql
+
+-- Option B: Télécharger depuis Oracle Support (Doc ID 2748362.1)
+-- Puis exécuter les scripts fournis
+
+-- 3. Après installation, vérifier
+SELECT object_name, object_type, status
+FROM dba_objects
+WHERE object_name = 'DBMS_CLOUD';
+
+-- 4. Créer le synonyme public si nécessaire
+CREATE OR REPLACE PUBLIC SYNONYM DBMS_CLOUD FOR C##CLOUD$SERVICE.DBMS_CLOUD;</code></pre>
+        </div>
+
+        <!-- Étape 6: Credentials -->
+        <h3>6️⃣ Création des Credentials dans la Base de Données</h3>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🔐</span>
+            <div>
+                <strong>Sécurité des Credentials</strong><br>
+                Les credentials contiennent la clé privée. Ils sont stockés de manière chiffrée dans la base
+                mais limitez l'accès aux utilisateurs qui en ont vraiment besoin.
+            </div>
+        </div>
+
+        <h4>Option A: Credential avec API Key (Recommandé pour Production)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Création Credential avec API Key</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- CRÉATION DU CREDENTIAL AVEC API KEY
+-- Méthode recommandée pour production
+-- ============================================
+
+-- Connexion en tant qu'utilisateur qui possédera le credential
+-- ou en tant que SYS pour créer dans un schéma spécifique
+
+-- 1. Supprimer le credential existant si nécessaire
+BEGIN
+    DBMS_CLOUD.DROP_CREDENTIAL(credential_name => 'OCI_CREDENTIAL');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -20000 THEN RAISE; END IF;
+END;
+/
+
+-- 2. Créer le credential avec API Key
+-- REMPLACER les valeurs par vos informations OCI
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'OCI_CREDENTIAL',
+        user_ocid       => 'ocid1.user.oc1..aaaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        tenancy_ocid    => 'ocid1.tenancy.oc1..aaaaaaaaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        private_key     => '-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+-----END RSA PRIVATE KEY-----',
+        fingerprint     => 'aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99'
+    );
+    DBMS_OUTPUT.PUT_LINE('Credential OCI_CREDENTIAL créé avec succès');
+END;
+/
+
+-- 3. Vérifier la création
+SELECT credential_name, username, enabled, comments
+FROM user_credentials
+WHERE credential_name = 'OCI_CREDENTIAL';</code></pre>
+        </div>
+
+        <h4>Option B: Credential avec Auth Token (Plus simple, pour tests)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Création Credential avec Auth Token</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- CRÉATION DU CREDENTIAL AVEC AUTH TOKEN
+-- Plus simple mais moins sécurisé (le token expire)
+-- Utile pour tests ou environnements non-production
+-- ============================================
+
+-- Générer un Auth Token dans OCI Console:
+-- Identity & Security → Users → [User] → Auth Tokens → Generate Token
+-- ATTENTION: Le token n'est affiché qu'une seule fois!
+
+BEGIN
+    DBMS_CLOUD.DROP_CREDENTIAL(credential_name => 'OCI_CREDENTIAL_TOKEN');
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'OCI_CREDENTIAL_TOKEN',
+        username        => 'oracleidentitycloudservice/john.doe@company.com', -- Format pour IDCS
+        -- OU
+        -- username     => 'john.doe@company.com',  -- Format pour IAM natif
+        password        => 'votre_auth_token_ici'   -- Le token généré dans OCI Console
+    );
+    DBMS_OUTPUT.PUT_LINE('Credential avec Auth Token créé');
+END;
+/</code></pre>
+        </div>
+
+        <h4>Option C: Credential avec Resource Principal (ExaCC avec Instance Principal)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Création Credential avec Resource Principal</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- CREDENTIAL AVEC RESOURCE PRINCIPAL
+-- Méthode sans clé - utilise l'identité de l'instance ExaCC
+-- Nécessite configuration IAM spécifique
+-- ============================================
+
+-- Prérequis:
+-- 1. Dynamic Group configuré pour inclure l'instance ExaCC
+-- 2. Policy permettant au Dynamic Group d'accéder à Object Storage
+
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'OCI_RESOURCE_PRINCIPAL',
+        params          => JSON_OBJECT('type' VALUE 'RESOURCE_PRINCIPAL')
+    );
+END;
+/
+
+-- Policy IAM requise (à créer dans OCI Console):
+-- Allow dynamic-group ExaCC_Instances to manage objects in compartment MyCompartment</code></pre>
+        </div>
+
+        <!-- Étape 7: Configuration ACL -->
+        <h3>7️⃣ Configuration ACL Réseau (Network Access Control)</h3>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Accès réseau requis</strong><br>
+                La base de données doit pouvoir accéder à Internet (objectstorage.*.oraclecloud.com)
+                via HTTPS (port 443). Sur ExaCC, cela peut nécessiter une configuration ACL.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Configuration ACL pour accès Object Storage</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- CONFIGURATION ACL RÉSEAU
+-- Permet à la base d'accéder à Object Storage via HTTPS
+-- Exécuter en tant que SYS
+-- ============================================
+
+-- 1. Créer l'ACL pour l'accès HTTP/HTTPS
+BEGIN
+    DBMS_NETWORK_ACL_ADMIN.CREATE_ACL(
+        acl         => 'oci_objectstorage_acl.xml',
+        description => 'ACL pour accès OCI Object Storage',
+        principal   => 'VOTRE_SCHEMA',  -- Le schéma qui utilise DBMS_CLOUD
+        is_grant    => TRUE,
+        privilege   => 'connect',
+        start_date  => SYSTIMESTAMP,
+        end_date    => NULL
+    );
+END;
+/
+
+-- 2. Ajouter les privilèges HTTP
+BEGIN
+    DBMS_NETWORK_ACL_ADMIN.ADD_PRIVILEGE(
+        acl       => 'oci_objectstorage_acl.xml',
+        principal => 'VOTRE_SCHEMA',
+        is_grant  => TRUE,
+        privilege => 'resolve'
+    );
+END;
+/
+
+-- 3. Assigner l'ACL aux hosts Object Storage (toutes les régions)
+BEGIN
+    -- Région principale
+    DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL(
+        acl  => 'oci_objectstorage_acl.xml',
+        host => 'objectstorage.eu-paris-1.oraclecloud.com',
+        lower_port => 443,
+        upper_port => 443
+    );
+
+    -- Ajouter d'autres régions si nécessaire
+    DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL(
+        acl  => 'oci_objectstorage_acl.xml',
+        host => 'objectstorage.eu-frankfurt-1.oraclecloud.com',
+        lower_port => 443,
+        upper_port => 443
+    );
+
+    -- Wildcard pour toutes les régions (Oracle 12c+)
+    DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL(
+        acl  => 'oci_objectstorage_acl.xml',
+        host => '*.oraclecloud.com',
+        lower_port => 443,
+        upper_port => 443
+    );
+END;
+/
+
+COMMIT;
+
+-- 4. Vérifier les ACLs
+SELECT host, lower_port, upper_port, acl
+FROM dba_network_acls
+WHERE acl LIKE '%objectstorage%';
+
+-- 5. Vérifier les privilèges
+SELECT acl, principal, privilege, is_grant
+FROM dba_network_acl_privileges
+WHERE acl LIKE '%objectstorage%';
+
+-- ============================================
+-- MÉTHODE ORACLE 12c+ (APPEND_HOST_ACE - Recommandée)
+-- ============================================
+
+BEGIN
+    DBMS_NETWORK_ACL_ADMIN.APPEND_HOST_ACE(
+        host       => '*.oraclecloud.com',
+        lower_port => 443,
+        upper_port => 443,
+        ace        => xs$ace_type(
+            privilege_list => xs$name_list('connect', 'resolve'),
+            principal_name => 'VOTRE_SCHEMA',
+            principal_type => xs_acl.ptype_db
+        )
+    );
+END;
+/
+
+COMMIT;</code></pre>
+        </div>
+
+        <!-- Étape 8: Table de Mapping -->
+        <h3>8️⃣ Création de la Table de Mapping Directory → Object Storage</h3>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Table de mapping complète</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- TABLE DE MAPPING DIRECTORY → OBJECT STORAGE
+-- Stocke la correspondance entre les directories Oracle
+-- et les URIs Object Storage
+-- ============================================
+
+-- 1. Créer la table de mapping
+CREATE TABLE utl_file_directory_mapping (
+    mapping_id         NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    oracle_directory   VARCHAR2(128) NOT NULL,
+    object_storage_uri VARCHAR2(1000) NOT NULL,
+    credential_name    VARCHAR2(128) DEFAULT 'OCI_CREDENTIAL',
+    description        VARCHAR2(500),
+    is_active          VARCHAR2(1) DEFAULT 'Y' CHECK (is_active IN ('Y', 'N')),
+    max_file_size_mb   NUMBER DEFAULT 5120,  -- 5GB par défaut
+    retention_days     NUMBER,               -- Rétention optionnelle
+    created_by         VARCHAR2(128) DEFAULT USER,
+    created_date       DATE DEFAULT SYSDATE,
+    modified_by        VARCHAR2(128),
+    modified_date      DATE,
+    CONSTRAINT uk_directory UNIQUE (oracle_directory)
+);
+
+-- 2. Créer les index
+CREATE INDEX idx_mapping_directory ON utl_file_directory_mapping(oracle_directory);
+CREATE INDEX idx_mapping_active ON utl_file_directory_mapping(is_active);
+
+-- 3. Ajouter des commentaires
+COMMENT ON TABLE utl_file_directory_mapping IS 'Mapping entre directories Oracle et URIs Object Storage pour migration UTL_FILE';
+COMMENT ON COLUMN utl_file_directory_mapping.oracle_directory IS 'Nom du directory Oracle original (ex: DATA_EXPORT)';
+COMMENT ON COLUMN utl_file_directory_mapping.object_storage_uri IS 'URI Object Storage complète incluant le bucket et le prefix';
+COMMENT ON COLUMN utl_file_directory_mapping.credential_name IS 'Nom du credential DBMS_CLOUD à utiliser';
+
+-- 4. Créer un trigger pour la date de modification
+CREATE OR REPLACE TRIGGER trg_mapping_update
+BEFORE UPDATE ON utl_file_directory_mapping
+FOR EACH ROW
+BEGIN
+    :NEW.modified_date := SYSDATE;
+    :NEW.modified_by := USER;
+END;
+/
+
+-- ============================================
+-- INSERTION DES MAPPINGS
+-- Adapter selon votre audit des directories Oracle
+-- ============================================
+
+-- Template URI: https://objectstorage.{REGION}.oraclecloud.com/n/{NAMESPACE}/b/{BUCKET}/o/{PREFIX}/
+
+-- Exemple pour région eu-paris-1
+DECLARE
+    v_base_uri VARCHAR2(500) := 'https://objectstorage.eu-paris-1.oraclecloud.com/n/YOUR_NAMESPACE/b/db-file-storage/o/';
+BEGIN
+    -- Directory pour exports de données
+    INSERT INTO utl_file_directory_mapping (oracle_directory, object_storage_uri, description)
+    VALUES ('DATA_EXPORT', v_base_uri || 'DATA_EXPORT/', 'Export de données applicatives');
+
+    -- Directory pour les logs
+    INSERT INTO utl_file_directory_mapping (oracle_directory, object_storage_uri, description)
+    VALUES ('LOG_DIR', v_base_uri || 'LOG_FILES/', 'Fichiers de logs applicatifs');
+
+    -- Directory pour les rapports
+    INSERT INTO utl_file_directory_mapping (oracle_directory, object_storage_uri, description)
+    VALUES ('REPORT_DIR', v_base_uri || 'REPORTS/', 'Rapports générés');
+
+    -- Directory temporaire
+    INSERT INTO utl_file_directory_mapping (oracle_directory, object_storage_uri, description, retention_days)
+    VALUES ('TEMP_DIR', v_base_uri || 'TEMP/', 'Fichiers temporaires', 7);
+
+    -- Directory pour archives
+    INSERT INTO utl_file_directory_mapping (oracle_directory, object_storage_uri, description)
+    VALUES ('ARCHIVE_DIR', v_base_uri || 'ARCHIVES/', 'Fichiers archivés');
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Mappings insérés avec succès');
+END;
+/
+
+-- 5. Vérifier les mappings
+SELECT
+    oracle_directory,
+    object_storage_uri,
+    credential_name,
+    is_active,
+    description
+FROM utl_file_directory_mapping
+ORDER BY oracle_directory;
+
+-- 6. Script pour générer les mappings depuis les directories existants
+-- Utile si vous avez beaucoup de directories
+SELECT
+    'INSERT INTO utl_file_directory_mapping (oracle_directory, object_storage_uri, description) VALUES (''' ||
+    directory_name || ''', ''https://objectstorage.eu-paris-1.oraclecloud.com/n/YOUR_NAMESPACE/b/db-file-storage/o/' ||
+    directory_name || '/'', ''Migré depuis ' || directory_path || ''');'
+FROM dba_directories
+WHERE owner NOT IN ('SYS', 'SYSTEM')
+ORDER BY directory_name;</code></pre>
+        </div>
+
+        <!-- Étape 9: Grants -->
+        <h3>9️⃣ Attribution des Grants aux Schémas</h3>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Grants complets pour DBMS_CLOUD</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- GRANTS POUR UTILISER DBMS_CLOUD ET LE WRAPPER
+-- Exécuter en tant que SYS ou utilisateur avec GRANT OPTION
+-- ============================================
+
+-- Variable pour le schéma cible (adapter)
+DEFINE target_schema = 'VOTRE_SCHEMA'
+
+-- ============================================
+-- GRANTS DBMS_CLOUD
+-- ============================================
+
+-- Grant d'exécution sur DBMS_CLOUD
+GRANT EXECUTE ON DBMS_CLOUD TO &target_schema;
+
+-- Grant pour créer des credentials
+GRANT CREATE CREDENTIAL TO &target_schema;
+
+-- ============================================
+-- GRANTS POUR LA TABLE DE MAPPING
+-- ============================================
+
+-- Si la table est dans un autre schéma
+GRANT SELECT, INSERT, UPDATE, DELETE ON admin_schema.utl_file_directory_mapping TO &target_schema;
+
+-- Créer un synonyme pour simplifier l'accès
+CREATE OR REPLACE SYNONYM &target_schema..utl_file_directory_mapping
+FOR admin_schema.utl_file_directory_mapping;
+
+-- ============================================
+-- GRANTS ADDITIONNELS (si nécessaire)
+-- ============================================
+
+-- Pour utiliser des LOBs temporaires
+GRANT CREATE ANY DIRECTORY TO &target_schema;
+
+-- Pour debug avec DBMS_OUTPUT
+GRANT EXECUTE ON DBMS_OUTPUT TO &target_schema;
+
+-- Pour accéder aux métadonnées
+GRANT SELECT ON dba_directories TO &target_schema;
+GRANT SELECT ON dba_credentials TO &target_schema;
+
+-- ============================================
+-- GRANTS POUR PLUSIEURS SCHÉMAS
+-- ============================================
+
+-- Script pour donner les grants à plusieurs schémas
+BEGIN
+    FOR schema_rec IN (
+        SELECT username
+        FROM dba_users
+        WHERE username IN ('SCHEMA1', 'SCHEMA2', 'SCHEMA3', 'APP_USER')
+    ) LOOP
+        EXECUTE IMMEDIATE 'GRANT EXECUTE ON DBMS_CLOUD TO ' || schema_rec.username;
+        EXECUTE IMMEDIATE 'GRANT CREATE CREDENTIAL TO ' || schema_rec.username;
+        EXECUTE IMMEDIATE 'GRANT SELECT ON admin_schema.utl_file_directory_mapping TO ' || schema_rec.username;
+        DBMS_OUTPUT.PUT_LINE('Grants accordés à: ' || schema_rec.username);
+    END LOOP;
+END;
+/
+
+-- ============================================
+-- VÉRIFICATION DES GRANTS
+-- ============================================
+
+-- Vérifier les privilèges système
+SELECT privilege
+FROM dba_sys_privs
+WHERE grantee = '&target_schema'
+ORDER BY privilege;
+
+-- Vérifier les privilèges sur les objets
+SELECT owner, table_name, privilege
+FROM dba_tab_privs
+WHERE grantee = '&target_schema'
+AND table_name IN ('DBMS_CLOUD', 'UTL_FILE_DIRECTORY_MAPPING')
+ORDER BY owner, table_name;</code></pre>
+        </div>
+
+        <!-- Étape 10: Tests -->
+        <h3>🔟 Tests de Connectivité Object Storage</h3>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Tests de connectivité complets</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- TESTS DE CONNECTIVITÉ OBJECT STORAGE
+-- Exécuter après configuration complète
+-- ============================================
+
+SET SERVEROUTPUT ON SIZE UNLIMITED
+
+DECLARE
+    v_credential    VARCHAR2(128) := 'OCI_CREDENTIAL';
+    v_bucket_uri    VARCHAR2(500) := 'https://objectstorage.eu-paris-1.oraclecloud.com/n/YOUR_NAMESPACE/b/db-file-storage/o/';
+    v_test_content  VARCHAR2(100) := 'Test de connectivité - ' || TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS');
+    v_test_file     VARCHAR2(100) := 'test_connectivity_' || TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') || '.txt';
+    v_result        BLOB;
+    v_result_clob   CLOB;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('============================================');
+    DBMS_OUTPUT.PUT_LINE('TEST DE CONNECTIVITÉ OBJECT STORAGE');
+    DBMS_OUTPUT.PUT_LINE('============================================');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 1: Vérifier le credential
+    DBMS_OUTPUT.PUT_LINE('TEST 1: Vérification du credential...');
+    BEGIN
+        FOR cred IN (
+            SELECT credential_name, enabled
+            FROM user_credentials
+            WHERE credential_name = v_credential
+        ) LOOP
+            IF cred.enabled = 'TRUE' THEN
+                DBMS_OUTPUT.PUT_LINE('  ✅ Credential "' || v_credential || '" existe et est activé');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('  ❌ Credential "' || v_credential || '" existe mais est DÉSACTIVÉ');
+            END IF;
+        END LOOP;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            DBMS_OUTPUT.PUT_LINE('  ❌ Credential "' || v_credential || '" NON TROUVÉ');
+            RETURN;
+    END;
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 2: Écriture vers Object Storage
+    DBMS_OUTPUT.PUT_LINE('TEST 2: Écriture vers Object Storage...');
+    BEGIN
+        DBMS_CLOUD.PUT_OBJECT(
+            credential_name => v_credential,
+            object_uri      => v_bucket_uri || 'TEMP/' || v_test_file,
+            contents        => UTL_RAW.CAST_TO_RAW(v_test_content)
+        );
+        DBMS_OUTPUT.PUT_LINE('  ✅ Fichier écrit: ' || v_test_file);
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('  ❌ ERREUR écriture: ' || SQLERRM);
+            DBMS_OUTPUT.PUT_LINE('  URI: ' || v_bucket_uri || 'TEMP/' || v_test_file);
+            RETURN;
+    END;
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 3: Lecture depuis Object Storage
+    DBMS_OUTPUT.PUT_LINE('TEST 3: Lecture depuis Object Storage...');
+    BEGIN
+        v_result := DBMS_CLOUD.GET_OBJECT(
+            credential_name => v_credential,
+            object_uri      => v_bucket_uri || 'TEMP/' || v_test_file
+        );
+        v_result_clob := UTL_RAW.CAST_TO_VARCHAR2(v_result);
+
+        IF v_result_clob = v_test_content THEN
+            DBMS_OUTPUT.PUT_LINE('  ✅ Contenu lu correctement: ' || v_result_clob);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('  ⚠️ Contenu différent: ' || v_result_clob);
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('  ❌ ERREUR lecture: ' || SQLERRM);
+            RETURN;
+    END;
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 4: Liste des objets
+    DBMS_OUTPUT.PUT_LINE('TEST 4: Liste des objets dans TEMP/...');
+    BEGIN
+        FOR obj IN (
+            SELECT object_name, bytes, TO_CHAR(last_modified, 'YYYY-MM-DD HH24:MI:SS') as last_mod
+            FROM DBMS_CLOUD.LIST_OBJECTS(
+                credential_name => v_credential,
+                location_uri    => v_bucket_uri || 'TEMP/'
+            )
+            WHERE ROWNUM <= 5
+        ) LOOP
+            DBMS_OUTPUT.PUT_LINE('  📄 ' || obj.object_name || ' (' || obj.bytes || ' bytes)');
+        END LOOP;
+        DBMS_OUTPUT.PUT_LINE('  ✅ Liste des objets récupérée');
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('  ❌ ERREUR liste: ' || SQLERRM);
+    END;
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 5: Suppression du fichier test
+    DBMS_OUTPUT.PUT_LINE('TEST 5: Suppression du fichier test...');
+    BEGIN
+        DBMS_CLOUD.DELETE_OBJECT(
+            credential_name => v_credential,
+            object_uri      => v_bucket_uri || 'TEMP/' || v_test_file
+        );
+        DBMS_OUTPUT.PUT_LINE('  ✅ Fichier supprimé: ' || v_test_file);
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('  ⚠️ Erreur suppression (non bloquant): ' || SQLERRM);
+    END;
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 6: Vérifier les mappings
+    DBMS_OUTPUT.PUT_LINE('TEST 6: Vérification des mappings...');
+    FOR mapping IN (
+        SELECT oracle_directory, object_storage_uri, is_active
+        FROM utl_file_directory_mapping
+        WHERE is_active = 'Y'
+        ORDER BY oracle_directory
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('  📁 ' || mapping.oracle_directory || ' → ' || SUBSTR(mapping.object_storage_uri, 1, 60) || '...');
+    END LOOP;
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Résumé
+    DBMS_OUTPUT.PUT_LINE('============================================');
+    DBMS_OUTPUT.PUT_LINE('🎉 TOUS LES TESTS SONT PASSÉS!');
+    DBMS_OUTPUT.PUT_LINE('La connectivité Object Storage est opérationnelle.');
+    DBMS_OUTPUT.PUT_LINE('============================================');
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('');
+        DBMS_OUTPUT.PUT_LINE('============================================');
+        DBMS_OUTPUT.PUT_LINE('❌ ERREUR GÉNÉRALE: ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('============================================');
+END;
+/</code></pre>
+        </div>
+
+        <!-- Troubleshooting -->
+        <h3>🔧 Troubleshooting - Erreurs Courantes</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Erreur</th>
+                    <th>Cause probable</th>
+                    <th>Solution</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ORA-20401: Authorization failed</code></td>
+                    <td>Credential invalide ou expiré</td>
+                    <td>Vérifier user_ocid, tenancy_ocid, fingerprint et clé privée</td>
+                </tr>
+                <tr>
+                    <td><code>ORA-20404: Object not found</code></td>
+                    <td>URI incorrecte ou objet inexistant</td>
+                    <td>Vérifier namespace, bucket, et chemin de l'objet</td>
+                </tr>
+                <tr>
+                    <td><code>ORA-29024: Certificate validation failure</code></td>
+                    <td>Problème de certificat SSL</td>
+                    <td>Mettre à jour le wallet SSL ou configurer ACL</td>
+                </tr>
+                <tr>
+                    <td><code>ORA-12535: TNS:operation timed out</code></td>
+                    <td>Pas d'accès réseau vers OCI</td>
+                    <td>Vérifier firewall, proxy, et ACL réseau</td>
+                </tr>
+                <tr>
+                    <td><code>ORA-24247: network access denied by ACL</code></td>
+                    <td>ACL non configurée</td>
+                    <td>Créer l'ACL pour *.oraclecloud.com port 443</td>
+                </tr>
+                <tr>
+                    <td><code>ORA-20000: Credential does not exist</code></td>
+                    <td>Credential non créé ou nom incorrect</td>
+                    <td>Vérifier user_credentials et le nom exact</td>
+                </tr>
+                <tr>
+                    <td><code>ORA-00942: table or view does not exist</code></td>
+                    <td>DBMS_CLOUD non accessible</td>
+                    <td>Vérifier le grant EXECUTE ON DBMS_CLOUD</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Script de diagnostic</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- SCRIPT DE DIAGNOSTIC COMPLET
+-- Exécuter en cas de problème de connectivité
+-- ============================================
+
+SET SERVEROUTPUT ON SIZE UNLIMITED
+
+DECLARE
+    v_count NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('=== DIAGNOSTIC DBMS_CLOUD ===');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- 1. Vérifier DBMS_CLOUD
+    DBMS_OUTPUT.PUT_LINE('1. Vérification DBMS_CLOUD:');
+    SELECT COUNT(*) INTO v_count
+    FROM dba_objects
+    WHERE object_name = 'DBMS_CLOUD' AND status = 'VALID';
+    DBMS_OUTPUT.PUT_LINE('   Objets DBMS_CLOUD valides: ' || v_count);
+
+    -- 2. Vérifier les credentials
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('2. Credentials disponibles:');
+    FOR cred IN (SELECT credential_name, enabled FROM user_credentials) LOOP
+        DBMS_OUTPUT.PUT_LINE('   - ' || cred.credential_name || ' (enabled=' || cred.enabled || ')');
+    END LOOP;
+
+    -- 3. Vérifier les grants
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('3. Grants sur DBMS_CLOUD:');
+    FOR grant_rec IN (
+        SELECT grantee, privilege
+        FROM dba_tab_privs
+        WHERE table_name = 'DBMS_CLOUD'
+        AND grantee = USER
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('   - ' || grant_rec.privilege);
+    END LOOP;
+
+    -- 4. Vérifier les ACLs
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('4. ACLs réseau:');
+    FOR acl_rec IN (
+        SELECT host, lower_port, upper_port
+        FROM dba_network_acls
+        WHERE host LIKE '%oraclecloud%'
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('   - ' || acl_rec.host || ':' || acl_rec.lower_port || '-' || acl_rec.upper_port);
+    END LOOP;
+
+    -- 5. Vérifier les mappings
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('5. Mappings configurés:');
+    FOR map IN (
+        SELECT oracle_directory, is_active
+        FROM utl_file_directory_mapping
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('   - ' || map.oracle_directory || ' (active=' || map.is_active || ')');
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('=== FIN DIAGNOSTIC ===');
+END;
+/</code></pre>
+        </div>
+    </section>
+
+    <!-- Section Wrapper Package -->
+    <section id="wrapper">
+        <h2>📦 Package Wrapper UTL_FILE</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Solution recommandée</strong><br>
+                Ce package wrapper permet de conserver la même interface que UTL_FILE tout en utilisant DBMS_CLOUD et Object Storage en arrière-plan. Impact minimal sur le code existant.
+            </div>
+        </div>
+
+        <h3>Package Specification</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - UTL_FILE_WRAPPER Package Spec</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- UTL_FILE_WRAPPER - PACKAGE SPECIFICATION
+-- Interface compatible UTL_FILE pour ExaCC
+-- Version: 1.0
+-- ============================================
+
+CREATE OR REPLACE PACKAGE utl_file_wrapper AS
+
+    -- ==========================================
+    -- Types compatibles avec UTL_FILE
+    -- ==========================================
+
+    TYPE file_type IS RECORD (
+        file_id         NUMBER,
+        directory       VARCHAR2(255),
+        filename        VARCHAR2(255),
+        open_mode       VARCHAR2(10),
+        max_linesize    BINARY_INTEGER,
+        buffer          CLOB,
+        buffer_position NUMBER,
+        is_open         BOOLEAN,
+        credential_name VARCHAR2(128),
+        object_uri      VARCHAR2(1000)
+    );
+
+    -- ==========================================
+    -- Exceptions compatibles UTL_FILE
+    -- ==========================================
+    invalid_path        EXCEPTION;
+    invalid_mode        EXCEPTION;
+    invalid_filehandle  EXCEPTION;
+    invalid_operation   EXCEPTION;
+    read_error          EXCEPTION;
+    write_error         EXCEPTION;
+    internal_error      EXCEPTION;
+    no_data_found       EXCEPTION;
+    value_error         EXCEPTION;
+    access_denied       EXCEPTION;
+    invalid_maxlinesize EXCEPTION;
+    invalid_filename    EXCEPTION;
+    file_open           EXCEPTION;
+
+    PRAGMA EXCEPTION_INIT(invalid_path, -29280);
+    PRAGMA EXCEPTION_INIT(invalid_mode, -29281);
+    PRAGMA EXCEPTION_INIT(invalid_filehandle, -29282);
+    PRAGMA EXCEPTION_INIT(invalid_operation, -29283);
+    PRAGMA EXCEPTION_INIT(read_error, -29284);
+    PRAGMA EXCEPTION_INIT(write_error, -29285);
+    PRAGMA EXCEPTION_INIT(internal_error, -29286);
+
+    -- ==========================================
+    -- Fonctions et procédures principales
+    -- ==========================================
+
+    -- Ouvrir un fichier
+    FUNCTION fopen(
+        location     IN VARCHAR2,
+        filename     IN VARCHAR2,
+        open_mode    IN VARCHAR2,
+        max_linesize IN BINARY_INTEGER DEFAULT 32767
+    ) RETURN file_type;
+
+    -- Fermer un fichier
+    PROCEDURE fclose(
+        file IN OUT file_type
+    );
+
+    -- Fermer tous les fichiers
+    PROCEDURE fclose_all;
+
+    -- Vérifier si fichier ouvert
+    FUNCTION is_open(
+        file IN file_type
+    ) RETURN BOOLEAN;
+
+    -- Écrire une ligne
+    PROCEDURE put_line(
+        file      IN OUT file_type,
+        buffer    IN VARCHAR2,
+        autoflush IN BOOLEAN DEFAULT FALSE
+    );
+
+    -- Écrire sans retour à la ligne
+    PROCEDURE put(
+        file   IN OUT file_type,
+        buffer IN VARCHAR2
+    );
+
+    -- Écrire un retour à la ligne
+    PROCEDURE new_line(
+        file  IN OUT file_type,
+        lines IN BINARY_INTEGER DEFAULT 1
+    );
+
+    -- Écrire des données brutes
+    PROCEDURE put_raw(
+        file      IN OUT file_type,
+        buffer    IN RAW,
+        autoflush IN BOOLEAN DEFAULT FALSE
+    );
+
+    -- Lire une ligne
+    PROCEDURE get_line(
+        file   IN OUT file_type,
+        buffer OUT VARCHAR2,
+        len    IN BINARY_INTEGER DEFAULT NULL
+    );
+
+    -- Lire données brutes
+    PROCEDURE get_raw(
+        file   IN OUT file_type,
+        buffer OUT RAW,
+        len    IN BINARY_INTEGER DEFAULT NULL
+    );
+
+    -- Forcer l'écriture
+    PROCEDURE fflush(
+        file IN OUT file_type
+    );
+
+    -- Obtenir attributs fichier
+    PROCEDURE fgetattr(
+        location    IN VARCHAR2,
+        filename    IN VARCHAR2,
+        fexists     OUT BOOLEAN,
+        file_length OUT NUMBER,
+        block_size  OUT BINARY_INTEGER
+    );
+
+    -- Copier un fichier
+    PROCEDURE fcopy(
+        src_location  IN VARCHAR2,
+        src_filename  IN VARCHAR2,
+        dest_location IN VARCHAR2,
+        dest_filename IN VARCHAR2,
+        start_line    IN BINARY_INTEGER DEFAULT 1,
+        end_line      IN BINARY_INTEGER DEFAULT NULL
+    );
+
+    -- Renommer/déplacer un fichier
+    PROCEDURE frename(
+        src_location  IN VARCHAR2,
+        src_filename  IN VARCHAR2,
+        dest_location IN VARCHAR2,
+        dest_filename IN VARCHAR2,
+        overwrite     IN BOOLEAN DEFAULT FALSE
+    );
+
+    -- Supprimer un fichier
+    PROCEDURE fremove(
+        location IN VARCHAR2,
+        filename IN VARCHAR2
+    );
+
+    -- ==========================================
+    -- Fonctions utilitaires (nouvelles)
+    -- ==========================================
+
+    -- Obtenir l'URI Object Storage pour un directory
+    FUNCTION get_object_uri(
+        p_directory IN VARCHAR2,
+        p_filename  IN VARCHAR2
+    ) RETURN VARCHAR2;
+
+    -- Configurer le credential par défaut
+    PROCEDURE set_default_credential(
+        p_credential_name IN VARCHAR2
+    );
+
+    -- Activer/désactiver le mode debug
+    PROCEDURE set_debug_mode(
+        p_enabled IN BOOLEAN
+    );
+
+END utl_file_wrapper;
+/</code></pre>
+        </div>
+
+        <h3>Package Body</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - UTL_FILE_WRAPPER Package Body</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- UTL_FILE_WRAPPER - PACKAGE BODY
+-- Implémentation utilisant DBMS_CLOUD
+-- Version: 1.0
+-- ============================================
+
+CREATE OR REPLACE PACKAGE BODY utl_file_wrapper AS
+
+    -- ==========================================
+    -- Variables privées
+    -- ==========================================
+    g_default_credential VARCHAR2(128) := 'OCI_CREDENTIAL';
+    g_debug_mode         BOOLEAN := FALSE;
+    g_file_sequence      NUMBER := 0;
+
+    -- Collection pour gérer les fichiers ouverts
+    TYPE t_open_files IS TABLE OF file_type INDEX BY BINARY_INTEGER;
+    g_open_files t_open_files;
+
+    -- ==========================================
+    -- Procédures privées
+    -- ==========================================
+
+    PROCEDURE debug_log(p_message IN VARCHAR2) IS
+    BEGIN
+        IF g_debug_mode THEN
+            DBMS_OUTPUT.PUT_LINE('[UTL_FILE_WRAPPER] ' || TO_CHAR(SYSDATE, 'HH24:MI:SS') || ' - ' || p_message);
+        END IF;
+    END debug_log;
+
+    FUNCTION get_mapping(p_directory IN VARCHAR2) RETURN utl_file_directory_mapping%ROWTYPE IS
+        v_mapping utl_file_directory_mapping%ROWTYPE;
+    BEGIN
+        SELECT * INTO v_mapping
+        FROM utl_file_directory_mapping
+        WHERE UPPER(oracle_directory) = UPPER(p_directory)
+          AND is_active = 'Y';
+        RETURN v_mapping;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-29280, 'Directory mapping not found: ' || p_directory);
+    END get_mapping;
+
+    -- ==========================================
+    -- Implémentation des fonctions publiques
+    -- ==========================================
+
+    FUNCTION get_object_uri(
+        p_directory IN VARCHAR2,
+        p_filename  IN VARCHAR2
+    ) RETURN VARCHAR2 IS
+        v_mapping utl_file_directory_mapping%ROWTYPE;
+    BEGIN
+        v_mapping := get_mapping(p_directory);
+        RETURN v_mapping.object_storage_uri || p_filename;
+    END get_object_uri;
+
+    PROCEDURE set_default_credential(p_credential_name IN VARCHAR2) IS
+    BEGIN
+        g_default_credential := p_credential_name;
+        debug_log('Default credential set to: ' || p_credential_name);
+    END set_default_credential;
+
+    PROCEDURE set_debug_mode(p_enabled IN BOOLEAN) IS
+    BEGIN
+        g_debug_mode := p_enabled;
+    END set_debug_mode;
+
+    -- ==========================================
+    -- FOPEN - Ouvrir un fichier
+    -- ==========================================
+    FUNCTION fopen(
+        location     IN VARCHAR2,
+        filename     IN VARCHAR2,
+        open_mode    IN VARCHAR2,
+        max_linesize IN BINARY_INTEGER DEFAULT 32767
+    ) RETURN file_type IS
+        v_file    file_type;
+        v_mapping utl_file_directory_mapping%ROWTYPE;
+        v_content BLOB;
+    BEGIN
+        debug_log('FOPEN: ' || location || '/' || filename || ' mode=' || open_mode);
+
+        -- Valider le mode
+        IF UPPER(open_mode) NOT IN ('R', 'W', 'A', 'RB', 'WB', 'AB') THEN
+            RAISE_APPLICATION_ERROR(-29281, 'Invalid open mode: ' || open_mode);
+        END IF;
+
+        -- Valider max_linesize
+        IF max_linesize < 1 OR max_linesize > 32767 THEN
+            RAISE_APPLICATION_ERROR(-29287, 'Invalid max linesize: ' || max_linesize);
+        END IF;
+
+        -- Obtenir le mapping
+        v_mapping := get_mapping(location);
+
+        -- Initialiser le fichier
+        g_file_sequence := g_file_sequence + 1;
+        v_file.file_id := g_file_sequence;
+        v_file.directory := location;
+        v_file.filename := filename;
+        v_file.open_mode := UPPER(open_mode);
+        v_file.max_linesize := max_linesize;
+        v_file.is_open := TRUE;
+        v_file.credential_name := NVL(v_mapping.credential_name, g_default_credential);
+        v_file.object_uri := v_mapping.object_storage_uri || filename;
+        v_file.buffer_position := 1;
+
+        -- Initialiser le buffer
+        DBMS_LOB.CREATETEMPORARY(v_file.buffer, TRUE, DBMS_LOB.SESSION);
+
+        -- Mode lecture: charger le contenu depuis Object Storage
+        IF v_file.open_mode IN ('R', 'RB') THEN
+            BEGIN
+                v_content := DBMS_CLOUD.GET_OBJECT(
+                    credential_name => v_file.credential_name,
+                    object_uri      => v_file.object_uri
+                );
+
+                -- Convertir BLOB en CLOB
+                DBMS_LOB.CONVERTTOCLOB(
+                    dest_lob     => v_file.buffer,
+                    src_blob     => v_content,
+                    amount       => DBMS_LOB.LOBMAXSIZE,
+                    dest_offset  => 1,
+                    src_offset   => 1,
+                    blob_csid    => DBMS_LOB.DEFAULT_CSID,
+                    lang_context => DBMS_LOB.DEFAULT_LANG_CTX,
+                    warning      => 0
+                );
+
+                debug_log('File loaded, size: ' || DBMS_LOB.GETLENGTH(v_file.buffer));
+            EXCEPTION
+                WHEN OTHERS THEN
+                    IF SQLCODE = -20404 THEN -- File not found
+                        RAISE_APPLICATION_ERROR(-29280, 'File not found: ' || v_file.object_uri);
+                    ELSE
+                        RAISE;
+                    END IF;
+            END;
+        END IF;
+
+        -- Mode append: charger le contenu existant
+        IF v_file.open_mode IN ('A', 'AB') THEN
+            BEGIN
+                v_content := DBMS_CLOUD.GET_OBJECT(
+                    credential_name => v_file.credential_name,
+                    object_uri      => v_file.object_uri
+                );
+
+                DBMS_LOB.CONVERTTOCLOB(
+                    dest_lob     => v_file.buffer,
+                    src_blob     => v_content,
+                    amount       => DBMS_LOB.LOBMAXSIZE,
+                    dest_offset  => 1,
+                    src_offset   => 1,
+                    blob_csid    => DBMS_LOB.DEFAULT_CSID,
+                    lang_context => DBMS_LOB.DEFAULT_LANG_CTX,
+                    warning      => 0
+                );
+
+                v_file.buffer_position := DBMS_LOB.GETLENGTH(v_file.buffer) + 1;
+            EXCEPTION
+                WHEN OTHERS THEN
+                    -- Fichier n'existe pas encore, c'est OK pour append
+                    v_file.buffer_position := 1;
+            END;
+        END IF;
+
+        -- Stocker dans la collection des fichiers ouverts
+        g_open_files(v_file.file_id) := v_file;
+
+        RETURN v_file;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            debug_log('FOPEN ERROR: ' || SQLERRM);
+            RAISE;
+    END fopen;
+
+    -- ==========================================
+    -- PUT_LINE - Écrire une ligne
+    -- ==========================================
+    PROCEDURE put_line(
+        file      IN OUT file_type,
+        buffer    IN VARCHAR2,
+        autoflush IN BOOLEAN DEFAULT FALSE
+    ) IS
+        v_line VARCHAR2(32767);
+    BEGIN
+        IF NOT file.is_open THEN
+            RAISE_APPLICATION_ERROR(-29282, 'Invalid file handle');
+        END IF;
+
+        IF file.open_mode NOT IN ('W', 'WB', 'A', 'AB') THEN
+            RAISE_APPLICATION_ERROR(-29283, 'Invalid operation for read mode');
+        END IF;
+
+        v_line := buffer || CHR(10);
+
+        IF LENGTH(buffer) > file.max_linesize THEN
+            RAISE_APPLICATION_ERROR(-29285, 'Line too long');
+        END IF;
+
+        DBMS_LOB.WRITEAPPEND(file.buffer, LENGTH(v_line), v_line);
+
+        debug_log('PUT_LINE: ' || SUBSTR(buffer, 1, 50) || '...');
+
+        IF autoflush THEN
+            fflush(file);
+        END IF;
+
+        -- Mettre à jour la collection
+        g_open_files(file.file_id) := file;
+
+    END put_line;
+
+    -- ==========================================
+    -- PUT - Écrire sans retour à la ligne
+    -- ==========================================
+    PROCEDURE put(
+        file   IN OUT file_type,
+        buffer IN VARCHAR2
+    ) IS
+    BEGIN
+        IF NOT file.is_open THEN
+            RAISE_APPLICATION_ERROR(-29282, 'Invalid file handle');
+        END IF;
+
+        IF file.open_mode NOT IN ('W', 'WB', 'A', 'AB') THEN
+            RAISE_APPLICATION_ERROR(-29283, 'Invalid operation for read mode');
+        END IF;
+
+        DBMS_LOB.WRITEAPPEND(file.buffer, LENGTH(buffer), buffer);
+
+        g_open_files(file.file_id) := file;
+
+    END put;
+
+    -- ==========================================
+    -- NEW_LINE - Écrire retour(s) à la ligne
+    -- ==========================================
+    PROCEDURE new_line(
+        file  IN OUT file_type,
+        lines IN BINARY_INTEGER DEFAULT 1
+    ) IS
+    BEGIN
+        FOR i IN 1..lines LOOP
+            DBMS_LOB.WRITEAPPEND(file.buffer, 1, CHR(10));
+        END LOOP;
+
+        g_open_files(file.file_id) := file;
+    END new_line;
+
+    -- ==========================================
+    -- PUT_RAW - Écrire données brutes
+    -- ==========================================
+    PROCEDURE put_raw(
+        file      IN OUT file_type,
+        buffer    IN RAW,
+        autoflush IN BOOLEAN DEFAULT FALSE
+    ) IS
+        v_varchar VARCHAR2(32767);
+    BEGIN
+        v_varchar := UTL_RAW.CAST_TO_VARCHAR2(buffer);
+        DBMS_LOB.WRITEAPPEND(file.buffer, LENGTH(v_varchar), v_varchar);
+
+        IF autoflush THEN
+            fflush(file);
+        END IF;
+
+        g_open_files(file.file_id) := file;
+    END put_raw;
+
+    -- ==========================================
+    -- GET_LINE - Lire une ligne
+    -- ==========================================
+    PROCEDURE get_line(
+        file   IN OUT file_type,
+        buffer OUT VARCHAR2,
+        len    IN BINARY_INTEGER DEFAULT NULL
+    ) IS
+        v_buffer_length NUMBER;
+        v_line_end      NUMBER;
+        v_read_length   NUMBER;
+    BEGIN
+        IF NOT file.is_open THEN
+            RAISE_APPLICATION_ERROR(-29282, 'Invalid file handle');
+        END IF;
+
+        IF file.open_mode NOT IN ('R', 'RB') THEN
+            RAISE_APPLICATION_ERROR(-29283, 'Invalid operation for write mode');
+        END IF;
+
+        v_buffer_length := DBMS_LOB.GETLENGTH(file.buffer);
+
+        -- Vérifier si fin de fichier
+        IF file.buffer_position > v_buffer_length THEN
+            RAISE NO_DATA_FOUND;
+        END IF;
+
+        -- Chercher la fin de ligne
+        v_line_end := DBMS_LOB.INSTR(file.buffer, CHR(10), file.buffer_position);
+
+        IF v_line_end = 0 THEN
+            -- Dernière ligne sans retour à la ligne
+            v_line_end := v_buffer_length + 1;
+        END IF;
+
+        -- Calculer la longueur à lire
+        v_read_length := v_line_end - file.buffer_position;
+
+        IF len IS NOT NULL AND len < v_read_length THEN
+            v_read_length := len;
+        END IF;
+
+        -- Lire la ligne
+        buffer := DBMS_LOB.SUBSTR(file.buffer, v_read_length, file.buffer_position);
+
+        -- Supprimer le retour chariot si présent
+        buffer := RTRIM(buffer, CHR(13) || CHR(10));
+
+        -- Avancer la position
+        file.buffer_position := v_line_end + 1;
+
+        debug_log('GET_LINE: position=' || file.buffer_position || ', read=' || SUBSTR(buffer, 1, 50));
+
+        g_open_files(file.file_id) := file;
+
+    END get_line;
+
+    -- ==========================================
+    -- GET_RAW - Lire données brutes
+    -- ==========================================
+    PROCEDURE get_raw(
+        file   IN OUT file_type,
+        buffer OUT RAW,
+        len    IN BINARY_INTEGER DEFAULT NULL
+    ) IS
+        v_varchar VARCHAR2(32767);
+        v_len     NUMBER := NVL(len, 32767);
+    BEGIN
+        IF NOT file.is_open THEN
+            RAISE_APPLICATION_ERROR(-29282, 'Invalid file handle');
+        END IF;
+
+        v_varchar := DBMS_LOB.SUBSTR(file.buffer, v_len, file.buffer_position);
+        buffer := UTL_RAW.CAST_TO_RAW(v_varchar);
+        file.buffer_position := file.buffer_position + LENGTH(v_varchar);
+
+        g_open_files(file.file_id) := file;
+    END get_raw;
+
+    -- ==========================================
+    -- FFLUSH - Forcer l'écriture
+    -- ==========================================
+    PROCEDURE fflush(file IN OUT file_type) IS
+        v_blob BLOB;
+    BEGIN
+        IF NOT file.is_open THEN
+            RAISE_APPLICATION_ERROR(-29282, 'Invalid file handle');
+        END IF;
+
+        IF file.open_mode IN ('W', 'WB', 'A', 'AB') THEN
+            debug_log('FFLUSH: Writing to ' || file.object_uri);
+
+            -- Convertir CLOB en BLOB
+            DBMS_LOB.CREATETEMPORARY(v_blob, TRUE);
+            DBMS_LOB.CONVERTTOBLOB(
+                dest_lob     => v_blob,
+                src_clob     => file.buffer,
+                amount       => DBMS_LOB.LOBMAXSIZE,
+                dest_offset  => 1,
+                src_offset   => 1,
+                blob_csid    => DBMS_LOB.DEFAULT_CSID,
+                lang_context => DBMS_LOB.DEFAULT_LANG_CTX,
+                warning      => 0
+            );
+
+            -- Écrire vers Object Storage
+            DBMS_CLOUD.PUT_OBJECT(
+                credential_name => file.credential_name,
+                object_uri      => file.object_uri,
+                contents        => v_blob
+            );
+
+            DBMS_LOB.FREETEMPORARY(v_blob);
+
+            debug_log('FFLUSH: Write complete');
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            debug_log('FFLUSH ERROR: ' || SQLERRM);
+            RAISE_APPLICATION_ERROR(-29285, 'Write error: ' || SQLERRM);
+    END fflush;
+
+    -- ==========================================
+    -- FCLOSE - Fermer un fichier
+    -- ==========================================
+    PROCEDURE fclose(file IN OUT file_type) IS
+    BEGIN
+        IF NOT file.is_open THEN
+            RETURN; -- Déjà fermé, pas d'erreur
+        END IF;
+
+        debug_log('FCLOSE: ' || file.directory || '/' || file.filename);
+
+        -- Flush si mode écriture
+        IF file.open_mode IN ('W', 'WB', 'A', 'AB') THEN
+            fflush(file);
+        END IF;
+
+        -- Libérer le buffer
+        IF file.buffer IS NOT NULL THEN
+            DBMS_LOB.FREETEMPORARY(file.buffer);
+        END IF;
+
+        -- Supprimer de la collection
+        IF g_open_files.EXISTS(file.file_id) THEN
+            g_open_files.DELETE(file.file_id);
+        END IF;
+
+        file.is_open := FALSE;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            debug_log('FCLOSE ERROR: ' || SQLERRM);
+            file.is_open := FALSE;
+            RAISE;
+    END fclose;
+
+    -- ==========================================
+    -- FCLOSE_ALL - Fermer tous les fichiers
+    -- ==========================================
+    PROCEDURE fclose_all IS
+        v_idx BINARY_INTEGER;
+        v_file file_type;
+    BEGIN
+        debug_log('FCLOSE_ALL: Closing all open files');
+
+        v_idx := g_open_files.FIRST;
+        WHILE v_idx IS NOT NULL LOOP
+            v_file := g_open_files(v_idx);
+            BEGIN
+                fclose(v_file);
+            EXCEPTION
+                WHEN OTHERS THEN
+                    debug_log('Error closing file ' || v_idx || ': ' || SQLERRM);
+            END;
+            v_idx := g_open_files.NEXT(v_idx);
+        END LOOP;
+
+        g_open_files.DELETE;
+    END fclose_all;
+
+    -- ==========================================
+    -- IS_OPEN - Vérifier si fichier ouvert
+    -- ==========================================
+    FUNCTION is_open(file IN file_type) RETURN BOOLEAN IS
+    BEGIN
+        RETURN file.is_open;
+    END is_open;
+
+    -- ==========================================
+    -- FGETATTR - Obtenir attributs fichier
+    -- ==========================================
+    PROCEDURE fgetattr(
+        location    IN VARCHAR2,
+        filename    IN VARCHAR2,
+        fexists     OUT BOOLEAN,
+        file_length OUT NUMBER,
+        block_size  OUT BINARY_INTEGER
+    ) IS
+        v_mapping utl_file_directory_mapping%ROWTYPE;
+        v_uri     VARCHAR2(1000);
+        v_content BLOB;
+    BEGIN
+        v_mapping := get_mapping(location);
+        v_uri := v_mapping.object_storage_uri || filename;
+
+        BEGIN
+            v_content := DBMS_CLOUD.GET_OBJECT(
+                credential_name => NVL(v_mapping.credential_name, g_default_credential),
+                object_uri      => v_uri
+            );
+
+            fexists := TRUE;
+            file_length := DBMS_LOB.GETLENGTH(v_content);
+            block_size := 4096; -- Valeur standard
+
+            DBMS_LOB.FREETEMPORARY(v_content);
+
+        EXCEPTION
+            WHEN OTHERS THEN
+                fexists := FALSE;
+                file_length := 0;
+                block_size := 0;
+        END;
+
+    END fgetattr;
+
+    -- ==========================================
+    -- FCOPY - Copier un fichier
+    -- ==========================================
+    PROCEDURE fcopy(
+        src_location  IN VARCHAR2,
+        src_filename  IN VARCHAR2,
+        dest_location IN VARCHAR2,
+        dest_filename IN VARCHAR2,
+        start_line    IN BINARY_INTEGER DEFAULT 1,
+        end_line      IN BINARY_INTEGER DEFAULT NULL
+    ) IS
+        v_src_mapping  utl_file_directory_mapping%ROWTYPE;
+        v_dest_mapping utl_file_directory_mapping%ROWTYPE;
+        v_content      BLOB;
+    BEGIN
+        debug_log('FCOPY: ' || src_location || '/' || src_filename || ' -> ' || dest_location || '/' || dest_filename);
+
+        v_src_mapping := get_mapping(src_location);
+        v_dest_mapping := get_mapping(dest_location);
+
+        -- Lire le fichier source
+        v_content := DBMS_CLOUD.GET_OBJECT(
+            credential_name => NVL(v_src_mapping.credential_name, g_default_credential),
+            object_uri      => v_src_mapping.object_storage_uri || src_filename
+        );
+
+        -- TODO: Implémenter start_line/end_line si nécessaire
+
+        -- Écrire vers la destination
+        DBMS_CLOUD.PUT_OBJECT(
+            credential_name => NVL(v_dest_mapping.credential_name, g_default_credential),
+            object_uri      => v_dest_mapping.object_storage_uri || dest_filename,
+            contents        => v_content
+        );
+
+        DBMS_LOB.FREETEMPORARY(v_content);
+
+        debug_log('FCOPY: Complete');
+
+    END fcopy;
+
+    -- ==========================================
+    -- FRENAME - Renommer/déplacer un fichier
+    -- ==========================================
+    PROCEDURE frename(
+        src_location  IN VARCHAR2,
+        src_filename  IN VARCHAR2,
+        dest_location IN VARCHAR2,
+        dest_filename IN VARCHAR2,
+        overwrite     IN BOOLEAN DEFAULT FALSE
+    ) IS
+        v_exists     BOOLEAN;
+        v_length     NUMBER;
+        v_block_size BINARY_INTEGER;
+    BEGIN
+        debug_log('FRENAME: ' || src_location || '/' || src_filename || ' -> ' || dest_location || '/' || dest_filename);
+
+        -- Vérifier si destination existe
+        IF NOT overwrite THEN
+            fgetattr(dest_location, dest_filename, v_exists, v_length, v_block_size);
+            IF v_exists THEN
+                RAISE_APPLICATION_ERROR(-29283, 'Destination file exists');
+            END IF;
+        END IF;
+
+        -- Copier puis supprimer
+        fcopy(src_location, src_filename, dest_location, dest_filename);
+        fremove(src_location, src_filename);
+
+    END frename;
+
+    -- ==========================================
+    -- FREMOVE - Supprimer un fichier
+    -- ==========================================
+    PROCEDURE fremove(
+        location IN VARCHAR2,
+        filename IN VARCHAR2
+    ) IS
+        v_mapping utl_file_directory_mapping%ROWTYPE;
+    BEGIN
+        debug_log('FREMOVE: ' || location || '/' || filename);
+
+        v_mapping := get_mapping(location);
+
+        DBMS_CLOUD.DELETE_OBJECT(
+            credential_name => NVL(v_mapping.credential_name, g_default_credential),
+            object_uri      => v_mapping.object_storage_uri || filename
+        );
+
+    END fremove;
+
+END utl_file_wrapper;
+/</code></pre>
+        </div>
+    </section>
+
+    <!-- Section Remplacement -->
+    <section id="remplacement">
+        <h2>🔄 Scripts de Remplacement Automatique</h2>
+
+        <h3>Option 1: Synonyme Global (Recommandé - Impact minimal)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Créer un synonyme pour UTL_FILE</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- OPTION 1: SYNONYME GLOBAL
+-- Rediriger tous les appels UTL_FILE vers le wrapper
+-- ⚠️ Nécessite privilèges DBA
+-- ============================================
+
+-- 1. Sauvegarder les grants actuels sur UTL_FILE
+CREATE TABLE utl_file_grants_backup AS
+SELECT grantee, privilege, grantable
+FROM dba_tab_privs
+WHERE table_name = 'UTL_FILE' AND owner = 'SYS';
+
+-- 2. Révoquer les grants sur UTL_FILE original
+BEGIN
+    FOR rec IN (
+        SELECT grantee
+        FROM dba_tab_privs
+        WHERE table_name = 'UTL_FILE'
+        AND owner = 'SYS'
+        AND grantee NOT IN ('SYS', 'SYSTEM')
+    ) LOOP
+        BEGIN
+            EXECUTE IMMEDIATE 'REVOKE EXECUTE ON SYS.UTL_FILE FROM ' || rec.grantee;
+        EXCEPTION
+            WHEN OTHERS THEN NULL;
+        END;
+    END LOOP;
+END;
+/
+
+-- 3. Créer le synonyme public
+CREATE OR REPLACE PUBLIC SYNONYM utl_file FOR your_schema.utl_file_wrapper;
+
+-- 4. Donner les grants sur le wrapper
+BEGIN
+    FOR rec IN (SELECT grantee FROM utl_file_grants_backup) LOOP
+        EXECUTE IMMEDIATE 'GRANT EXECUTE ON your_schema.utl_file_wrapper TO ' || rec.grantee;
+    END LOOP;
+END;
+/
+
+-- 5. Recompiler les objets invalides
+BEGIN
+    FOR rec IN (
+        SELECT owner, object_name, object_type
+        FROM dba_objects
+        WHERE status = 'INVALID'
+        AND object_type IN ('PACKAGE', 'PACKAGE BODY', 'PROCEDURE', 'FUNCTION', 'TRIGGER')
+    ) LOOP
+        BEGIN
+            IF rec.object_type = 'PACKAGE BODY' THEN
+                EXECUTE IMMEDIATE 'ALTER PACKAGE ' || rec.owner || '.' || rec.object_name || ' COMPILE BODY';
+            ELSE
+                EXECUTE IMMEDIATE 'ALTER ' || rec.object_type || ' ' || rec.owner || '.' || rec.object_name || ' COMPILE';
+            END IF;
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Error compiling ' || rec.owner || '.' || rec.object_name || ': ' || SQLERRM);
+        END;
+    END LOOP;
+END;
+/</code></pre>
+        </div>
+
+        <h3>Option 2: Remplacement par Rechercher/Remplacer</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Générer scripts de remplacement</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- OPTION 2: REMPLACEMENT DANS LE CODE SOURCE
+-- Générer des scripts ALTER pour chaque objet
+-- ============================================
+
+SET SERVEROUTPUT ON SIZE UNLIMITED
+SET LONG 1000000
+SET LONGCHUNKSIZE 32767
+
+DECLARE
+    v_source CLOB;
+    v_new_source CLOB;
+BEGIN
+    -- Pour chaque objet contenant UTL_FILE
+    FOR obj IN (
+        SELECT DISTINCT owner, name, type
+        FROM dba_source
+        WHERE UPPER(text) LIKE '%UTL_FILE.%'
+        AND owner NOT IN ('SYS', 'SYSTEM')
+        ORDER BY owner, type, name
+    ) LOOP
+
+        DBMS_OUTPUT.PUT_LINE('-- ========================================');
+        DBMS_OUTPUT.PUT_LINE('-- Object: ' || obj.owner || '.' || obj.name || ' (' || obj.type || ')');
+        DBMS_OUTPUT.PUT_LINE('-- ========================================');
+
+        -- Récupérer le code source complet
+        v_source := '';
+        FOR src IN (
+            SELECT text
+            FROM dba_source
+            WHERE owner = obj.owner
+            AND name = obj.name
+            AND type = obj.type
+            ORDER BY line
+        ) LOOP
+            v_source := v_source || src.text;
+        END LOOP;
+
+        -- Remplacer UTL_FILE par UTL_FILE_WRAPPER
+        v_new_source := REPLACE(v_source, 'UTL_FILE.', 'UTL_FILE_WRAPPER.');
+        v_new_source := REPLACE(v_new_source, 'utl_file.', 'utl_file_wrapper.');
+        v_new_source := REPLACE(v_new_source, 'Utl_File.', 'Utl_File_Wrapper.');
+
+        -- Afficher le script de création
+        DBMS_OUTPUT.PUT_LINE('CREATE OR REPLACE ' || v_new_source);
+        DBMS_OUTPUT.PUT_LINE('/');
+        DBMS_OUTPUT.PUT_LINE('');
+
+    END LOOP;
+END;
+/</code></pre>
+        </div>
+
+        <h3>Option 3: Script de remplacement avec sauvegarde</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Remplacement avec backup automatique</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- OPTION 3: REMPLACEMENT AUTOMATIQUE AVEC BACKUP
+-- Sauvegarde le code original avant modification
+-- ============================================
+
+-- 1. Créer la table de backup
+CREATE TABLE utl_file_migration_backup (
+    backup_id      NUMBER GENERATED ALWAYS AS IDENTITY,
+    backup_date    TIMESTAMP DEFAULT SYSTIMESTAMP,
+    owner          VARCHAR2(128),
+    object_name    VARCHAR2(128),
+    object_type    VARCHAR2(30),
+    line           NUMBER,
+    original_text  VARCHAR2(4000),
+    modified       VARCHAR2(1) DEFAULT 'N'
+);
+
+-- 2. Sauvegarder tout le code contenant UTL_FILE
+INSERT INTO utl_file_migration_backup (owner, object_name, object_type, line, original_text)
+SELECT owner, name, type, line, text
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM');
+
+COMMIT;
+
+-- 3. Procédure de migration automatique
+CREATE OR REPLACE PROCEDURE migrate_utl_file_to_wrapper(
+    p_owner    IN VARCHAR2 DEFAULT NULL,
+    p_dry_run  IN BOOLEAN DEFAULT TRUE
+) AS
+    v_ddl       CLOB;
+    v_new_ddl   CLOB;
+    v_count     NUMBER := 0;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('===========================================');
+    DBMS_OUTPUT.PUT_LINE('UTL_FILE Migration - ' || CASE WHEN p_dry_run THEN 'DRY RUN' ELSE 'EXECUTION' END);
+    DBMS_OUTPUT.PUT_LINE('===========================================');
+
+    FOR obj IN (
+        SELECT DISTINCT owner, name, type
+        FROM dba_source
+        WHERE UPPER(text) LIKE '%UTL_FILE.%'
+        AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+        AND (p_owner IS NULL OR owner = p_owner)
+        ORDER BY owner, type, name
+    ) LOOP
+
+        -- Obtenir le DDL de l'objet
+        v_ddl := DBMS_METADATA.GET_DDL(
+            object_type => CASE obj.type
+                WHEN 'PACKAGE BODY' THEN 'PACKAGE_BODY'
+                ELSE obj.type
+            END,
+            name        => obj.name,
+            schema      => obj.owner
+        );
+
+        -- Remplacer les références
+        v_new_ddl := REPLACE(v_ddl, 'UTL_FILE.', 'UTL_FILE_WRAPPER.');
+        v_new_ddl := REPLACE(v_new_ddl, 'utl_file.', 'utl_file_wrapper.');
+        v_new_ddl := REPLACE(v_new_ddl, 'Utl_File.', 'Utl_File_Wrapper.');
+
+        IF v_new_ddl != v_ddl THEN
+            v_count := v_count + 1;
+            DBMS_OUTPUT.PUT_LINE(v_count || '. ' || obj.owner || '.' || obj.name || ' (' || obj.type || ')');
+
+            IF NOT p_dry_run THEN
+                BEGIN
+                    EXECUTE IMMEDIATE v_new_ddl;
+
+                    UPDATE utl_file_migration_backup
+                    SET modified = 'Y'
+                    WHERE owner = obj.owner
+                    AND object_name = obj.name
+                    AND object_type = obj.type;
+
+                    DBMS_OUTPUT.PUT_LINE('   -> Migrated successfully');
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        DBMS_OUTPUT.PUT_LINE('   -> ERROR: ' || SQLERRM);
+                END;
+            END IF;
+        END IF;
+
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('===========================================');
+    DBMS_OUTPUT.PUT_LINE('Total objects to migrate: ' || v_count);
+
+    IF NOT p_dry_run THEN
+        COMMIT;
+    END IF;
+
+END migrate_utl_file_to_wrapper;
+/
+
+-- 4. Exécuter en mode dry-run d'abord
+BEGIN
+    migrate_utl_file_to_wrapper(p_dry_run => TRUE);
+END;
+/
+
+-- 5. Exécuter la migration réelle (décommenter pour exécuter)
+-- BEGIN
+--     migrate_utl_file_to_wrapper(p_dry_run => FALSE);
+-- END;
+-- /</code></pre>
+        </div>
+    </section>
+
+    <!-- Section Tests -->
+    <section id="tests">
+        <h2>✅ Scripts de Tests</h2>
+
+        <h3>Test 1: Écriture de fichier</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Test écriture</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- TEST 1: ÉCRITURE DE FICHIER
+-- Vérifier que put_line fonctionne
+-- ============================================
+
+SET SERVEROUTPUT ON
+
+DECLARE
+    v_file utl_file_wrapper.file_type;
+BEGIN
+    -- Activer le mode debug
+    utl_file_wrapper.set_debug_mode(TRUE);
+
+    -- Ouvrir le fichier en écriture
+    v_file := utl_file_wrapper.fopen(
+        location  => 'DATA_EXPORT',  -- Doit exister dans la table de mapping
+        filename  => 'test_write_' || TO_CHAR(SYSDATE, 'YYYYMMDD_HH24MISS') || '.txt',
+        open_mode => 'W'
+    );
+
+    -- Écrire des lignes
+    utl_file_wrapper.put_line(v_file, 'Ligne 1: Test écriture UTL_FILE_WRAPPER');
+    utl_file_wrapper.put_line(v_file, 'Ligne 2: Date: ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS'));
+    utl_file_wrapper.put_line(v_file, 'Ligne 3: Migration ExaCC réussie!');
+
+    -- Fermer le fichier
+    utl_file_wrapper.fclose(v_file);
+
+    DBMS_OUTPUT.PUT_LINE('✅ Test écriture réussi!');
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ Erreur: ' || SQLERRM);
+        IF utl_file_wrapper.is_open(v_file) THEN
+            utl_file_wrapper.fclose(v_file);
+        END IF;
+END;
+/</code></pre>
+        </div>
+
+        <h3>Test 2: Lecture de fichier</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Test lecture</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- TEST 2: LECTURE DE FICHIER
+-- Vérifier que get_line fonctionne
+-- ============================================
+
+SET SERVEROUTPUT ON
+
+DECLARE
+    v_file   utl_file_wrapper.file_type;
+    v_line   VARCHAR2(32767);
+    v_count  NUMBER := 0;
+BEGIN
+    utl_file_wrapper.set_debug_mode(TRUE);
+
+    -- Ouvrir le fichier en lecture
+    v_file := utl_file_wrapper.fopen(
+        location  => 'DATA_EXPORT',
+        filename  => 'test_read.txt',  -- Fichier qui doit exister
+        open_mode => 'R'
+    );
+
+    -- Lire toutes les lignes
+    LOOP
+        BEGIN
+            utl_file_wrapper.get_line(v_file, v_line);
+            v_count := v_count + 1;
+            DBMS_OUTPUT.PUT_LINE('Ligne ' || v_count || ': ' || v_line);
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                EXIT;
+        END;
+    END LOOP;
+
+    utl_file_wrapper.fclose(v_file);
+
+    DBMS_OUTPUT.PUT_LINE('✅ Test lecture réussi! ' || v_count || ' lignes lues.');
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ Erreur: ' || SQLERRM);
+        IF utl_file_wrapper.is_open(v_file) THEN
+            utl_file_wrapper.fclose(v_file);
+        END IF;
+END;
+/</code></pre>
+        </div>
+
+        <h3>Test 3: Suite de tests complète</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Suite de tests automatisée</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- TEST SUITE COMPLÈTE UTL_FILE_WRAPPER
+-- Exécute tous les tests et génère un rapport
+-- ============================================
+
+SET SERVEROUTPUT ON SIZE UNLIMITED
+
+DECLARE
+    v_file       utl_file_wrapper.file_type;
+    v_line       VARCHAR2(32767);
+    v_exists     BOOLEAN;
+    v_length     NUMBER;
+    v_block_size BINARY_INTEGER;
+    v_test_file  VARCHAR2(100) := 'test_suite_' || TO_CHAR(SYSDATE, 'YYYYMMDD_HH24MISS') || '.txt';
+    v_tests_passed NUMBER := 0;
+    v_tests_failed NUMBER := 0;
+
+    PROCEDURE log_result(p_test VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+    BEGIN
+        IF p_passed THEN
+            v_tests_passed := v_tests_passed + 1;
+            DBMS_OUTPUT.PUT_LINE('✅ ' || p_test || CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message END);
+        ELSE
+            v_tests_failed := v_tests_failed + 1;
+            DBMS_OUTPUT.PUT_LINE('❌ ' || p_test || CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message END);
+        END IF;
+    END;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('================================================');
+    DBMS_OUTPUT.PUT_LINE('UTL_FILE_WRAPPER - SUITE DE TESTS');
+    DBMS_OUTPUT.PUT_LINE('Date: ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS'));
+    DBMS_OUTPUT.PUT_LINE('================================================');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Test 1: FOPEN en mode écriture
+    BEGIN
+        v_file := utl_file_wrapper.fopen('DATA_EXPORT', v_test_file, 'W');
+        log_result('TEST 1: FOPEN (write mode)', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 1: FOPEN (write mode)', FALSE, SQLERRM);
+    END;
+
+    -- Test 2: IS_OPEN
+    BEGIN
+        IF utl_file_wrapper.is_open(v_file) THEN
+            log_result('TEST 2: IS_OPEN', TRUE);
+        ELSE
+            log_result('TEST 2: IS_OPEN', FALSE, 'File not reported as open');
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 2: IS_OPEN', FALSE, SQLERRM);
+    END;
+
+    -- Test 3: PUT_LINE
+    BEGIN
+        utl_file_wrapper.put_line(v_file, 'Test line 1');
+        utl_file_wrapper.put_line(v_file, 'Test line 2 with special chars: àéïôù');
+        utl_file_wrapper.put_line(v_file, 'Test line 3: ' || TO_CHAR(SYSDATE, 'YYYY-MM-DD'));
+        log_result('TEST 3: PUT_LINE', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 3: PUT_LINE', FALSE, SQLERRM);
+    END;
+
+    -- Test 4: PUT (sans retour à la ligne)
+    BEGIN
+        utl_file_wrapper.put(v_file, 'Partial ');
+        utl_file_wrapper.put(v_file, 'line ');
+        utl_file_wrapper.put(v_file, 'completed');
+        utl_file_wrapper.new_line(v_file);
+        log_result('TEST 4: PUT + NEW_LINE', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 4: PUT + NEW_LINE', FALSE, SQLERRM);
+    END;
+
+    -- Test 5: FFLUSH
+    BEGIN
+        utl_file_wrapper.fflush(v_file);
+        log_result('TEST 5: FFLUSH', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 5: FFLUSH', FALSE, SQLERRM);
+    END;
+
+    -- Test 6: FCLOSE
+    BEGIN
+        utl_file_wrapper.fclose(v_file);
+        log_result('TEST 6: FCLOSE', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 6: FCLOSE', FALSE, SQLERRM);
+    END;
+
+    -- Test 7: FGETATTR
+    BEGIN
+        utl_file_wrapper.fgetattr('DATA_EXPORT', v_test_file, v_exists, v_length, v_block_size);
+        IF v_exists AND v_length > 0 THEN
+            log_result('TEST 7: FGETATTR', TRUE, 'Size: ' || v_length || ' bytes');
+        ELSE
+            log_result('TEST 7: FGETATTR', FALSE, 'File not found or empty');
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 7: FGETATTR', FALSE, SQLERRM);
+    END;
+
+    -- Test 8: FOPEN en mode lecture
+    BEGIN
+        v_file := utl_file_wrapper.fopen('DATA_EXPORT', v_test_file, 'R');
+        log_result('TEST 8: FOPEN (read mode)', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 8: FOPEN (read mode)', FALSE, SQLERRM);
+    END;
+
+    -- Test 9: GET_LINE
+    BEGIN
+        utl_file_wrapper.get_line(v_file, v_line);
+        IF v_line = 'Test line 1' THEN
+            log_result('TEST 9: GET_LINE', TRUE, 'Content matches');
+        ELSE
+            log_result('TEST 9: GET_LINE', FALSE, 'Content mismatch: ' || v_line);
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 9: GET_LINE', FALSE, SQLERRM);
+    END;
+
+    -- Fermer le fichier de lecture
+    utl_file_wrapper.fclose(v_file);
+
+    -- Test 10: FCOPY
+    BEGIN
+        utl_file_wrapper.fcopy('DATA_EXPORT', v_test_file, 'DATA_EXPORT', 'copy_' || v_test_file);
+        log_result('TEST 10: FCOPY', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 10: FCOPY', FALSE, SQLERRM);
+    END;
+
+    -- Test 11: FREMOVE
+    BEGIN
+        utl_file_wrapper.fremove('DATA_EXPORT', 'copy_' || v_test_file);
+        log_result('TEST 11: FREMOVE', TRUE);
+    EXCEPTION
+        WHEN OTHERS THEN
+            log_result('TEST 11: FREMOVE', FALSE, SQLERRM);
+    END;
+
+    -- Nettoyage
+    BEGIN
+        utl_file_wrapper.fremove('DATA_EXPORT', v_test_file);
+    EXCEPTION
+        WHEN OTHERS THEN NULL;
+    END;
+
+    -- Résumé
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('================================================');
+    DBMS_OUTPUT.PUT_LINE('RÉSUMÉ');
+    DBMS_OUTPUT.PUT_LINE('================================================');
+    DBMS_OUTPUT.PUT_LINE('Tests réussis: ' || v_tests_passed);
+    DBMS_OUTPUT.PUT_LINE('Tests échoués: ' || v_tests_failed);
+    DBMS_OUTPUT.PUT_LINE('Total: ' || (v_tests_passed + v_tests_failed));
+    DBMS_OUTPUT.PUT_LINE('');
+
+    IF v_tests_failed = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('🎉 TOUS LES TESTS SONT PASSÉS!');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('⚠️ CERTAINS TESTS ONT ÉCHOUÉ');
+    END IF;
+
+END;
+/</code></pre>
+        </div>
+    </section>
+
+    <!-- Section Rollback -->
+    <section id="rollback">
+        <h2>↩️ Procédure de Rollback</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Important</strong><br>
+                Conservez toujours une sauvegarde complète avant la migration. Ces scripts permettent de revenir à l'état initial en cas de problème.
+            </div>
+        </div>
+
+        <h3>Rollback Option 1: Restaurer le synonyme</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Rollback synonyme</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- ROLLBACK: RESTAURER UTL_FILE ORIGINAL
+-- Si vous avez utilisé l'option synonyme
+-- ============================================
+
+-- 1. Supprimer le synonyme public
+DROP PUBLIC SYNONYM utl_file;
+
+-- 2. Restaurer les grants sur UTL_FILE original
+BEGIN
+    FOR rec IN (SELECT grantee FROM utl_file_grants_backup) LOOP
+        BEGIN
+            EXECUTE IMMEDIATE 'GRANT EXECUTE ON SYS.UTL_FILE TO ' || rec.grantee;
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Warning: Could not grant to ' || rec.grantee);
+        END;
+    END LOOP;
+END;
+/
+
+-- 3. Recompiler les objets
+BEGIN
+    DBMS_UTILITY.COMPILE_SCHEMA(schema => 'YOUR_SCHEMA', compile_all => FALSE);
+END;
+/
+
+-- 4. Nettoyer
+DROP TABLE utl_file_grants_backup PURGE;</code></pre>
+        </div>
+
+        <h3>Rollback Option 2: Restaurer le code source</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Rollback code source</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- ROLLBACK: RESTAURER LE CODE ORIGINAL
+-- Si vous avez modifié le code source directement
+-- ============================================
+
+-- 1. Vérifier les objets modifiés
+SELECT DISTINCT owner, object_name, object_type
+FROM utl_file_migration_backup
+WHERE modified = 'Y';
+
+-- 2. Procédure de restauration
+CREATE OR REPLACE PROCEDURE rollback_utl_file_migration(
+    p_owner    IN VARCHAR2 DEFAULT NULL,
+    p_dry_run  IN BOOLEAN DEFAULT TRUE
+) AS
+    v_source CLOB;
+    v_line   VARCHAR2(4000);
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('===========================================');
+    DBMS_OUTPUT.PUT_LINE('UTL_FILE Rollback - ' || CASE WHEN p_dry_run THEN 'DRY RUN' ELSE 'EXECUTION' END);
+    DBMS_OUTPUT.PUT_LINE('===========================================');
+
+    FOR obj IN (
+        SELECT DISTINCT owner, object_name, object_type
+        FROM utl_file_migration_backup
+        WHERE modified = 'Y'
+        AND (p_owner IS NULL OR owner = p_owner)
+    ) LOOP
+
+        DBMS_OUTPUT.PUT_LINE('Restoring: ' || obj.owner || '.' || obj.object_name);
+
+        IF NOT p_dry_run THEN
+            -- Reconstruire le source original
+            v_source := '';
+            FOR src IN (
+                SELECT original_text
+                FROM utl_file_migration_backup
+                WHERE owner = obj.owner
+                AND object_name = obj.object_name
+                AND object_type = obj.object_type
+                ORDER BY line
+            ) LOOP
+                v_source := v_source || src.original_text;
+            END LOOP;
+
+            -- Recréer l'objet
+            BEGIN
+                EXECUTE IMMEDIATE 'CREATE OR REPLACE ' || v_source;
+                DBMS_OUTPUT.PUT_LINE('   -> Restored successfully');
+
+                UPDATE utl_file_migration_backup
+                SET modified = 'R' -- Restored
+                WHERE owner = obj.owner
+                AND object_name = obj.object_name
+                AND object_type = obj.object_type;
+
+            EXCEPTION
+                WHEN OTHERS THEN
+                    DBMS_OUTPUT.PUT_LINE('   -> ERROR: ' || SQLERRM);
+            END;
+        END IF;
+
+    END LOOP;
+
+    IF NOT p_dry_run THEN
+        COMMIT;
+    END IF;
+
+END rollback_utl_file_migration;
+/
+
+-- 3. Exécuter le rollback (dry run d'abord)
+BEGIN
+    rollback_utl_file_migration(p_dry_run => TRUE);
+END;
+/
+
+-- 4. Exécuter le rollback réel (décommenter)
+-- BEGIN
+--     rollback_utl_file_migration(p_dry_run => FALSE);
+-- END;
+-- /</code></pre>
+        </div>
+
+        <h3>Checklist de rollback</h3>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">1️⃣</div>
+                <h4>Identifier les objets modifiés</h4>
+                <p>Consulter la table de backup pour voir tous les objets qui ont été migrés.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">2️⃣</div>
+                <h4>Exécuter en dry-run</h4>
+                <p>Toujours tester le rollback en mode dry-run avant l'exécution réelle.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">3️⃣</div>
+                <h4>Restaurer les objets</h4>
+                <p>Exécuter la procédure de rollback pour restaurer le code original.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">4️⃣</div>
+                <h4>Recompiler et tester</h4>
+                <p>Recompiler tous les objets et exécuter les tests de non-régression.</p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p><strong>Migration UTL_FILE vers ExaCC</strong></p>
+    <p>Documentation générée le <script>document.write(new Date().toLocaleDateString('fr-FR'))</script></p>
+    <p>Version 1.0 | Oracle Database | Exadata Cloud at Customer</p>
+</footer>
+
+<script>
+function copyCode(button) {
+    const codeContainer = button.closest('.code-container');
+    const code = codeContainer.querySelector('pre code').innerText;
+
+    navigator.clipboard.writeText(code).then(() => {
+        const originalText = button.innerHTML;
+        button.innerHTML = '✅ Copié!';
+        button.classList.add('copied');
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Erreur copie:', err);
+        button.innerHTML = '❌ Erreur';
+        setTimeout(() => {
+            button.innerHTML = '📋 Copier';
+        }, 2000);
+    });
+}
+
+// Smooth scroll for navigation
+document.querySelectorAll('nav a').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Highlight current section in nav
+window.addEventListener('scroll', () => {
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('nav a');
+
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        if (window.pageYOffset >= sectionTop) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    navLinks.forEach(link => {
+        link.style.background = link.getAttribute('href') === '#' + current ? 'var(--light-gray)' : '';
+    });
+});
+</script>
+
+</body>
+</html>
