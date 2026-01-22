@@ -344,6 +344,49 @@
                 display: none;
             }
         }
+
+        /* Navigation par onglets */
+        .tabs-nav {
+            display: flex;
+            background: var(--dark);
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            overflow-x: auto;
+        }
+
+        .tabs-nav li {
+            flex: 0 0 auto;
+        }
+
+        .tabs-nav a {
+            display: block;
+            padding: 15px 25px;
+            color: #ccc;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tabs-nav a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .tabs-nav a.active {
+            color: white;
+            border-bottom-color: var(--primary);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -354,7 +397,347 @@
     <span class="badge">Tu gères la base • Les admins OCI gèrent le cloud</span>
 </header>
 
+<!-- Navigation par onglets -->
+<nav>
+    <ul class="tabs-nav">
+        <li><a href="#guide" class="active" onclick="showTab('guide', this)">📋 Guide Migration</a></li>
+        <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
+    </ul>
+</nav>
+
 <div class="container">
+
+<!-- ==================== ONGLET JIRA ==================== -->
+<div id="jira" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
+        <h2>🎫 Tickets JIRA - Migration UTL_FILE vers ExaCC</h2>
+        <p style="margin: 15px 0;">Voici des modèles de tickets JIRA pour structurer ton projet de migration.</p>
+    </section>
+
+    <!-- TICKET 1 : AUDIT -->
+    <section>
+        <h2>📝 Ticket 1 : Audit et Analyse UTL_FILE</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">📋</span>
+            <div>
+                <strong>Type :</strong> Story ou Task<br>
+                <strong>Epic :</strong> Migration ExaCC - Adaptation code PL/SQL
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Titre du ticket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>[EXACC] Audit des utilisations UTL_FILE dans la base de données</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Description</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Contexte
+Dans le cadre de la migration vers ExaCC (Exadata Cloud@Customer), le package UTL_FILE n'est plus disponible car l'accès au filesystem du serveur est supprimé.
+
+Nous devons identifier toutes les utilisations de UTL_FILE dans nos schémas applicatifs pour planifier leur migration vers DBMS_CLOUD + Object Storage.
+
+## Objectif
+Réaliser un audit complet des utilisations de UTL_FILE dans la base de données pour :
+- Identifier les schémas impactés
+- Lister les objets PL/SQL concernés (packages, procédures, fonctions)
+- Quantifier l'effort de migration
+- Identifier les directories Oracle utilisés
+
+## Périmètre
+- Base de données : [NOM_BASE]
+- Environnement : [PROD/PREPROD/DEV]
+- Schémas applicatifs uniquement (exclusion des schémas système Oracle)
+
+## Tâches
+- [ ] Lister tous les schémas utilisant UTL_FILE
+- [ ] Pour chaque schéma, identifier les objets impactés
+- [ ] Compter le nombre de références UTL_FILE par schéma
+- [ ] Lister les directories Oracle référencés dans le code
+- [ ] Documenter les opérations utilisées (FOPEN, PUT_LINE, GET_LINE, etc.)
+- [ ] Produire un rapport d'audit
+
+## Livrables
+- Rapport d'audit Excel/CSV avec :
+  - Liste des schémas impactés
+  - Liste des objets par schéma
+  - Nombre de références par objet
+  - Liste des directories à migrer
+- Recommandations pour la migration</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Critères d'acceptation</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Critères d'acceptation
+
+### ✅ DONE quand :
+
+1. **Inventaire complet**
+   - [ ] Tous les schémas applicatifs ont été analysés
+   - [ ] La liste des schémas utilisant UTL_FILE est documentée
+   - [ ] Le nombre total de références UTL_FILE est connu
+
+2. **Détail par schéma**
+   - [ ] Pour chaque schéma impacté, la liste des objets (packages, procédures, fonctions) est fournie
+   - [ ] Le nombre de références par objet est documenté
+   - [ ] Les lignes de code concernées sont identifiées
+
+3. **Directories Oracle**
+   - [ ] La liste des directories Oracle utilisés par UTL_FILE est fournie
+   - [ ] La correspondance directory → chemin physique est documentée
+
+4. **Rapport d'audit**
+   - [ ] Un fichier Excel/CSV récapitulatif est produit
+   - [ ] Le rapport contient : schéma, objet, type, nb_références, directories
+   - [ ] Le rapport est stocké dans [EMPLACEMENT]
+
+5. **Estimation effort**
+   - [ ] Une estimation du nombre d'objets à modifier est fournie
+   - [ ] Les schémas sont priorisés par criticité/complexité
+
+### ❌ NOT DONE si :
+- Des schémas applicatifs n'ont pas été analysés
+- Le rapport d'audit n'est pas produit
+- Les directories Oracle ne sont pas listés</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Labels suggérés</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>migration, exacc, utl_file, audit, dba, plsql</code></pre>
+        </div>
+    </section>
+
+    <!-- TICKET 2 : DEMANDE ADMINS OCI -->
+    <section>
+        <h2>📝 Ticket 2 : Demande configuration OCI (Admins Cloud)</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⏳</span>
+            <div>
+                <strong>Type :</strong> Task (bloquante)<br>
+                <strong>Assigné à :</strong> Équipe Admin OCI / Cloud
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Titre du ticket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>[EXACC] Configuration Object Storage et credentials pour migration UTL_FILE</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Description</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Contexte
+Suite à l'audit UTL_FILE (voir ticket [LIEN_TICKET_AUDIT]), nous avons identifié X schémas et Y références à migrer vers DBMS_CLOUD + Object Storage.
+
+## Demande
+Nous avons besoin des éléments suivants pour continuer la migration :
+
+### 1. Bucket Object Storage
+- Créer un bucket dédié pour les fichiers de la base de données
+- Fournir l'URI complète au format :
+  `https://objectstorage.[region].oraclecloud.com/n/[namespace]/b/[bucket]/o/`
+
+### 2. Credential DBMS_CLOUD
+- Créer un credential en base pour l'authentification vers Object Storage
+- Fournir le nom du credential créé
+- OU fournir les informations (API Key) pour que le DBA le crée
+
+### 3. ACL Réseau
+- Confirmer que la base ExaCC peut accéder à *.oraclecloud.com:443
+
+### 4. Dossiers (prefixes) à créer dans le bucket
+Voici la liste des directories Oracle à reproduire dans le bucket :
+- DATA_EXPORT/
+- LOG_DIR/
+- REPORTS/
+[À COMPLÉTER AVEC RÉSULTAT AUDIT]
+
+## Priorité
+Bloquant pour la suite de la migration.</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Critères d'acceptation</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Critères d'acceptation
+
+### ✅ DONE quand :
+
+1. **Bucket Object Storage**
+   - [ ] Le bucket est créé
+   - [ ] L'URI complète est communiquée au DBA
+   - [ ] Les dossiers (prefixes) demandés sont créés
+
+2. **Credential DBMS_CLOUD**
+   - [ ] Le credential est créé en base OU les informations sont fournies
+   - [ ] Le nom du credential est communiqué
+
+3. **ACL Réseau**
+   - [ ] L'accès réseau ExaCC → Object Storage est confirmé
+   - [ ] Un test de connexion a été validé
+
+4. **Documentation**
+   - [ ] Les informations sont documentées et transmises au DBA</code></pre>
+        </div>
+    </section>
+
+    <!-- TICKET 3 : IMPLEMENTATION -->
+    <section>
+        <h2>📝 Ticket 3 : Implémentation du wrapper UTL_FILE</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">🔧</span>
+            <div>
+                <strong>Type :</strong> Story<br>
+                <strong>Dépend de :</strong> Ticket Audit + Ticket Config OCI
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Titre du ticket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>[EXACC] Déploiement wrapper UTL_FILE_WRAPPER et synonyme PUBLIC</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Description</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Contexte
+Suite à l'audit (ticket [LIEN]) et la configuration OCI (ticket [LIEN]), nous pouvons déployer la solution de migration.
+
+## Solution technique
+Déployer un package wrapper UTL_FILE_WRAPPER qui :
+- Expose les mêmes signatures que UTL_FILE (FOPEN, PUT_LINE, GET_LINE, FCLOSE, etc.)
+- Utilise DBMS_CLOUD en interne pour accéder à Object Storage
+- Utilise une table de mapping pour convertir les directories Oracle en URI Object Storage
+
+Créer un synonyme PUBLIC UTL_FILE → UTL_FILE_WRAPPER pour que le code existant fonctionne sans modification.
+
+## Tâches
+- [ ] Créer la table de mapping UTL_FILE_DIRECTORY_MAPPING
+- [ ] Insérer les mappings directory → URI Object Storage
+- [ ] Déployer le package UTL_FILE_WRAPPER (spec + body)
+- [ ] Créer le synonyme PUBLIC UTL_FILE
+- [ ] Recompiler les schémas impactés
+- [ ] Valider qu'il n'y a pas d'objets invalides
+
+## Environnement cible
+- Base : [NOM_BASE]
+- Schémas impactés : [LISTE]</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Critères d'acceptation</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Critères d'acceptation
+
+### ✅ DONE quand :
+
+1. **Table de mapping**
+   - [ ] La table UTL_FILE_DIRECTORY_MAPPING est créée
+   - [ ] Tous les directories identifiés dans l'audit sont mappés
+   - [ ] Les URI Object Storage sont correctes
+
+2. **Package wrapper**
+   - [ ] Le package UTL_FILE_WRAPPER est déployé et VALID
+   - [ ] Les fonctions FOPEN, FCLOSE, PUT_LINE, GET_LINE sont implémentées
+   - [ ] Le package utilise DBMS_CLOUD en interne
+
+3. **Synonyme PUBLIC**
+   - [ ] Le synonyme PUBLIC UTL_FILE pointe vers UTL_FILE_WRAPPER
+   - [ ] Le synonyme est visible depuis tous les schémas applicatifs
+
+4. **Recompilation**
+   - [ ] Tous les schémas impactés sont recompilés
+   - [ ] Aucun objet n'est en statut INVALID
+
+5. **Tests**
+   - [ ] Un test d'écriture de fichier fonctionne
+   - [ ] Un test de lecture de fichier fonctionne
+   - [ ] Les fichiers apparaissent dans Object Storage</code></pre>
+        </div>
+    </section>
+
+    <!-- RECAPITULATIF -->
+    <section style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border: 2px solid #9c27b0;">
+        <h2>📊 Récapitulatif des tickets</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>N°</th>
+                    <th>Ticket</th>
+                    <th>Type</th>
+                    <th>Assigné à</th>
+                    <th>Dépendance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Audit UTL_FILE</td>
+                    <td>Story/Task</td>
+                    <td>DBA</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Configuration OCI</td>
+                    <td>Task</td>
+                    <td>Admin OCI</td>
+                    <td>Ticket 1</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Déploiement wrapper</td>
+                    <td>Story</td>
+                    <td>DBA</td>
+                    <td>Tickets 1 + 2</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Tests de validation</td>
+                    <td>Task</td>
+                    <td>DBA + QA</td>
+                    <td>Ticket 3</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET JIRA ==================== -->
+
+<!-- ==================== ONGLET GUIDE ==================== -->
+<div id="guide" class="tab-content active">
 
     <!-- Info Multi-Schémas -->
     <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50;">
@@ -1882,6 +2265,25 @@ END;
 </footer>
 
 <script>
+// Fonction pour switcher entre les onglets
+function showTab(tabId, clickedLink) {
+    // Cacher tous les contenus d'onglets
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Désactiver tous les liens de navigation
+    document.querySelectorAll('.tabs-nav a').forEach(link => {
+        link.classList.remove('active');
+    });
+
+    // Afficher l'onglet sélectionné
+    document.getElementById(tabId).classList.add('active');
+
+    // Activer le lien cliqué
+    clickedLink.classList.add('active');
+}
+
 function copyCode(button) {
     const codeContainer = button.closest('.code-container');
     const code = codeContainer.querySelector('pre code').innerText;
