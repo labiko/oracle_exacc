@@ -1119,14 +1119,37 @@ ORDER BY directory_name;</code></pre>
             <pre><code>-- ============================================
 -- IDENTIFIER LES DIRECTORIES À CRÉER DANS LE BUCKET
 -- ============================================
--- Ce script liste tous les directories Oracle utilisés par UTL_FILE
--- Ces noms doivent être créés comme dossiers (prefixes) dans Object Storage
+-- Formatage pour affichage lisible
+SET LINESIZE 200
+SET PAGESIZE 100
+COLUMN directory_name FORMAT A30
+COLUMN directory_path FORMAT A60
+COLUMN directory_utilise FORMAT A30
+COLUMN nb_utilisations FORMAT 9999
 
 -- Afficher le schéma courant
 SELECT USER AS schema_courant FROM DUAL;
 
--- MÉTHODE 1 : Directories référencés dans le code UTL_FILE du schéma courant
--- --------------------------------------------------------------------------
+
+-- ============================================
+-- MÉTHODE 1 : LISTER TOUS LES DIRECTORIES ORACLE (RECOMMANDÉ)
+-- ============================================
+-- Cette requête affiche TOUS les directories Oracle existants
+-- avec leur chemin physique actuel
+
+SELECT
+    directory_name,
+    directory_path
+FROM all_directories
+ORDER BY directory_name;
+
+
+-- ============================================
+-- MÉTHODE 2 : Directories référencés dans le code UTL_FILE (schéma courant)
+-- ============================================
+-- Extrait les noms de directories depuis les appels UTL_FILE.FOPEN
+-- Note: Ne capture que les directories en dur dans le code (pas les variables)
+
 SELECT DISTINCT
     REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) AS directory_utilise
 FROM user_source
@@ -1135,49 +1158,58 @@ WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
 ORDER BY 1;
 
 
--- MÉTHODE 2 : Directories avec leurs chemins actuels (vue DBA)
--- ------------------------------------------------------------
--- Montre aussi le chemin physique actuel (pour info)
+-- ============================================
+-- MÉTHODE 3 : Croiser directories existants avec code UTL_FILE
+-- ============================================
+-- Montre les directories réellement utilisés avec leur chemin
+
 SELECT DISTINCT
     d.directory_name AS "Directory Oracle",
-    d.directory_path AS "Chemin actuel (On-Premise)",
-    d.directory_name AS "Dossier à créer dans bucket"
-FROM dba_directories d
-WHERE d.directory_name IN (
-    SELECT DISTINCT
-        REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1)
-    FROM dba_source
-    WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
+    d.directory_path AS "Chemin actuel (On-Premise)"
+FROM all_directories d
+WHERE EXISTS (
+    SELECT 1 FROM user_source s
+    WHERE UPPER(s.text) LIKE '%' || d.directory_name || '%'
+      AND UPPER(s.text) LIKE '%UTL_FILE%'
 )
 ORDER BY d.directory_name;
 
 
--- MÉTHODE 3 : Rapport complet pour l'email aux admins OCI
--- -------------------------------------------------------
--- Génère une liste formatée à copier dans l'email
-SELECT
-    '   - ' || d.directory_name || '/' AS "Dossiers à créer dans le bucket"
-FROM dba_directories d
-WHERE d.directory_name IN (
-    SELECT DISTINCT
-        REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1)
-    FROM dba_source
-    WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
-)
-ORDER BY d.directory_name;
+-- ============================================
+-- MÉTHODE 4 : Liste formatée pour email aux admins OCI
+-- ============================================
+-- Génère directement la liste à copier-coller
+
+SELECT '   - ' || directory_name || '/' AS "Dossiers à créer dans le bucket"
+FROM all_directories
+WHERE directory_name NOT IN ('DATA_PUMP_DIR', 'ORACLE_OCM_CONFIG_DIR', 'OPATCH_INST_DIR',
+                              'OPATCH_LOG_DIR', 'OPATCH_SCRIPT_DIR', 'XSDDIR', 'XMLDIR')
+ORDER BY directory_name;
 
 
--- MÉTHODE 4 : Compter les fichiers par directory (estimation usage)
--- -----------------------------------------------------------------
+-- ============================================
+-- MÉTHODE 5 : Comptage d'utilisation par directory
+-- ============================================
 -- Permet de prioriser les directories les plus utilisés
+
 SELECT
     REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) AS directory_name,
     COUNT(*) AS nb_utilisations
-FROM dba_source
+FROM user_source
 WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
   AND REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) IS NOT NULL
 GROUP BY REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1)
 ORDER BY nb_utilisations DESC;</code></pre>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Important</strong><br>
+                La méthode REGEXP ne capture que les directories écrits en dur dans le code (ex: <code>'DATA_EXPORT'</code>).<br>
+                Si un directory est passé via une variable PL/SQL, il ne sera pas détecté automatiquement.<br>
+                <strong>Recommandation :</strong> Utilise la <strong>Méthode 1</strong> pour lister TOUS les directories, puis valide avec l'équipe applicative.
+            </div>
         </div>
 
         <h3>📧 Exemple de liste à envoyer aux admins OCI</h3>
