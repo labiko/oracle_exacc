@@ -458,6 +458,12 @@ ORDER BY name, type, line;</code></pre>
 -- ============================================
 -- Exécute connecté en SYSDBA (sqlplus / as sysdba)
 
+-- Formatage pour affichage lisible dans SQL*Plus
+SET LINESIZE 200
+SET PAGESIZE 100
+COLUMN schema_name FORMAT A30
+COLUMN nb_references FORMAT 999999
+
 -- 1. Liste simple des schémas
 SELECT DISTINCT owner AS schema_name
 FROM dba_source
@@ -480,7 +486,12 @@ ORDER BY nb_references DESC;</code></pre>
                 <span>SQL - Lister tous les schémas de la base (SYSDBA)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>-- Lister tous les schémas (utilisateurs) de la base
+            <pre><code>-- Formatage pour affichage lisible dans SQL*Plus
+SET LINESIZE 200
+SET PAGESIZE 100
+COLUMN username FORMAT A30
+
+-- Lister tous les schémas (utilisateurs) de la base
 SELECT username FROM dba_users ORDER BY username;
 
 -- Lister uniquement les schémas applicatifs (sans schémas système)
