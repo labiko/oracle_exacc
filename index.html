@@ -1823,37 +1823,103 @@ GROUP BY name, type
 ORDER BY nb_references DESC;</code></pre>
         </div>
 
-        <h3>1.3 Types d'opérations utilisées</h3>
+        <h3>1.3 Fonctions UTL_FILE utilisées et compatibilité wrapper</h3>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Répartition par type d'opération (schéma courant)</span>
+                <span>SQL - Liste des fonctions UTL_FILE utilisées et leur support</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>-- Quelles fonctions UTL_FILE sont utilisées dans le schéma courant ?
+            <pre><code>-- ============================================
+-- FONCTIONS UTL_FILE UTILISÉES ET COMPATIBILITÉ WRAPPER
+-- ============================================
+-- Cette requête liste toutes les fonctions UTL_FILE utilisées
+-- et indique si elles sont supportées par UTL_FILE_WRAPPER
+
+SET LINESIZE 200
+SET PAGESIZE 100
+COLUMN fonction FORMAT A20
+COLUMN nb_utilisations FORMAT 9999
+COLUMN supporte_wrapper FORMAT A20
+
 SELECT
+    fonction,
+    nb_utilisations,
     CASE
-        WHEN UPPER(text) LIKE '%FOPEN%' THEN 'FOPEN (ouverture)'
-        WHEN UPPER(text) LIKE '%PUT_LINE%' THEN 'PUT_LINE (écriture ligne)'
-        WHEN UPPER(text) LIKE '%GET_LINE%' THEN 'GET_LINE (lecture ligne)'
-        WHEN UPPER(text) LIKE '%FCLOSE%' THEN 'FCLOSE (fermeture)'
-        WHEN UPPER(text) LIKE '%FFLUSH%' THEN 'FFLUSH (flush)'
-        WHEN UPPER(text) LIKE '%FILE_TYPE%' THEN 'FILE_TYPE (déclaration)'
-        ELSE 'AUTRE'
-    END AS operation,
-    COUNT(*) AS nb_occurrences
-FROM user_source
-WHERE UPPER(text) LIKE '%UTL_FILE%'
-GROUP BY
-    CASE
-        WHEN UPPER(text) LIKE '%FOPEN%' THEN 'FOPEN (ouverture)'
-        WHEN UPPER(text) LIKE '%PUT_LINE%' THEN 'PUT_LINE (écriture ligne)'
-        WHEN UPPER(text) LIKE '%GET_LINE%' THEN 'GET_LINE (lecture ligne)'
-        WHEN UPPER(text) LIKE '%FCLOSE%' THEN 'FCLOSE (fermeture)'
-        WHEN UPPER(text) LIKE '%FFLUSH%' THEN 'FFLUSH (flush)'
-        WHEN UPPER(text) LIKE '%FILE_TYPE%' THEN 'FILE_TYPE (déclaration)'
-        ELSE 'AUTRE'
-    END
-ORDER BY nb_occurrences DESC;</code></pre>
+        WHEN fonction IN ('FOPEN', 'FCLOSE', 'FCLOSE_ALL', 'PUT_LINE', 'PUT',
+                          'GET_LINE', 'NEW_LINE', 'FFLUSH', 'IS_OPEN',
+                          'PUT_RAW', 'GET_RAW', 'FGETATTR',
+                          'FCOPY', 'FRENAME', 'FREMOVE', 'FILE_TYPE')
+        THEN '✅ OUI'
+        ELSE '❌ NON'
+    END AS supporte_wrapper
+FROM (
+    SELECT
+        CASE
+            WHEN UPPER(text) LIKE '%UTL_FILE.FOPEN%' THEN 'FOPEN'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE_ALL%' THEN 'FCLOSE_ALL'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE%' THEN 'FCLOSE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUT_LINE%' THEN 'PUT_LINE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUT_RAW%' THEN 'PUT_RAW'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUT%' AND UPPER(text) NOT LIKE '%PUT_LINE%' AND UPPER(text) NOT LIKE '%PUT_RAW%' THEN 'PUT'
+            WHEN UPPER(text) LIKE '%UTL_FILE.GET_LINE%' THEN 'GET_LINE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.GET_RAW%' THEN 'GET_RAW'
+            WHEN UPPER(text) LIKE '%UTL_FILE.NEW_LINE%' THEN 'NEW_LINE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FFLUSH%' THEN 'FFLUSH'
+            WHEN UPPER(text) LIKE '%UTL_FILE.IS_OPEN%' THEN 'IS_OPEN'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FGETATTR%' THEN 'FGETATTR'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FCOPY%' THEN 'FCOPY'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FRENAME%' THEN 'FRENAME'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FREMOVE%' THEN 'FREMOVE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FILE_TYPE%' OR UPPER(text) LIKE '%FILE_TYPE%' THEN 'FILE_TYPE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FSEEK%' THEN 'FSEEK'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FGETPOS%' THEN 'FGETPOS'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUTF%' THEN 'PUTF'
+            ELSE 'AUTRE'
+        END AS fonction,
+        COUNT(*) AS nb_utilisations
+    FROM user_source
+    WHERE UPPER(text) LIKE '%UTL_FILE%'
+    GROUP BY
+        CASE
+            WHEN UPPER(text) LIKE '%UTL_FILE.FOPEN%' THEN 'FOPEN'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE_ALL%' THEN 'FCLOSE_ALL'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FCLOSE%' THEN 'FCLOSE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUT_LINE%' THEN 'PUT_LINE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUT_RAW%' THEN 'PUT_RAW'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUT%' AND UPPER(text) NOT LIKE '%PUT_LINE%' AND UPPER(text) NOT LIKE '%PUT_RAW%' THEN 'PUT'
+            WHEN UPPER(text) LIKE '%UTL_FILE.GET_LINE%' THEN 'GET_LINE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.GET_RAW%' THEN 'GET_RAW'
+            WHEN UPPER(text) LIKE '%UTL_FILE.NEW_LINE%' THEN 'NEW_LINE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FFLUSH%' THEN 'FFLUSH'
+            WHEN UPPER(text) LIKE '%UTL_FILE.IS_OPEN%' THEN 'IS_OPEN'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FGETATTR%' THEN 'FGETATTR'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FCOPY%' THEN 'FCOPY'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FRENAME%' THEN 'FRENAME'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FREMOVE%' THEN 'FREMOVE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FILE_TYPE%' OR UPPER(text) LIKE '%FILE_TYPE%' THEN 'FILE_TYPE'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FSEEK%' THEN 'FSEEK'
+            WHEN UPPER(text) LIKE '%UTL_FILE.FGETPOS%' THEN 'FGETPOS'
+            WHEN UPPER(text) LIKE '%UTL_FILE.PUTF%' THEN 'PUTF'
+            ELSE 'AUTRE'
+        END
+)
+ORDER BY nb_utilisations DESC;</code></pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Fonctions supportées par UTL_FILE_WRAPPER :</strong><br>
+                FOPEN, FCLOSE, FCLOSE_ALL, PUT_LINE, PUT, GET_LINE, NEW_LINE, FFLUSH, IS_OPEN, PUT_RAW, GET_RAW, FGETATTR, FCOPY, FRENAME, FREMOVE, FILE_TYPE
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Fonctions NON supportées (rarement utilisées) :</strong><br>
+                FSEEK, FGETPOS, PUTF - Si tu utilises ces fonctions, il faudra adapter le wrapper ou modifier le code.
+            </div>
         </div>
 
         <h3>1.4 Export de l'audit complet</h3>
