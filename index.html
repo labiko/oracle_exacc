@@ -2255,37 +2255,165 @@ END;
 /</code></pre>
         </div>
 
-        <h3>🔄 Rollback si problème</h3>
+        <h3>🔄 Rollback complet si problème</h3>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Script de rollback complet</strong><br>
+                Ce script annule entièrement la migration et revient à UTL_FILE natif Oracle.
+                À exécuter en tant que DBA (SYSDBA).
+            </div>
+        </div>
+
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Annuler la migration (schéma courant)</span>
+                <span>SQL - ROLLBACK COMPLET (exécuter en SYSDBA)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>-- ============================================
--- ROLLBACK - SCHÉMA COURANT
+-- ROLLBACK COMPLET - MIGRATION UTL_FILE
 -- ============================================
--- En cas de problème, revenir à UTL_FILE original
+-- Exécuter en tant que SYSDBA
+-- Ce script annule toute la migration et revient à UTL_FILE natif
 
--- Afficher le schéma courant
-SELECT USER AS schema_courant FROM DUAL;
+SET SERVEROUTPUT ON
+SET LINESIZE 200
 
--- Supprimer le synonyme (schéma courant)
-DROP SYNONYM UTL_FILE;
-
--- Si un synonyme PUBLIC avait été créé (nécessite privilèges DBA):
--- DROP PUBLIC SYNONYM UTL_FILE;
-
--- Recompiler le schéma courant pour revenir au package Oracle natif
+DECLARE
+    v_count NUMBER;
+    v_schema VARCHAR2(128) := 'SCHEMA_WRAPPER';  -- ⚠️ ADAPTER: Schéma où le wrapper a été installé
 BEGIN
-    DBMS_UTILITY.COMPILE_SCHEMA(schema => USER, compile_all => FALSE);
+    DBMS_OUTPUT.PUT_LINE('========================================');
+    DBMS_OUTPUT.PUT_LINE('ROLLBACK MIGRATION UTL_FILE - DÉBUT');
+    DBMS_OUTPUT.PUT_LINE('========================================');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- ============================================
+    -- ÉTAPE 1 : Supprimer le synonyme PUBLIC
+    -- ============================================
+    DBMS_OUTPUT.PUT_LINE('ÉTAPE 1 : Suppression du synonyme PUBLIC UTL_FILE...');
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM UTL_FILE';
+        DBMS_OUTPUT.PUT_LINE('   ✅ Synonyme PUBLIC UTL_FILE supprimé');
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -1432 THEN
+                DBMS_OUTPUT.PUT_LINE('   ℹ️ Synonyme PUBLIC UTL_FILE n''existait pas');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('   ❌ Erreur: ' || SQLERRM);
+            END IF;
+    END;
+
+    -- ============================================
+    -- ÉTAPE 2 : Supprimer le package UTL_FILE_WRAPPER
+    -- ============================================
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('ÉTAPE 2 : Suppression du package UTL_FILE_WRAPPER...');
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP PACKAGE ' || v_schema || '.UTL_FILE_WRAPPER';
+        DBMS_OUTPUT.PUT_LINE('   ✅ Package UTL_FILE_WRAPPER supprimé');
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -4043 THEN
+                DBMS_OUTPUT.PUT_LINE('   ℹ️ Package UTL_FILE_WRAPPER n''existait pas');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('   ❌ Erreur: ' || SQLERRM);
+            END IF;
+    END;
+
+    -- ============================================
+    -- ÉTAPE 3 : Supprimer la table de mapping
+    -- ============================================
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('ÉTAPE 3 : Suppression de la table de mapping...');
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE ' || v_schema || '.UTL_FILE_DIRECTORY_MAPPING CASCADE CONSTRAINTS';
+        DBMS_OUTPUT.PUT_LINE('   ✅ Table UTL_FILE_DIRECTORY_MAPPING supprimée');
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -942 THEN
+                DBMS_OUTPUT.PUT_LINE('   ℹ️ Table UTL_FILE_DIRECTORY_MAPPING n''existait pas');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('   ❌ Erreur: ' || SQLERRM);
+            END IF;
+    END;
+
+    -- ============================================
+    -- ÉTAPE 4 : Recompiler tous les schémas impactés
+    -- ============================================
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('ÉTAPE 4 : Recompilation des schémas impactés...');
+    FOR rec IN (
+        SELECT DISTINCT owner
+        FROM dba_source
+        WHERE UPPER(text) LIKE '%UTL_FILE%'
+          AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+        ORDER BY owner
+    ) LOOP
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('   Recompilation de ' || rec.owner || '...');
+            DBMS_UTILITY.COMPILE_SCHEMA(schema => rec.owner, compile_all => FALSE);
+            DBMS_OUTPUT.PUT_LINE('   ✅ ' || rec.owner || ' recompilé');
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('   ❌ Erreur recompilation ' || rec.owner || ': ' || SQLERRM);
+        END;
+    END LOOP;
+
+    -- ============================================
+    -- ÉTAPE 5 : Vérification finale
+    -- ============================================
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('ÉTAPE 5 : Vérifications...');
+
+    -- Vérifier qu'il n'y a plus de synonyme PUBLIC UTL_FILE
+    SELECT COUNT(*) INTO v_count
+    FROM dba_synonyms
+    WHERE synonym_name = 'UTL_FILE' AND owner = 'PUBLIC';
+
+    IF v_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('   ✅ Aucun synonyme PUBLIC UTL_FILE');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('   ❌ Synonyme PUBLIC UTL_FILE existe encore !');
+    END IF;
+
+    -- Vérifier les objets invalides
+    SELECT COUNT(*) INTO v_count
+    FROM dba_objects
+    WHERE status = 'INVALID'
+      AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM');
+
+    IF v_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('   ✅ Aucun objet invalide');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('   ⚠️ ' || v_count || ' objets invalides (vérifier avec requête ci-dessous)');
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('========================================');
+    DBMS_OUTPUT.PUT_LINE('ROLLBACK TERMINÉ');
+    DBMS_OUTPUT.PUT_LINE('Le code utilise maintenant UTL_FILE natif Oracle (SYS.UTL_FILE)');
+    DBMS_OUTPUT.PUT_LINE('========================================');
 END;
 /
 
--- Vérifier - doit afficher le vrai UTL_FILE (SYS.UTL_FILE)
-SELECT synonym_name, table_owner, table_name
-FROM user_synonyms
-WHERE synonym_name = 'UTL_FILE';
--- Si aucun résultat = OK, le code utilise le vrai UTL_FILE de SYS</code></pre>
+-- Vérifier les objets invalides après rollback
+SELECT owner, object_name, object_type, status
+FROM dba_objects
+WHERE status = 'INVALID'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+ORDER BY owner, object_type, object_name;</code></pre>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Après le rollback :</strong><br>
+                - Le code PL/SQL utilise à nouveau UTL_FILE natif (SYS.UTL_FILE)<br>
+                - Les fichiers seront écrits sur le filesystem local (comme avant)<br>
+                - Les fichiers déjà dans Object Storage restent accessibles (à supprimer manuellement si besoin)
+            </div>
         </div>
 
     </section>
