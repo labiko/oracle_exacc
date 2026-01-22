@@ -1037,9 +1037,18 @@ Cordialement,
                 <span>SQL - Lister les directories utilisés par UTL_FILE</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>-- Lister tous les directories Oracle
+            <pre><code>-- Lister les directories applicatifs (hors directories système Oracle)
 SELECT directory_name, directory_path
 FROM all_directories
+WHERE directory_name NOT LIKE 'ORACLE%'
+  AND directory_name NOT LIKE 'OPATCH%'
+  AND directory_name NOT LIKE 'DATA_PUMP%'
+  AND directory_name NOT LIKE 'DBMS_%'
+  AND directory_name NOT LIKE 'XDB%'
+  AND directory_name NOT LIKE 'XML%'
+  AND directory_name NOT LIKE 'XSD%'
+  AND directory_name NOT LIKE 'JAVA$%'
+  AND directory_name NOT LIKE 'ADMIN%'
 ORDER BY directory_name;</code></pre>
         </div>
     </section>
@@ -1116,11 +1125,20 @@ SET PAGESIZE 100
 COLUMN directory_name FORMAT A30
 COLUMN directory_path FORMAT A60
 
--- Liste TOUS les directories Oracle
+-- Liste les directories applicatifs (hors directories système Oracle)
 SELECT
     directory_name,
     directory_path
 FROM all_directories
+WHERE directory_name NOT LIKE 'ORACLE%'
+  AND directory_name NOT LIKE 'OPATCH%'
+  AND directory_name NOT LIKE 'DATA_PUMP%'
+  AND directory_name NOT LIKE 'DBMS_%'
+  AND directory_name NOT LIKE 'XDB%'
+  AND directory_name NOT LIKE 'XML%'
+  AND directory_name NOT LIKE 'XSD%'
+  AND directory_name NOT LIKE 'JAVA$%'
+  AND directory_name NOT LIKE 'ADMIN%'
 ORDER BY directory_name;</code></pre>
         </div>
 
