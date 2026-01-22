@@ -1109,106 +1109,48 @@ ORDER BY directory_name;</code></pre>
             </p>
         </div>
 
-        <h3>🔍 Script : Lister tous les directories utilisés par ton code</h3>
+        <h3>🔍 Script : Lister les directories à migrer</h3>
 
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Identifier les directories à créer dans Object Storage</span>
+                <span>SQL - Lister tous les directories applicatifs</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>-- ============================================
--- IDENTIFIER LES DIRECTORIES À CRÉER DANS LE BUCKET
+-- LISTER TOUS LES DIRECTORIES ORACLE APPLICATIFS
 -- ============================================
 -- Formatage pour affichage lisible
 SET LINESIZE 200
 SET PAGESIZE 100
 COLUMN directory_name FORMAT A30
 COLUMN directory_path FORMAT A60
-COLUMN directory_utilise FORMAT A30
-COLUMN nb_utilisations FORMAT 9999
 
--- Afficher le schéma courant
-SELECT USER AS schema_courant FROM DUAL;
-
-
--- ============================================
--- MÉTHODE 1 : LISTER TOUS LES DIRECTORIES ORACLE (RECOMMANDÉ)
--- ============================================
--- Cette requête affiche TOUS les directories Oracle existants
--- avec leur chemin physique actuel
-
+-- Liste tous les directories (hors directories système Oracle)
 SELECT
     directory_name,
     directory_path
 FROM all_directories
-ORDER BY directory_name;
-
-
--- ============================================
--- MÉTHODE 2 : Directories référencés dans le code UTL_FILE (schéma courant)
--- ============================================
--- Extrait les noms de directories depuis les appels UTL_FILE.FOPEN
--- Note: Ne capture que les directories en dur dans le code (pas les variables)
-
-SELECT DISTINCT
-    REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) AS directory_utilise
-FROM user_source
-WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
-  AND REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) IS NOT NULL
-ORDER BY 1;
-
-
--- ============================================
--- MÉTHODE 3 : Croiser directories existants avec code UTL_FILE
--- ============================================
--- Montre les directories réellement utilisés avec leur chemin
-
-SELECT DISTINCT
-    d.directory_name AS "Directory Oracle",
-    d.directory_path AS "Chemin actuel (On-Premise)"
-FROM all_directories d
-WHERE EXISTS (
-    SELECT 1 FROM user_source s
-    WHERE UPPER(s.text) LIKE '%' || d.directory_name || '%'
-      AND UPPER(s.text) LIKE '%UTL_FILE%'
+WHERE directory_name NOT IN (
+    -- Directories système Oracle à exclure
+    'DATA_PUMP_DIR',
+    'ORACLE_OCM_CONFIG_DIR',
+    'OPATCH_INST_DIR',
+    'OPATCH_LOG_DIR',
+    'OPATCH_SCRIPT_DIR',
+    'XSDDIR',
+    'XMLDIR',
+    'ORACLE_BASE',
+    'ADMIN_DIR'
 )
-ORDER BY d.directory_name;
-
-
--- ============================================
--- MÉTHODE 4 : Liste formatée pour email aux admins OCI
--- ============================================
--- Génère directement la liste à copier-coller
-
-SELECT '   - ' || directory_name || '/' AS "Dossiers à créer dans le bucket"
-FROM all_directories
-WHERE directory_name NOT IN ('DATA_PUMP_DIR', 'ORACLE_OCM_CONFIG_DIR', 'OPATCH_INST_DIR',
-                              'OPATCH_LOG_DIR', 'OPATCH_SCRIPT_DIR', 'XSDDIR', 'XMLDIR')
-ORDER BY directory_name;
-
-
--- ============================================
--- MÉTHODE 5 : Comptage d'utilisation par directory
--- ============================================
--- Permet de prioriser les directories les plus utilisés
-
-SELECT
-    REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) AS directory_name,
-    COUNT(*) AS nb_utilisations
-FROM user_source
-WHERE UPPER(text) LIKE '%UTL_FILE.FOPEN%'
-  AND REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1) IS NOT NULL
-GROUP BY REGEXP_SUBSTR(text, '''([A-Z_0-9]+)''', 1, 1, 'i', 1)
-ORDER BY nb_utilisations DESC;</code></pre>
+ORDER BY directory_name;</code></pre>
         </div>
 
-        <div class="alert alert-warning">
-            <span class="alert-icon">⚠️</span>
+        <div class="alert alert-info">
+            <span class="alert-icon">📋</span>
             <div>
-                <strong>Important</strong><br>
-                La méthode REGEXP ne capture que les directories écrits en dur dans le code (ex: <code>'DATA_EXPORT'</code>).<br>
-                Si un directory est passé via une variable PL/SQL, il ne sera pas détecté automatiquement.<br>
-                <strong>Recommandation :</strong> Utilise la <strong>Méthode 1</strong> pour lister TOUS les directories, puis valide avec l'équipe applicative.
+                <strong>Étape suivante</strong><br>
+                Avec cette liste, valide avec l'équipe applicative quels directories sont réellement utilisés par les traitements UTL_FILE.<br>
+                Ces directories deviendront les dossiers (prefixes) à créer dans le bucket Object Storage.
             </div>
         </div>
 
