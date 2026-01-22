@@ -1133,6 +1133,53 @@ ORDER BY directory_name;</code></pre>
             </div>
         </div>
 
+        <h3>📧 Modèle d'email à envoyer à un éditeur de logiciel</h3>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Quand utiliser ce mail ?</strong><br>
+                Si tu utilises une application tierce (éditeur) qui partage ta base de données, envoie ce mail pour vérifier la compatibilité.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Email - Vérification compatibilité éditeur</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>Objet : Migration Oracle ExaCC - Vérification compatibilité de votre application
+
+Bonjour,
+
+Dans le cadre de la modernisation de notre infrastructure, nous allons migrer notre base de données Oracle vers Oracle Exadata Cloud@Customer (ExaCC).
+
+CHANGEMENT TECHNIQUE MAJEUR :
+
+Sur ExaCC, l'accès direct au système de fichiers du serveur de base de données est supprimé. Concrètement, le package Oracle UTL_FILE (utilisé pour lire/écrire des fichiers côté serveur BDD) n'est plus disponible.
+
+IMPACT POTENTIEL :
+
+Les applications qui génèrent ou lisent des fichiers directement côté base de données via PL/SQL (exports CSV, fichiers de logs, fichiers d'interface, etc.) sont concernées.
+
+En revanche, si votre application gère les fichiers côté serveur applicatif (Java, .NET, PHP...) après avoir récupéré les données en SQL, il n'y a aucun impact.
+
+NOTRE DEMANDE :
+
+Pourriez-vous nous confirmer si votre application utilise le package UTL_FILE ou tout autre mécanisme d'écriture/lecture de fichiers côté base de données ?
+
+Si c'est le cas, merci de nous indiquer :
+- Les fonctionnalités concernées (exports, interfaces, logs...)
+- Les noms des directories Oracle utilisés (ex: EXPORT_DIR, DATA_DIR...)
+- Ou les chemins physiques si codés en dur dans votre code (ex: /u01/app/...)
+- Si vous disposez d'une version compatible Cloud/ExaCC
+
+Nous restons disponibles pour en discuter.
+
+Cordialement,
+[Votre nom]</code></pre>
+        </div>
+
         <h3>📧 Exemple de liste à envoyer aux admins OCI</h3>
 
         <div style="background: #f8f9fa; border: 2px dashed #6c757d; border-radius: 10px; padding: 20px; margin: 20px 0; font-family: 'Courier New', monospace;">
