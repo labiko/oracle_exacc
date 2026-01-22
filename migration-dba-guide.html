@@ -439,29 +439,66 @@ WHERE UPPER(text) LIKE '%UTL_FILE%'
 ORDER BY name, type, line;</code></pre>
         </div>
 
-        <h3>📊 Optionnel : Vue globale (connexion DBA uniquement)</h3>
-        <details style="background: white; border-radius: 10px; padding: 15px; margin: 15px 0; border: 1px solid #ddd;">
-            <summary style="cursor: pointer; font-weight: bold; color: #1565c0;">Cliquer pour voir le script DBA (tous schémas)</summary>
-            <div style="margin-top: 15px;">
-                <p>Si tu as une connexion DBA, tu peux voir tous les schémas d'un coup avec <code>dba_source</code> :</p>
-                <div class="code-container">
-                    <div class="code-header">
-                        <span>SQL - Vue globale (DBA uniquement)</span>
-                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
-                    </div>
-                    <pre><code>-- Résumé : quels schémas applicatifs utilisent UTL_FILE ?
--- (exclut les schémas système Oracle)
-SELECT
-    owner AS schema_name,
-    COUNT(*) AS nb_references_utl_file
+        <h3>📊 Connexion SYSDBA : Identifier les schémas à migrer</h3>
+        <div class="alert alert-info">
+            <span class="alert-icon">🔑</span>
+            <div>
+                <strong>Connecté en SYSDBA ?</strong><br>
+                Utilise ces commandes pour identifier rapidement tous les schémas qui utilisent UTL_FILE.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Lister tous les schémas utilisant UTL_FILE (SYSDBA)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- LISTER LES SCHÉMAS UTILISANT UTL_FILE
+-- ============================================
+-- Exécute connecté en SYSDBA (sqlplus / as sysdba)
+
+-- 1. Liste simple des schémas
+SELECT DISTINCT owner AS schema_name
 FROM dba_source
 WHERE UPPER(text) LIKE '%UTL_FILE%'
-  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS', 'CTXSYS', 'MDSYS', 'OLAPSYS', 'ORDDATA', 'ORDSYS')
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+ORDER BY owner;
+
+
+-- 2. Avec le nombre de références par schéma
+SELECT owner AS schema_name, COUNT(*) AS nb_references
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
 GROUP BY owner
-ORDER BY nb_references_utl_file DESC;</code></pre>
-                </div>
+ORDER BY nb_references DESC;</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Lister tous les schémas de la base (SYSDBA)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-        </details>
+            <pre><code>-- Lister tous les schémas (utilisateurs) de la base
+SELECT username FROM dba_users ORDER BY username;
+
+-- Lister uniquement les schémas applicatifs (sans schémas système)
+SELECT username
+FROM dba_users
+WHERE username NOT IN (
+    'SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS', 'CTXSYS', 'MDSYS',
+    'OLAPSYS', 'ORDDATA', 'ORDSYS', 'OUTLN', 'DBSNMP', 'APPQOSSYS',
+    'DBSFWUSER', 'GGSYS', 'ANONYMOUS', 'AUDSYS', 'DIP', 'DVF', 'DVSYS',
+    'GSMADMIN_INTERNAL', 'GSMCATUSER', 'GSMUSER', 'LBACSYS', 'OJVMSYS',
+    'REMOTE_SCHEDULER_AGENT', 'SYS$UMF', 'SYSBACKUP', 'SYSDG', 'SYSKM', 'SYSRAC'
+)
+  AND username NOT LIKE 'APEX%'
+  AND username NOT LIKE 'FLOWS_%'
+  AND username NOT LIKE 'OWA%'
+  AND account_status = 'OPEN'
+ORDER BY username;</code></pre>
+        </div>
     </section>
 
     <!-- Répartition des rôles -->
