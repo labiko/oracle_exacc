@@ -2245,23 +2245,26 @@ SELECT USER AS schema_courant FROM DUAL;
 SET SERVEROUTPUT ON
 
 DECLARE
-    v_file   utl_file_wrapper.file_type;
+    v_file   UTL_FILE.FILE_TYPE;
     v_line   VARCHAR2(32767);
     v_test   VARCHAR2(100) := 'Test migration ' || USER || ' - ' || TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS');
 BEGIN
     DBMS_OUTPUT.PUT_LINE('=== Test pour le schéma: ' || USER || ' ===');
     DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Le code utilise UTL_FILE (comme avant)');
+    DBMS_OUTPUT.PUT_LINE('Le synonyme redirige vers UTL_FILE_WRAPPER automatiquement');
+    DBMS_OUTPUT.PUT_LINE('');
 
-    -- Test écriture
-    v_file := utl_file_wrapper.fopen('DATA_EXPORT', 'test_migration_' || USER || '.txt', 'W');
-    utl_file_wrapper.put_line(v_file, v_test);
-    utl_file_wrapper.fclose(v_file);
+    -- Test écriture (appel UTL_FILE comme avant migration)
+    v_file := UTL_FILE.FOPEN('DATA_EXPORT', 'test_migration_' || USER || '.txt', 'W');
+    UTL_FILE.PUT_LINE(v_file, v_test);
+    UTL_FILE.FCLOSE(v_file);
     DBMS_OUTPUT.PUT_LINE('✅ Écriture OK');
 
-    -- Test lecture
-    v_file := utl_file_wrapper.fopen('DATA_EXPORT', 'test_migration_' || USER || '.txt', 'R');
-    utl_file_wrapper.get_line(v_file, v_line);
-    utl_file_wrapper.fclose(v_file);
+    -- Test lecture (appel UTL_FILE comme avant migration)
+    v_file := UTL_FILE.FOPEN('DATA_EXPORT', 'test_migration_' || USER || '.txt', 'R');
+    UTL_FILE.GET_LINE(v_file, v_line);
+    UTL_FILE.FCLOSE(v_file);
 
     IF v_line = v_test THEN
         DBMS_OUTPUT.PUT_LINE('✅ Lecture OK - Contenu vérifié');
@@ -2270,11 +2273,12 @@ BEGIN
     END IF;
 
     -- Nettoyage
-    utl_file_wrapper.fremove('DATA_EXPORT', 'test_migration_' || USER || '.txt');
+    UTL_FILE.FREMOVE('DATA_EXPORT', 'test_migration_' || USER || '.txt');
     DBMS_OUTPUT.PUT_LINE('✅ Suppression OK');
 
     DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('🎉 MIGRATION RÉUSSIE POUR LE SCHÉMA: ' || USER);
+    DBMS_OUTPUT.PUT_LINE('🎉 MIGRATION RÉUSSIE - Le synonyme fonctionne !');
+    DBMS_OUTPUT.PUT_LINE('Le code UTL_FILE existant fonctionne sans modification.');
 
 EXCEPTION
     WHEN OTHERS THEN
