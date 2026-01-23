@@ -412,18 +412,19 @@
 
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🎫 Tickets JIRA - Migration UTL_FILE vers ExaCC</h2>
-        <p style="margin: 15px 0;">Voici des modèles de tickets JIRA pour structurer ton projet de migration.</p>
+        <p style="margin: 15px 0;">3 tickets pour structurer ton projet de migration : Audit → Implémentation → Tests</p>
     </section>
 
     <!-- TICKET 1 : AUDIT -->
     <section>
-        <h2>📝 Ticket 1 : Audit et Analyse UTL_FILE</h2>
+        <h2>📝 Ticket 1 : Audit UTL_FILE</h2>
 
         <div class="alert alert-info">
-            <span class="alert-icon">📋</span>
+            <span class="alert-icon">🔍</span>
             <div>
-                <strong>Type :</strong> Story ou Task<br>
-                <strong>Epic :</strong> Migration ExaCC - Adaptation code PL/SQL
+                <strong>Type :</strong> Story<br>
+                <strong>Epic :</strong> Migration ExaCC - Adaptation code PL/SQL<br>
+                <strong>Assigné à :</strong> DBA
             </div>
         </div>
 
@@ -432,7 +433,7 @@
                 <span>JIRA - Titre du ticket</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>[EXACC] Audit des utilisations UTL_FILE dans la base de données</code></pre>
+            <pre><code>[EXACC] Audit des utilisations UTL_FILE</code></pre>
         </div>
 
         <div class="code-container">
@@ -443,27 +444,25 @@
             <pre><code>## Contexte
 Dans le cadre de la migration vers ExaCC (Exadata Cloud@Customer), le package UTL_FILE n'est plus disponible car l'accès au filesystem du serveur est supprimé.
 
-Nous devons identifier toutes les utilisations de UTL_FILE dans nos schémas applicatifs pour planifier leur migration vers DBMS_CLOUD + Object Storage.
+Nous devons identifier toutes les utilisations de UTL_FILE pour planifier la migration vers DBMS_CLOUD + Object Storage.
 
 ## Objectif
-Réaliser un audit complet des utilisations de UTL_FILE dans la base de données pour :
-- Identifier les schémas impactés
-- Lister les objets PL/SQL concernés (packages, procédures, fonctions)
-- Quantifier l'effort de migration
-- Identifier les directories Oracle utilisés
+Réaliser un audit complet pour identifier et documenter tous les impacts avant migration.
 
 ## Périmètre
 - Base de données : [NOM_BASE]
 - Environnement : [PROD/PREPROD/DEV]
-- Schémas applicatifs uniquement (exclusion des schémas système Oracle)
 
 ## Tâches
-- [ ] Lister tous les schémas utilisant UTL_FILE
-- [ ] Pour chaque schéma, identifier les objets impactés
-- [ ] Compter le nombre de références UTL_FILE par schéma
-- [ ] Lister les directories Oracle référencés dans le code
-- [ ] Documenter les opérations utilisées (FOPEN, PUT_LINE, GET_LINE, etc.)
-- [ ] Produire un rapport d'audit
+- [ ] Lister les schémas utilisant UTL_FILE
+- [ ] Compter les références par schéma
+- [ ] Lister les objets impactés (packages, procédures, fonctions)
+- [ ] Identifier les fonctions UTL_FILE utilisées (FOPEN, PUT_LINE, GET_LINE, etc.)
+- [ ] Vérifier compatibilité avec le wrapper UTL_FILE_WRAPPER
+- [ ] Lister les directories Oracle
+- [ ] Contacter l'éditeur si application tierce concernée
+- [ ] Identifier les jobs Control-M concernés
+- [ ] Identifier les fichiers volumineux (> 100 Mo)
 
 ## Livrables
 - Rapport d'audit Excel/CSV avec :
@@ -471,7 +470,8 @@ Réaliser un audit complet des utilisations de UTL_FILE dans la base de données
   - Liste des objets par schéma
   - Nombre de références par objet
   - Liste des directories à migrer
-- Recommandations pour la migration</code></pre>
+  - Liste des fonctions UTL_FILE utilisées
+  - Liste des jobs Control-M impactés</code></pre>
         </div>
 
         <div class="code-container">
@@ -483,33 +483,43 @@ Réaliser un audit complet des utilisations de UTL_FILE dans la base de données
 
 ### ✅ DONE quand :
 
-1. **Inventaire complet**
+1. **Inventaire schémas**
    - [ ] Tous les schémas applicatifs ont été analysés
    - [ ] La liste des schémas utilisant UTL_FILE est documentée
    - [ ] Le nombre total de références UTL_FILE est connu
 
-2. **Détail par schéma**
-   - [ ] Pour chaque schéma impacté, la liste des objets (packages, procédures, fonctions) est fournie
+2. **Inventaire objets**
+   - [ ] Pour chaque schéma, la liste des objets impactés est fournie
    - [ ] Le nombre de références par objet est documenté
-   - [ ] Les lignes de code concernées sont identifiées
 
-3. **Directories Oracle**
-   - [ ] La liste des directories Oracle utilisés par UTL_FILE est fournie
+3. **Fonctions UTL_FILE**
+   - [ ] La liste des fonctions UTL_FILE utilisées est fournie
+   - [ ] La compatibilité avec le wrapper est vérifiée (toutes ✅ OUI)
+
+4. **Directories Oracle**
+   - [ ] La liste des directories Oracle est fournie
    - [ ] La correspondance directory → chemin physique est documentée
 
-4. **Rapport d'audit**
-   - [ ] Un fichier Excel/CSV récapitulatif est produit
-   - [ ] Le rapport contient : schéma, objet, type, nb_références, directories
-   - [ ] Le rapport est stocké dans [EMPLACEMENT]
+5. **Éditeur (si applicable)**
+   - [ ] L'éditeur a été contacté
+   - [ ] La réponse de l'éditeur est documentée
 
-5. **Estimation effort**
-   - [ ] Une estimation du nombre d'objets à modifier est fournie
-   - [ ] Les schémas sont priorisés par criticité/complexité
+6. **Jobs Control-M**
+   - [ ] Les jobs utilisant UTL_FILE sont identifiés
+   - [ ] La liste est transmise à l'équipe ordonnancement
+
+7. **Fichiers volumineux**
+   - [ ] Les fichiers > 100 Mo sont identifiés
+   - [ ] Une stratégie est définie pour ces fichiers
+
+8. **Rapport d'audit**
+   - [ ] Un fichier Excel/CSV récapitulatif est produit
+   - [ ] Le rapport est stocké dans [EMPLACEMENT]
 
 ### ❌ NOT DONE si :
 - Des schémas applicatifs n'ont pas été analysés
 - Le rapport d'audit n'est pas produit
-- Les directories Oracle ne sont pas listés</code></pre>
+- La compatibilité des fonctions n'est pas vérifiée</code></pre>
         </div>
 
         <div class="code-container">
@@ -517,101 +527,20 @@ Réaliser un audit complet des utilisations de UTL_FILE dans la base de données
                 <span>JIRA - Labels suggérés</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>migration, exacc, utl_file, audit, dba, plsql</code></pre>
+            <pre><code>migration, exacc, utl_file, audit, dba</code></pre>
         </div>
     </section>
 
-    <!-- TICKET 2 : DEMANDE ADMINS OCI -->
+    <!-- TICKET 2 : IMPLEMENTATION -->
     <section>
-        <h2>📝 Ticket 2 : Demande configuration OCI (Admins Cloud)</h2>
-
-        <div class="alert alert-warning">
-            <span class="alert-icon">⏳</span>
-            <div>
-                <strong>Type :</strong> Task (bloquante)<br>
-                <strong>Assigné à :</strong> Équipe Admin OCI / Cloud
-            </div>
-        </div>
-
-        <div class="code-container">
-            <div class="code-header">
-                <span>JIRA - Titre du ticket</span>
-                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
-            </div>
-            <pre><code>[EXACC] Configuration Object Storage et credentials pour migration UTL_FILE</code></pre>
-        </div>
-
-        <div class="code-container">
-            <div class="code-header">
-                <span>JIRA - Description</span>
-                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
-            </div>
-            <pre><code>## Contexte
-Suite à l'audit UTL_FILE (voir ticket [LIEN_TICKET_AUDIT]), nous avons identifié X schémas et Y références à migrer vers DBMS_CLOUD + Object Storage.
-
-## Demande
-Nous avons besoin des éléments suivants pour continuer la migration :
-
-### 1. Bucket Object Storage
-- Créer un bucket dédié pour les fichiers de la base de données
-- Fournir l'URI complète au format :
-  `https://objectstorage.[region].oraclecloud.com/n/[namespace]/b/[bucket]/o/`
-
-### 2. Credential DBMS_CLOUD
-- Créer un credential en base pour l'authentification vers Object Storage
-- Fournir le nom du credential créé
-- OU fournir les informations (API Key) pour que le DBA le crée
-
-### 3. ACL Réseau
-- Confirmer que la base ExaCC peut accéder à *.oraclecloud.com:443
-
-### 4. Dossiers (prefixes) à créer dans le bucket
-Voici la liste des directories Oracle à reproduire dans le bucket :
-- DATA_EXPORT/
-- LOG_DIR/
-- REPORTS/
-[À COMPLÉTER AVEC RÉSULTAT AUDIT]
-
-## Priorité
-Bloquant pour la suite de la migration.</code></pre>
-        </div>
-
-        <div class="code-container">
-            <div class="code-header">
-                <span>JIRA - Critères d'acceptation</span>
-                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
-            </div>
-            <pre><code>## Critères d'acceptation
-
-### ✅ DONE quand :
-
-1. **Bucket Object Storage**
-   - [ ] Le bucket est créé
-   - [ ] L'URI complète est communiquée au DBA
-   - [ ] Les dossiers (prefixes) demandés sont créés
-
-2. **Credential DBMS_CLOUD**
-   - [ ] Le credential est créé en base OU les informations sont fournies
-   - [ ] Le nom du credential est communiqué
-
-3. **ACL Réseau**
-   - [ ] L'accès réseau ExaCC → Object Storage est confirmé
-   - [ ] Un test de connexion a été validé
-
-4. **Documentation**
-   - [ ] Les informations sont documentées et transmises au DBA</code></pre>
-        </div>
-    </section>
-
-    <!-- TICKET 3 : IMPLEMENTATION -->
-    <section>
-        <h2>📝 Ticket 3 : Implémentation du wrapper UTL_FILE</h2>
+        <h2>📝 Ticket 2 : Implémentation Migration UTL_FILE</h2>
 
         <div class="alert alert-success">
             <span class="alert-icon">🔧</span>
             <div>
                 <strong>Type :</strong> Story<br>
-                <strong>Dépend de :</strong> Ticket Audit + Ticket Config OCI
+                <strong>Assigné à :</strong> DBA<br>
+                <strong>Prérequis :</strong> Ticket 1 (Audit) terminé + Config OCI reçue des admins
             </div>
         </div>
 
@@ -620,7 +549,7 @@ Bloquant pour la suite de la migration.</code></pre>
                 <span>JIRA - Titre du ticket</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre><code>[EXACC] Déploiement wrapper UTL_FILE_WRAPPER et synonyme PUBLIC</code></pre>
+            <pre><code>[EXACC] Implémentation wrapper UTL_FILE et synonyme PUBLIC</code></pre>
         </div>
 
         <div class="code-container">
@@ -629,27 +558,41 @@ Bloquant pour la suite de la migration.</code></pre>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>## Contexte
-Suite à l'audit (ticket [LIEN]) et la configuration OCI (ticket [LIEN]), nous pouvons déployer la solution de migration.
+Suite à l'audit (ticket [LIEN_TICKET_1]), nous pouvons déployer la solution de migration.
+
+## Prérequis
+- [ ] Ticket Audit terminé
+- [ ] Configuration OCI reçue des admins :
+  - URI du bucket Object Storage
+  - Nom du credential DBMS_CLOUD
+  - ACL réseau confirmée
+  - Dossiers créés dans le bucket
 
 ## Solution technique
 Déployer un package wrapper UTL_FILE_WRAPPER qui :
-- Expose les mêmes signatures que UTL_FILE (FOPEN, PUT_LINE, GET_LINE, FCLOSE, etc.)
+- Expose les mêmes signatures que UTL_FILE
 - Utilise DBMS_CLOUD en interne pour accéder à Object Storage
-- Utilise une table de mapping pour convertir les directories Oracle en URI Object Storage
+- Utilise une table de mapping directory → URI Object Storage
 
 Créer un synonyme PUBLIC UTL_FILE → UTL_FILE_WRAPPER pour que le code existant fonctionne sans modification.
 
 ## Tâches
 - [ ] Créer la table de mapping UTL_FILE_DIRECTORY_MAPPING
-- [ ] Insérer les mappings directory → URI Object Storage
+- [ ] Insérer les mappings (directory → Object Storage)
 - [ ] Déployer le package UTL_FILE_WRAPPER (spec + body)
 - [ ] Créer le synonyme PUBLIC UTL_FILE
 - [ ] Recompiler les schémas impactés
-- [ ] Valider qu'il n'y a pas d'objets invalides
+- [ ] Vérifier aucun objet invalide
+- [ ] Documenter la procédure de rollback
 
 ## Environnement cible
 - Base : [NOM_BASE]
-- Schémas impactés : [LISTE]</code></pre>
+- Schémas impactés : [LISTE]
+
+## Livrables
+- Package UTL_FILE_WRAPPER déployé
+- Synonyme PUBLIC créé
+- Documentation de rollback</code></pre>
         </div>
 
         <div class="code-container">
@@ -667,8 +610,8 @@ Créer un synonyme PUBLIC UTL_FILE → UTL_FILE_WRAPPER pour que le code existan
    - [ ] Les URI Object Storage sont correctes
 
 2. **Package wrapper**
-   - [ ] Le package UTL_FILE_WRAPPER est déployé et VALID
-   - [ ] Les fonctions FOPEN, FCLOSE, PUT_LINE, GET_LINE sont implémentées
+   - [ ] Le package UTL_FILE_WRAPPER est déployé
+   - [ ] Le statut est VALID
    - [ ] Le package utilise DBMS_CLOUD en interne
 
 3. **Synonyme PUBLIC**
@@ -679,10 +622,233 @@ Créer un synonyme PUBLIC UTL_FILE → UTL_FILE_WRAPPER pour que le code existan
    - [ ] Tous les schémas impactés sont recompilés
    - [ ] Aucun objet n'est en statut INVALID
 
-5. **Tests**
-   - [ ] Un test d'écriture de fichier fonctionne
-   - [ ] Un test de lecture de fichier fonctionne
-   - [ ] Les fichiers apparaissent dans Object Storage</code></pre>
+5. **Rollback**
+   - [ ] La procédure de rollback est documentée
+   - [ ] Le script de rollback est testé sur environnement de test
+
+### ❌ NOT DONE si :
+- Des objets sont en statut INVALID
+- Le rollback n'est pas documenté</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Labels suggérés</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>migration, exacc, utl_file, implementation, dba</code></pre>
+        </div>
+    </section>
+
+    <!-- TICKET 3 : TESTS -->
+    <section>
+        <h2>📝 Ticket 3 : Tests et Validation</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Type :</strong> Story<br>
+                <strong>Assigné à :</strong> DBA + QA<br>
+                <strong>Prérequis :</strong> Ticket 2 (Implémentation) terminé
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Titre du ticket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>[EXACC] Tests et validation migration UTL_FILE</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Description</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Contexte
+Suite au déploiement du wrapper (ticket [LIEN_TICKET_2]), nous devons valider le bon fonctionnement avant mise en production.
+
+## Objectif
+Valider que la migration fonctionne correctement et que le rollback est opérationnel.
+
+## Tâches
+- [ ] Test unitaire écriture fichier
+- [ ] Test unitaire lecture fichier
+- [ ] Test avec chaque directory mappé
+- [ ] Vérifier fichiers dans Object Storage (console OCI)
+- [ ] Test job Control-M (environnement de test)
+- [ ] Test avec fichier volumineux (si applicable)
+- [ ] Test de rollback (sur environnement de test)
+- [ ] Validation avec équipe applicative
+- [ ] Validation avec éditeur (si applicable)
+
+## Environnement de test
+- Base : [NOM_BASE_TEST]
+- Jobs Control-M : [LISTE_JOBS_TEST]
+
+## Livrables
+- PV de recette signé
+- Rapport de tests</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Critères d'acceptation</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Critères d'acceptation
+
+### ✅ DONE quand :
+
+1. **Tests unitaires**
+   - [ ] Test écriture fichier OK
+   - [ ] Test lecture fichier OK
+   - [ ] Fichiers visibles dans Object Storage
+
+2. **Tests directories**
+   - [ ] Chaque directory mappé a été testé
+   - [ ] Les fichiers sont créés au bon emplacement
+
+3. **Tests Control-M**
+   - [ ] Au moins un job Control-M a été exécuté en test
+   - [ ] Le job s'est terminé avec succès
+   - [ ] Les fichiers générés sont corrects
+
+4. **Test fichiers volumineux** (si applicable)
+   - [ ] Un fichier > 100 Mo a été écrit avec succès
+   - [ ] Le temps d'exécution est acceptable
+
+5. **Validation métier**
+   - [ ] L'équipe applicative a validé les tests
+   - [ ] L'éditeur a validé (si applicable)
+
+6. **Documentation**
+   - [ ] PV de recette signé
+   - [ ] Rapport de tests produit
+
+### ❌ NOT DONE si :
+- Un test est en échec
+- Le PV de recette n'est pas signé</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Labels suggérés</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>migration, exacc, utl_file, tests, validation, qa</code></pre>
+        </div>
+    </section>
+
+    <!-- TICKET 4 : ROLLBACK -->
+    <section>
+        <h2>📝 Ticket 4 : Rollback et Test Rollback</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🔄</span>
+            <div>
+                <strong>Type :</strong> Story<br>
+                <strong>Assigné à :</strong> DBA<br>
+                <strong>Prérequis :</strong> Ticket 2 (Implémentation) terminé
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Titre du ticket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>[EXACC] Rollback et Test Rollback migration UTL_FILE</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Description</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Contexte
+En cas de problème après la migration UTL_FILE vers ExaCC, nous devons pouvoir revenir à l'état initial (UTL_FILE natif Oracle).
+
+Ce ticket couvre la documentation et le test de la procédure de rollback.
+
+## Objectif
+- Documenter la procédure de rollback complète
+- Tester le rollback sur environnement de test
+- Valider le retour à UTL_FILE natif
+
+## Tâches
+- [ ] Documenter la procédure de rollback étape par étape
+- [ ] Créer le script de rollback complet
+- [ ] Exécuter le rollback sur environnement de test
+- [ ] Vérifier suppression du synonyme PUBLIC UTL_FILE
+- [ ] Vérifier suppression du package UTL_FILE_WRAPPER
+- [ ] Vérifier suppression de la table de mapping
+- [ ] Recompiler les schémas impactés
+- [ ] Vérifier aucun objet invalide après rollback
+- [ ] Tester UTL_FILE natif après rollback
+- [ ] Documenter les résultats du test
+
+## Script de rollback
+Le script doit :
+1. Supprimer le synonyme PUBLIC UTL_FILE
+2. Supprimer le package UTL_FILE_WRAPPER
+3. Supprimer la table UTL_FILE_DIRECTORY_MAPPING
+4. Recompiler tous les schémas impactés
+5. Vérifier qu'il n'y a pas d'objets invalides
+
+## Environnement de test
+- Base : [NOM_BASE_TEST]
+
+## Livrables
+- Documentation procédure de rollback
+- Script de rollback testé et validé
+- Rapport de test rollback</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Critères d'acceptation</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Critères d'acceptation
+
+### ✅ DONE quand :
+
+1. **Documentation**
+   - [ ] La procédure de rollback est documentée étape par étape
+   - [ ] Le script de rollback est versionné
+
+2. **Test rollback exécuté**
+   - [ ] Le rollback a été exécuté sur environnement de test
+   - [ ] Le synonyme PUBLIC UTL_FILE est supprimé
+   - [ ] Le package UTL_FILE_WRAPPER est supprimé
+   - [ ] La table de mapping est supprimée
+
+3. **Recompilation**
+   - [ ] Tous les schémas impactés sont recompilés
+   - [ ] Aucun objet n'est en statut INVALID
+
+4. **Test UTL_FILE natif**
+   - [ ] Après rollback, UTL_FILE natif (SYS.UTL_FILE) fonctionne
+   - [ ] Un test écriture/lecture fichier est OK
+
+5. **Rapport**
+   - [ ] Le rapport de test rollback est produit
+   - [ ] Les résultats sont documentés
+
+### ❌ NOT DONE si :
+- Le rollback n'a pas été testé sur environnement de test
+- Des objets sont invalides après rollback
+- UTL_FILE natif ne fonctionne pas après rollback</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Labels suggérés</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>migration, exacc, utl_file, rollback, dba</code></pre>
         </div>
     </section>
 
@@ -704,33 +870,42 @@ Créer un synonyme PUBLIC UTL_FILE → UTL_FILE_WRAPPER pour que le code existan
                 <tr>
                     <td>1</td>
                     <td>Audit UTL_FILE</td>
-                    <td>Story/Task</td>
+                    <td>Story</td>
                     <td>DBA</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>2</td>
-                    <td>Configuration OCI</td>
-                    <td>Task</td>
-                    <td>Admin OCI</td>
-                    <td>Ticket 1</td>
+                    <td>Implémentation Migration</td>
+                    <td>Story</td>
+                    <td>DBA</td>
+                    <td>Ticket 1 + Config OCI</td>
                 </tr>
                 <tr>
                     <td>3</td>
-                    <td>Déploiement wrapper</td>
+                    <td>Tests et Validation</td>
                     <td>Story</td>
-                    <td>DBA</td>
-                    <td>Tickets 1 + 2</td>
+                    <td>DBA + QA</td>
+                    <td>Ticket 2</td>
                 </tr>
                 <tr>
                     <td>4</td>
-                    <td>Tests de validation</td>
-                    <td>Task</td>
-                    <td>DBA + QA</td>
-                    <td>Ticket 3</td>
+                    <td>Rollback et Test Rollback</td>
+                    <td>Story</td>
+                    <td>DBA</td>
+                    <td>Ticket 2</td>
                 </tr>
             </tbody>
         </table>
+
+        <div class="alert alert-info" style="margin-top: 20px;">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Notes :</strong><br>
+                - Le ticket "Configuration OCI" pour les admins cloud peut être créé séparément. Il est prérequis du Ticket 2.<br>
+                - Les tickets 3 et 4 peuvent être exécutés en parallèle après le ticket 2.
+            </div>
+        </div>
     </section>
 
 </div>
@@ -819,7 +994,54 @@ SELECT
     text AS code
 FROM user_source
 WHERE UPPER(text) LIKE '%UTL_FILE%'
-ORDER BY name, type, line;</code></pre>
+ORDER BY name, type, line;
+
+
+-- ============================================
+-- 5. LISTER TOUTES LES FONCTIONS/CONSTANTES UTL_FILE UTILISÉES
+-- ============================================
+-- Cette requête identifie TOUTES les fonctions et constantes UTL_FILE
+-- utilisées dans ton code pour vérifier si le wrapper les supporte
+
+COLUMN fonction_utl_file FORMAT A40
+COLUMN nb_utilisations FORMAT 9999
+COLUMN supporte_wrapper FORMAT A20
+
+SELECT
+    fonction_utl_file,
+    nb_utilisations,
+    CASE
+        WHEN UPPER(fonction_utl_file) IN (
+            'UTL_FILE.FOPEN', 'UTL_FILE.FCLOSE', 'UTL_FILE.FCLOSE_ALL',
+            'UTL_FILE.PUT_LINE', 'UTL_FILE.PUT', 'UTL_FILE.GET_LINE',
+            'UTL_FILE.NEW_LINE', 'UTL_FILE.FFLUSH', 'UTL_FILE.IS_OPEN',
+            'UTL_FILE.PUT_RAW', 'UTL_FILE.GET_RAW', 'UTL_FILE.FGETATTR',
+            'UTL_FILE.FCOPY', 'UTL_FILE.FRENAME', 'UTL_FILE.FREMOVE',
+            'UTL_FILE.FILE_TYPE',
+            -- Constantes/Exceptions
+            'UTL_FILE.INVALID_PATH', 'UTL_FILE.INVALID_MODE',
+            'UTL_FILE.INVALID_FILEHANDLE', 'UTL_FILE.INVALID_OPERATION',
+            'UTL_FILE.READ_ERROR', 'UTL_FILE.WRITE_ERROR',
+            'UTL_FILE.INTERNAL_ERROR', 'UTL_FILE.INVALID_MAXLINESIZE',
+            'UTL_FILE.INVALID_FILENAME', 'UTL_FILE.ACCESS_DENIED',
+            'UTL_FILE.INVALID_OFFSET', 'UTL_FILE.DELETE_FAILED',
+            'UTL_FILE.RENAME_FAILED'
+        ) THEN '✅ OUI'
+        WHEN UPPER(fonction_utl_file) IN (
+            'UTL_FILE.FSEEK', 'UTL_FILE.FGETPOS', 'UTL_FILE.PUTF'
+        ) THEN '❌ NON'
+        ELSE '⚠️ À VÉRIFIER'
+    END AS supporte_wrapper
+FROM (
+    SELECT
+        REGEXP_SUBSTR(UPPER(text), 'UTL_FILE\.[A-Z_]+') AS fonction_utl_file,
+        COUNT(*) AS nb_utilisations
+    FROM user_source
+    WHERE UPPER(text) LIKE '%UTL_FILE.%'
+    GROUP BY REGEXP_SUBSTR(UPPER(text), 'UTL_FILE\.[A-Z_]+')
+)
+WHERE fonction_utl_file IS NOT NULL
+ORDER BY nb_utilisations DESC;</code></pre>
         </div>
 
         <h3>📊 Connexion SYSDBA : Identifier les schémas à migrer</h3>
