@@ -105,6 +105,13 @@
             box-shadow: 0 5px 15px rgba(15, 157, 88, 0.3);
         }
 
+        .btn-login:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .error-message {
             background: #fce8e6;
             color: var(--danger);
@@ -132,7 +139,26 @@
             color: var(--gray);
             font-size: 0.85rem;
         }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -140,17 +166,17 @@
     <div class="login-header">
         <div class="login-icon">🔐</div>
         <h1>Migration UTL_FILE</h1>
-        <p>Connectez-vous pour accéder au guide</p>
+        <p>Connectez-vous pour acceder au guide</p>
     </div>
 
     <div id="error-message" class="error-message">
-        Identifiants incorrects. Veuillez réessayer.
+        Identifiants incorrects. Veuillez reessayer.
     </div>
 
     <form id="login-form" onsubmit="return handleLogin(event)">
         <div class="form-group">
-            <label for="username">Utilisateur</label>
-            <input type="text" id="username" name="username" placeholder="Entrez votre identifiant" required autofocus>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Entrez votre email" required autofocus>
         </div>
 
         <div class="form-group">
@@ -158,49 +184,85 @@
             <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
         </div>
 
-        <button type="submit" class="btn-login">Se connecter</button>
+        <button type="submit" class="btn-login" id="btn-login">Se connecter</button>
     </form>
 
     <p class="footer-text">Guide DBA - Migration ExaCC</p>
 </div>
 
 <script>
-// Vérifier si déjà connecté
+// Configuration Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyCp8zImO9NXFP0kdhFGPVmvlwNiNj4HM5Y",
+    authDomain: "oracle-exacc-scripts.firebaseapp.com",
+    databaseURL: "https://oracle-exacc-scripts-default-rtdb.firebaseio.com",
+    projectId: "oracle-exacc-scripts",
+    storageBucket: "oracle-exacc-scripts.firebasestorage.app",
+    messagingSenderId: "175726856681",
+    appId: "1:175726856681:web:791e2adb5bd78726f660d9"
+};
+
+// Initialiser Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// Verifier si deja connecte
 window.onload = function() {
-    if (localStorage.getItem('exacc_authenticated') === 'true') {
-        window.location.href = 'index.html';
-    }
+    auth.onAuthStateChanged(function(user) {
+        if (user) {
+            // Utilisateur connecte, rediriger vers index
+            window.location.href = 'index.html';
+        }
+    });
 };
 
 function handleLogin(event) {
     event.preventDefault();
 
-    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const errorMessage = document.getElementById('error-message');
+    const btnLogin = document.getElementById('btn-login');
 
-    // Vérification des identifiants
-    if (username === 'admin' && password === 'passer@123') {
-        // Stocker l'authentification dans localStorage (permanent)
-        localStorage.setItem('exacc_authenticated', 'true');
-        localStorage.setItem('exacc_user', username);
-        localStorage.setItem('exacc_login_date', new Date().toISOString());
+    // Afficher le loading
+    btnLogin.disabled = true;
+    btnLogin.innerHTML = '<span class="loading"></span>Connexion...';
 
-        // Rediriger vers la page principale
-        window.location.href = 'index.html';
-    } else {
-        // Afficher le message d'erreur
-        errorMessage.classList.add('show');
+    // Authentification Firebase
+    auth.signInWithEmailAndPassword(email, password)
+        .then(function(userCredential) {
+            // Connexion reussie, rediriger vers index
+            window.location.href = 'index.html';
+        })
+        .catch(function(error) {
+            // Afficher le message d'erreur
+            let message = 'Identifiants incorrects. Veuillez reessayer.';
+            if (error.code === 'auth/user-not-found') {
+                message = 'Utilisateur non trouve.';
+            } else if (error.code === 'auth/wrong-password') {
+                message = 'Mot de passe incorrect.';
+            } else if (error.code === 'auth/too-many-requests') {
+                message = 'Trop de tentatives. Reessayez plus tard.';
+            } else if (error.code === 'auth/invalid-email') {
+                message = 'Format d\'email invalide.';
+            }
 
-        // Vider le champ mot de passe
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
 
-        // Cacher le message après 3 secondes
-        setTimeout(() => {
-            errorMessage.classList.remove('show');
-        }, 3000);
-    }
+            // Restaurer le bouton
+            btnLogin.disabled = false;
+            btnLogin.innerHTML = 'Se connecter';
+
+            // Vider le champ mot de passe
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+
+            // Cacher le message apres 3 secondes
+            setTimeout(function() {
+                errorMessage.classList.remove('show');
+            }, 3000);
+        });
 
     return false;
 }

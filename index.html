@@ -617,6 +617,7 @@
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
@@ -3087,36 +3088,59 @@ function updateSQLScripts(config) {
     });
 }
 
-// Charger la config au démarrage
-window.onload = function() {
-    // Vérifier l'authentification
-    if (localStorage.getItem('exacc_authenticated') !== 'true') {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    const saved = localStorage.getItem('exacc_migration_config');
-    if (saved) {
-        const config = JSON.parse(saved);
-        document.getElementById('bucket_uri').value = config.bucket_uri || '';
-        document.getElementById('credential_name').value = config.credential_name || '';
-        document.getElementById('acl_confirmed').checked = config.acl_confirmed || false;
-        document.getElementById('folders_list').value = config.folders_list || '';
-
-        // Appliquer les valeurs aux scripts SQL au chargement
-        updateSQLScripts(config);
-    }
-
-    // Initialiser Firebase
-    initFirebase();
+// Configuration Firebase globale
+const firebaseConfig = {
+    apiKey: "AIzaSyCp8zImO9NXFP0kdhFGPVmvlwNiNj4HM5Y",
+    authDomain: "oracle-exacc-scripts.firebaseapp.com",
+    databaseURL: "https://oracle-exacc-scripts-default-rtdb.firebaseio.com",
+    projectId: "oracle-exacc-scripts",
+    storageBucket: "oracle-exacc-scripts.firebasestorage.app",
+    messagingSenderId: "175726856681",
+    appId: "1:175726856681:web:791e2adb5bd78726f660d9"
 };
 
-// Fonction de déconnexion
+// Initialiser Firebase au demarrage
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();
+
+// Charger la config au demarrage
+window.onload = function() {
+    // Verifier l'authentification Firebase
+    auth.onAuthStateChanged(function(user) {
+        if (!user) {
+            // Utilisateur non connecte, rediriger vers login
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Utilisateur connecte, charger la config
+        const saved = localStorage.getItem('exacc_migration_config');
+        if (saved) {
+            const config = JSON.parse(saved);
+            document.getElementById('bucket_uri').value = config.bucket_uri || '';
+            document.getElementById('credential_name').value = config.credential_name || '';
+            document.getElementById('acl_confirmed').checked = config.acl_confirmed || false;
+            document.getElementById('folders_list').value = config.folders_list || '';
+
+            // Appliquer les valeurs aux scripts SQL au chargement
+            updateSQLScripts(config);
+        }
+
+        // Initialiser Firebase Database
+        initFirebase();
+    });
+};
+
+// Fonction de deconnexion
 function logout() {
-    localStorage.removeItem('exacc_authenticated');
-    localStorage.removeItem('exacc_user');
-    localStorage.removeItem('exacc_login_date');
-    window.location.href = 'login.html';
+    auth.signOut().then(function() {
+        window.location.href = 'login.html';
+    }).catch(function(error) {
+        console.error('Erreur deconnexion:', error);
+        window.location.href = 'login.html';
+    });
 }
 
 // ===== FIREBASE SCRIPTS MANAGEMENT =====
@@ -3126,24 +3150,9 @@ let scriptsData = {};
 function initFirebase() {
     const statusEl = document.getElementById('firebase-status');
 
-    // Configuration Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyAq621LTxfNlKgHiVGTHXBMyf5N69U4boI",
-        authDomain: "oracle-exacc-scripts.firebaseapp.com",
-        databaseURL: "https://oracle-exacc-scripts-default-rtdb.firebaseio.com",
-        projectId: "oracle-exacc-scripts",
-        storageBucket: "oracle-exacc-scripts.firebasestorage.app",
-        messagingSenderId: "757268566812",
-        appId: "1:757268566812:web:791e2adb5bd78726f660d9"
-    };
-
     try {
-        // Initialiser Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        // Référence à la base de données
+        // Firebase deja initialise au chargement de la page
+        // Reference a la base de donnees
         const db = firebase.database();
         const scriptsRef = db.ref('scripts');
 
