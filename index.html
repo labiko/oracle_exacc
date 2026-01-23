@@ -1018,7 +1018,24 @@ ORDER BY nb_utilisations DESC;
 -- ✅ FOPEN, FCLOSE, FCLOSE_ALL, PUT_LINE, PUT, GET_LINE, NEW_LINE
 -- ✅ FFLUSH, IS_OPEN, PUT_RAW, GET_RAW, FGETATTR, FCOPY, FRENAME, FREMOVE
 -- ✅ Exceptions : INVALID_PATH, INVALID_MODE, INVALID_FILEHANDLE, etc.
--- ❌ Non supportées : FSEEK, FGETPOS, PUTF</code></pre>
+-- ❌ Non supportées : FSEEK, FGETPOS, PUTF
+
+
+-- ============================================
+-- 6. INVESTIGUER UNE FONCTION UTL_FILE INCONNUE
+-- ============================================
+-- Si tu vois une fonction UTL_FILE que tu ne connais pas dans la liste,
+-- utilise cette requête pour voir où elle est utilisée dans le code
+-- Remplace 'FILE_OPEN' par la fonction à investiguer
+
+SELECT
+    name AS object_name,
+    type AS object_type,
+    line AS numero_ligne,
+    text AS code
+FROM user_source
+WHERE UPPER(text) LIKE '%FILE_OPEN%'
+ORDER BY name, type, line;</code></pre>
         </div>
 
         <h3>📊 Connexion SYSDBA : Identifier les schémas à migrer</h3>
