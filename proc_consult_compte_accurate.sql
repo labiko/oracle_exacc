@@ -10,24 +10,60 @@
 --
 -- Retourne : Une table avec toutes les informations du compte
 -- Usage : SELECT * FROM TABLE(EXP_RNAPA.FN_CONSULT_COMPTE_ACCURATE('BBNP42304-EUR'));
+--
+-- SCRIPT IDEMPOTENT : Peut être exécuté plusieurs fois sans erreur
 -- ============================================================================
 
 -- ============================================================================
--- ETAPE 0 : SUPPRESSION DES OBJETS EXISTANTS (ordre important : fonction -> table type -> row type)
--- Exécuter ces DROP uniquement si les objets existent déjà
+-- ETAPE 1 : SUPPRESSION DES OBJETS EXISTANTS (bloc PL/SQL pour ignorer erreurs)
+-- Ordre important : fonction -> table type -> row type
 -- ============================================================================
--- DROP FUNCTION EXP_RNAPA.FN_CONSULT_COMPTE_ACCURATE;
--- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_TABLE;
--- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW;
+
+-- 1.1 Supprimer la fonction si elle existe
+BEGIN
+    EXECUTE IMMEDIATE 'DROP FUNCTION EXP_RNAPA.FN_CONSULT_COMPTE_ACCURATE';
+    DBMS_OUTPUT.PUT_LINE('Fonction FN_CONSULT_COMPTE_ACCURATE supprimée.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -4043 THEN -- ORA-04043: object does not exist
+            DBMS_OUTPUT.PUT_LINE('Fonction FN_CONSULT_COMPTE_ACCURATE n''existe pas - OK');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+-- 1.2 Supprimer le type TABLE si il existe
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_TABLE';
+    DBMS_OUTPUT.PUT_LINE('Type T_COMPTE_ACCURATE_TABLE supprimé.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -4043 THEN -- ORA-04043: object does not exist
+            DBMS_OUTPUT.PUT_LINE('Type T_COMPTE_ACCURATE_TABLE n''existe pas - OK');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+-- 1.3 Supprimer le type OBJECT si il existe
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW';
+    DBMS_OUTPUT.PUT_LINE('Type T_COMPTE_ACCURATE_ROW supprimé.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -4043 THEN -- ORA-04043: object does not exist
+            DBMS_OUTPUT.PUT_LINE('Type T_COMPTE_ACCURATE_ROW n''existe pas - OK');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
 
 -- ============================================================================
--- ALTERNATIVE : Suppression avec FORCE (supprime même si dépendances)
--- ATTENTION : Utiliser uniquement si les DROP normaux ne fonctionnent pas
+-- ETAPE 2 : CREATION DU TYPE OBJECT (structure d'une ligne)
 -- ============================================================================
--- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_TABLE FORCE;
--- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW FORCE;
-
--- 1. Créer le TYPE OBJECT pour définir la structure d'une ligne
 CREATE OR REPLACE TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW AS OBJECT (
     ID_COMPTE_ACCURATE      NUMBER,
     GROUPEG                 VARCHAR2(200),
@@ -63,11 +99,15 @@ CREATE OR REPLACE TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW AS OBJECT (
 );
 /
 
--- 2. Créer le TYPE TABLE pour la collection
+-- ============================================================================
+-- ETAPE 3 : CREATION DU TYPE TABLE (collection)
+-- ============================================================================
 CREATE OR REPLACE TYPE EXP_RNAPA.T_COMPTE_ACCURATE_TABLE AS TABLE OF EXP_RNAPA.T_COMPTE_ACCURATE_ROW;
 /
 
--- 3. Créer la fonction PIPELINED
+-- ============================================================================
+-- ETAPE 4 : CREATION DE LA FONCTION PIPELINED
+-- ============================================================================
 CREATE OR REPLACE FUNCTION EXP_RNAPA.FN_CONSULT_COMPTE_ACCURATE (
     p_num_compte_accurate   IN VARCHAR2,
     p_flag_actif            IN VARCHAR2 DEFAULT NULL,
@@ -215,6 +255,12 @@ BEGIN
 END FN_CONSULT_COMPTE_ACCURATE;
 /
 
+-- ============================================================================
+-- VERIFICATION DE LA COMPILATION
+-- ============================================================================
+SELECT object_name, object_type, status
+FROM user_objects
+WHERE object_name IN ('FN_CONSULT_COMPTE_ACCURATE', 'T_COMPTE_ACCURATE_ROW', 'T_COMPTE_ACCURATE_TABLE');
 
 -- ============================================================================
 -- EXEMPLES D'UTILISATION

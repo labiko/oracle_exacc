@@ -7,8 +7,29 @@
 --   p_flag_actif           : Flag actif O/N (nullable)
 --   p_num_compte_comptable : Numéro compte comptable (nullable)
 --   p_codes_societe        : Liste des codes société séparés par virgule (nullable)
+--
+-- SCRIPT IDEMPOTENT : Peut être exécuté plusieurs fois sans erreur
 -- ============================================================================
 
+-- ============================================================================
+-- ETAPE 1 : SUPPRESSION DE LA PROCEDURE SI ELLE EXISTE
+-- ============================================================================
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE EXP_RNAPA.SP_UPDATE_COMPTE_ACCURATE';
+    DBMS_OUTPUT.PUT_LINE('Procédure SP_UPDATE_COMPTE_ACCURATE supprimée.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -4043 THEN -- ORA-04043: object does not exist
+            DBMS_OUTPUT.PUT_LINE('Procédure SP_UPDATE_COMPTE_ACCURATE n''existe pas - OK');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+-- ============================================================================
+-- ETAPE 2 : CREATION DE LA PROCEDURE
+-- ============================================================================
 CREATE OR REPLACE PROCEDURE EXP_RNAPA.SP_UPDATE_COMPTE_ACCURATE (
     p_num_compte_accurate   IN VARCHAR2,
     p_id_compte_accurate    IN NUMBER   DEFAULT NULL,
@@ -182,6 +203,12 @@ EXCEPTION
 END SP_UPDATE_COMPTE_ACCURATE;
 /
 
+-- ============================================================================
+-- VERIFICATION DE LA COMPILATION
+-- ============================================================================
+SELECT object_name, object_type, status
+FROM user_objects
+WHERE object_name = 'SP_UPDATE_COMPTE_ACCURATE';
 
 -- ============================================================================
 -- EXEMPLES D'UTILISATION
