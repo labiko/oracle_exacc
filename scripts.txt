@@ -1,0 +1,86 @@
+# Scripts UTL_FILE Migration ExaCC
+# ================================
+# Ce fichier contient les scripts utiles pour la migration UTL_FILE vers ExaCC
+# Modifiez ce fichier directement sur GitHub pour ajouter/modifier des scripts
+#
+# Format: Séparez chaque script par une ligne "---SCRIPT---"
+# Chaque script commence par un titre sur la ligne "# TITRE: ..."
+
+---SCRIPT---
+# TITRE: Audit des objets utilisant UTL_FILE
+# DESCRIPTION: Liste tous les objets PL/SQL qui utilisent UTL_FILE
+
+SELECT DISTINCT
+    owner,
+    name AS object_name,
+    type AS object_type
+FROM all_source
+WHERE UPPER(text) LIKE '%UTL_FILE.%'
+ORDER BY owner, name, type;
+
+---SCRIPT---
+# TITRE: Liste des directories Oracle (hors systeme)
+# DESCRIPTION: Affiche les directories utilisables par UTL_FILE
+
+SELECT
+    directory_name,
+    directory_path
+FROM all_directories
+WHERE directory_name NOT LIKE 'ORACLE%'
+  AND directory_name NOT LIKE 'OPATCH%'
+  AND directory_name NOT LIKE 'DATA_PUMP%'
+  AND directory_name NOT LIKE 'DBMS_%'
+  AND directory_name NOT LIKE 'XMLDIR'
+  AND directory_name NOT LIKE 'XSDDIR'
+ORDER BY directory_name;
+
+---SCRIPT---
+# TITRE: Fonctions UTL_FILE utilisees dans la base
+# DESCRIPTION: Liste toutes les fonctions UTL_FILE avec leur nombre d'utilisations
+
+SELECT
+    REGEXP_SUBSTR(UPPER(text), 'UTL_FILE\.[A-Z_]+') AS fonction_utl_file,
+    COUNT(*) AS nb_utilisations
+FROM user_source
+WHERE UPPER(text) LIKE '%UTL_FILE.%'
+GROUP BY REGEXP_SUBSTR(UPPER(text), 'UTL_FILE\.[A-Z_]+')
+ORDER BY nb_utilisations DESC;
+
+---SCRIPT---
+# TITRE: Investiguer une fonction UTL_FILE specifique
+# DESCRIPTION: Recherche ou une fonction specifique est utilisee (ex: FILE_OPEN)
+
+SELECT
+    name AS object_name,
+    type AS object_type,
+    line AS numero_ligne,
+    text AS code
+FROM user_source
+WHERE UPPER(text) LIKE '%FILE_OPEN%'
+ORDER BY name, type, line;
+
+---SCRIPT---
+# TITRE: Verifier les grants sur directories
+# DESCRIPTION: Liste les privileges accordes sur les directories
+
+SELECT
+    grantee,
+    table_name AS directory_name,
+    privilege
+FROM all_tab_privs
+WHERE table_name IN (
+    SELECT directory_name
+    FROM all_directories
+)
+ORDER BY table_name, grantee;
+
+---SCRIPT---
+# TITRE: Rollback - Supprimer le synonyme public
+# DESCRIPTION: Script de rollback pour restaurer UTL_FILE natif
+
+-- Supprimer le synonyme public UTL_FILE
+DROP PUBLIC SYNONYM UTL_FILE;
+
+-- Verifier que le synonyme a ete supprime
+SELECT * FROM all_synonyms WHERE synonym_name = 'UTL_FILE';
+
