@@ -1394,9 +1394,9 @@ Sur ExaCC, l'accès direct au système de fichiers du serveur de base de donnée
 
 IMPACT POTENTIEL :
 
-Les applications qui génèrent ou lisent des fichiers directement côté base de données via PL/SQL (exports CSV, fichiers de logs, fichiers d'interface, etc.) sont concernées.
+Si votre application utilise UTL_FILE avec des directories Oracle standards (ex: UTL_FILE.FOPEN('NOM_DIRECTORY', 'fichier.csv', 'W')), il n'y a pas d'impact. Notre wrapper de migration prend en charge ces appels de manière transparente.
 
-En revanche, si votre application gère les fichiers côté serveur applicatif (Java, .NET, PHP...) après avoir récupéré les données en SQL, il n'y a aucun impact.
+Nous avons besoin de connaître les directories Oracle utilisés par votre application afin de les inclure dans notre table de mapping.
 
 DIRECTORIES ORACLE EXISTANTS :
 
