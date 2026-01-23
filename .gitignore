@@ -1,0 +1,9 @@
+# Fichiers locaux - NE PAS COMMITER
+CREDENTIALS.local.txt
+*.local.txt
+*.local
+
+# Fichiers secrets
+.env
+.env.local
+credentials.json
