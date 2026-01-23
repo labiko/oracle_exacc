@@ -41,6 +41,11 @@
             color: var(--white);
             padding: 40px 20px;
             text-align: center;
+            position: relative;
+        }
+
+        .header-content {
+            display: inline-block;
         }
 
         header h1 {
@@ -51,6 +56,25 @@
         header .subtitle {
             font-size: 1.1rem;
             opacity: 0.9;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: var(--white);
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.6);
         }
 
         .badge {
@@ -598,9 +622,12 @@
 <body>
 
 <header>
-    <h1>🛠️ Migration UTL_FILE vers ExaCC</h1>
-    <p class="subtitle">Guide DBA - Focus sur ton périmètre uniquement</p>
-    <span class="badge">Tu gères la base • Les admins OCI gèrent le cloud</span>
+    <div class="header-content">
+        <h1>🛠️ Migration UTL_FILE vers ExaCC</h1>
+        <p class="subtitle">Guide DBA - Focus sur ton périmètre uniquement</p>
+        <span class="badge">Tu gères la base • Les admins OCI gèrent le cloud</span>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Déconnexion">🚪 Déconnexion</button>
 </header>
 
 <!-- Navigation par onglets -->
@@ -3062,6 +3089,12 @@ function updateSQLScripts(config) {
 
 // Charger la config au démarrage
 window.onload = function() {
+    // Vérifier l'authentification
+    if (localStorage.getItem('exacc_authenticated') !== 'true') {
+        window.location.href = 'login.html';
+        return;
+    }
+
     const saved = localStorage.getItem('exacc_migration_config');
     if (saved) {
         const config = JSON.parse(saved);
@@ -3077,6 +3110,14 @@ window.onload = function() {
     // Initialiser Firebase
     initFirebase();
 };
+
+// Fonction de déconnexion
+function logout() {
+    localStorage.removeItem('exacc_authenticated');
+    localStorage.removeItem('exacc_user');
+    localStorage.removeItem('exacc_login_date');
+    window.location.href = 'login.html';
+}
 
 // ===== FIREBASE SCRIPTS MANAGEMENT =====
 let currentScriptId = null;

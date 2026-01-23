@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Migration UTL_FILE ExaCC</title>
+    <style>
+        :root {
+            --primary: #0f9d58;
+            --primary-dark: #0b7a45;
+            --danger: #ea4335;
+            --dark: #202124;
+            --gray: #5f6368;
+            --light-gray: #f1f3f4;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: var(--dark);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 157, 88, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 157, 88, 0.3);
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="login-header">
+        <div class="login-icon">🔐</div>
+        <h1>Migration UTL_FILE</h1>
+        <p>Connectez-vous pour accéder au guide</p>
+    </div>
+
+    <div id="error-message" class="error-message">
+        Identifiants incorrects. Veuillez réessayer.
+    </div>
+
+    <form id="login-form" onsubmit="return handleLogin(event)">
+        <div class="form-group">
+            <label for="username">Utilisateur</label>
+            <input type="text" id="username" name="username" placeholder="Entrez votre identifiant" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
+        </div>
+
+        <button type="submit" class="btn-login">Se connecter</button>
+    </form>
+
+    <p class="footer-text">Guide DBA - Migration ExaCC</p>
+</div>
+
+<script>
+// Vérifier si déjà connecté
+window.onload = function() {
+    if (localStorage.getItem('exacc_authenticated') === 'true') {
+        window.location.href = 'index.html';
+    }
+};
+
+function handleLogin(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorMessage = document.getElementById('error-message');
+
+    // Vérification des identifiants
+    if (username === 'admin' && password === 'passer@123') {
+        // Stocker l'authentification dans localStorage (permanent)
+        localStorage.setItem('exacc_authenticated', 'true');
+        localStorage.setItem('exacc_user', username);
+        localStorage.setItem('exacc_login_date', new Date().toISOString());
+
+        // Rediriger vers la page principale
+        window.location.href = 'index.html';
+    } else {
+        // Afficher le message d'erreur
+        errorMessage.classList.add('show');
+
+        // Vider le champ mot de passe
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+
+        // Cacher le message après 3 secondes
+        setTimeout(() => {
+            errorMessage.classList.remove('show');
+        }, 3000);
+    }
+
+    return false;
+}
+</script>
+
+</body>
+</html>
