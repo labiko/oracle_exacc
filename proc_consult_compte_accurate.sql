@@ -12,6 +12,21 @@
 -- Usage : SELECT * FROM TABLE(EXP_RNAPA.FN_CONSULT_COMPTE_ACCURATE('BBNP42304-EUR'));
 -- ============================================================================
 
+-- ============================================================================
+-- ETAPE 0 : SUPPRESSION DES OBJETS EXISTANTS (ordre important : fonction -> table type -> row type)
+-- Exécuter ces DROP uniquement si les objets existent déjà
+-- ============================================================================
+-- DROP FUNCTION EXP_RNAPA.FN_CONSULT_COMPTE_ACCURATE;
+-- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_TABLE;
+-- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW;
+
+-- ============================================================================
+-- ALTERNATIVE : Suppression avec FORCE (supprime même si dépendances)
+-- ATTENTION : Utiliser uniquement si les DROP normaux ne fonctionnent pas
+-- ============================================================================
+-- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_TABLE FORCE;
+-- DROP TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW FORCE;
+
 -- 1. Créer le TYPE OBJECT pour définir la structure d'une ligne
 CREATE OR REPLACE TYPE EXP_RNAPA.T_COMPTE_ACCURATE_ROW AS OBJECT (
     ID_COMPTE_ACCURATE      NUMBER,
