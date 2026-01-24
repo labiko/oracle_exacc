@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METIER_COFAH_COMPTA - Gestion des Cas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            background-color: #4a5568;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar gauche */
+        .sidebar {
+            width: 220px;
+            background-color: #f5f5f5;
+            border-right: 1px solid #ccc;
+            padding: 10px 0;
+        }
+
+        .sidebar-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            background-color: #e8e8e8;
+        }
+
+        .sidebar-item.parent {
+            font-weight: bold;
+        }
+
+        .sidebar-item .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        .sidebar-item .expand {
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Indicateurs de couleur */
+        .color-box {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+            border: 1px solid #999;
+        }
+
+        .color-red { background-color: #dc2626; }
+        .color-yellow { background-color: #f59e0b; }
+        .color-orange { background-color: #ea580c; }
+        .color-green { background-color: #22c55e; }
+
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #666;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            cursor: pointer;
+        }
+
+        .checkbox.checked::after {
+            content: "\2714";
+            font-size: 10px;
+            color: #333;
+        }
+
+        /* Zone principale */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f5f0e1;
+        }
+
+        /* Barre de menu */
+        .menu-bar {
+            background: linear-gradient(to bottom, #ff6b35, #e55a2b);
+            padding: 8px 15px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .menu-item {
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .menu-item:hover {
+            text-decoration: underline;
+        }
+
+        .menu-item .arrow {
+            font-size: 8px;
+        }
+
+        .collapse-btn {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Titre section */
+        .section-title {
+            padding: 15px 20px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* Tableau */
+        .table-container {
+            padding: 0 20px 20px 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background-color: #e8e4d9;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #ccc;
+            color: #333;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .row-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Lien */
+        .link {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        /* Status badge */
+        .status {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .status-transmis {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-item parent">
+        <span class="expand">></span>
+        <span class="checkbox"></span>
+        ADC_FINANCE
+    </div>
+
+    <div class="sidebar-item parent">
+        <span class="expand">v</span>
+        <span class="checkbox"></span>
+        METIER_COFAH_COMPTA
+    </div>
+
+    <div class="sidebar-item" style="padding-left: 35px;">
+        <span class="checkbox"></span>
+        <span class="color-box color-red"></span>
+        Ouverture
+    </div>
+
+    <div class="sidebar-item" style="padding-left: 35px;">
+        <span class="checkbox checked"></span>
+        <span class="color-box color-yellow"></span>
+        Cree
+    </div>
+
+    <div class="sidebar-item" style="padding-left: 35px;">
+        <span class="checkbox"></span>
+        <span class="color-box color-orange"></span>
+        A Traiter
+    </div>
+
+    <div class="sidebar-item" style="padding-left: 35px;">
+        <span class="checkbox"></span>
+        <span class="color-box color-orange"></span>
+        Traite
+    </div>
+
+    <div class="sidebar-item" style="padding-left: 35px;">
+        <span class="checkbox"></span>
+        <span class="color-box color-green"></span>
+        Cloture
+    </div>
+
+    <div class="sidebar-item parent" style="margin-top: 10px;">
+        <span class="expand">></span>
+        METIERS
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <button class="collapse-btn">&lt;</button>
+        <div class="menu-item">Cas <span class="arrow">v</span></div>
+        <div class="menu-item">Afficher <span class="arrow">v</span></div>
+        <div class="menu-item">Exportation <span class="arrow">v</span></div>
+    </div>
+
+    <!-- Section Title -->
+    <div class="section-title">
+        cas crees pour le processus: METIER_COFAH_COMPTA
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30px;"></th>
+                    <th>Statut tache</th>
+                    <th>Nombre</th>
+                    <th>Collaborateur/Equipe</th>
+                    <th>Date d'anciennete de la tache la plus ancienne</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>12</td>
+                    <td>j07155</td>
+                    <td>15/09/2025</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>8</td>
+                    <td>j08234</td>
+                    <td>22/09/2025</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>15</td>
+                    <td>j09412</td>
+                    <td>03/10/2025</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>6</td>
+                    <td>j05678</td>
+                    <td>18/10/2025</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>21</td>
+                    <td>j03291</td>
+                    <td>25/10/2025</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>9</td>
+                    <td>j11045</td>
+                    <td>02/11/2025</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>Cree</td>
+                    <td>4</td>
+                    <td>j06823</td>
+                    <td>10/11/2025</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
