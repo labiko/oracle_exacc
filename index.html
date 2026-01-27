@@ -1354,6 +1354,174 @@ Le script doit :
         </div>
     </section>
 
+    <!-- TICKET 5 : Audit Jobs Control-M -->
+    <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800;">
+        <h2>🎫 Ticket 5 : Audit Jobs Control-M - Scripts SQL</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>AUDIT PRÉ-MIGRATION</strong><br>
+                Ce ticket concerne l'audit des jobs Control-M AVANT migration ExaCC pour identifier les impacts UTL_FILE.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Titre du ticket</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>[AUDIT] Jobs Control-M - Analyse scripts SQL et impacts UTL_FILE</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Description</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>## Contexte
+
+Dans le cadre de la préparation à la migration vers Oracle ExaCC, il est nécessaire
+d'auditer les jobs Control-M qui exécutent des scripts SQL sur les serveurs applicatifs,
+afin d'identifier les impacts potentiels liés à l'utilisation d'UTL_FILE.
+
+## Objectif
+
+Recenser tous les jobs Control-M qui :
+1. Appellent des scripts sur le serveur applicatif
+2. Exécutent des traitements SQL/PL-SQL en base de données
+3. Utilisent directement ou indirectement UTL_FILE
+
+## Périmètre
+
+### Jobs à auditer :
+- Jobs déclenchant des scripts shell (.sh, .ksh)
+- Jobs appelant SQL*Plus, SQL*Loader ou Pro*C
+- Jobs ordonnançant des procédures PL/SQL
+
+### Serveurs concernés :
+- Serveurs applicatifs avec scripts SQL
+- Chaînes de connexion vers les bases Oracle actuelles
+
+## Livrables attendus
+
+1. **Inventaire des jobs Control-M**
+   - Nom du job
+   - Serveur d'exécution
+   - Script appelé
+   - Base de données cible
+
+2. **Analyse des scripts SQL**
+   - Scripts utilisant UTL_FILE (lecture/écriture fichiers)
+   - Chemins de répertoires utilisés
+   - DIRECTORY Oracle référencés
+
+3. **Matrice d'impact**
+   - Jobs impactés par la migration UTL_FILE
+   - Niveau de criticité (Haute/Moyenne/Basse)
+   - Actions de remédiation requises
+
+## Architecture concernée
+
+<code>
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   CONTROL-M     │────▶│ SERVEUR APPLI   │────▶│    DATABASE     │
+│   (Scheduler)   │     │  (Scripts SQL)  │     │    (Oracle)     │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │
+        │                       │                       │
+        ▼                       ▼                       ▼
+   Déclenchement          Exécution              UTL_FILE
+   des jobs               SQL*Plus              (Lecture/Écriture)
+                          SQL*Loader
+                          Pro*C
+</code>
+
+## Points de contrôle
+
+### Analyse Control-M :
+- [ ] Export de la liste des jobs vers les serveurs applicatifs
+- [ ] Identification des jobs avec scripts SQL
+- [ ] Mapping jobs → scripts → bases de données
+
+### Analyse Scripts SQL :
+- [ ] Grep sur les scripts pour "UTL_FILE"
+- [ ] Identification des appels FOPEN, PUT_LINE, GET_LINE
+- [ ] Liste des DIRECTORY Oracle utilisés
+
+### Documentation :
+- [ ] Inventaire complet produit
+- [ ] Matrice d'impact complétée
+- [ ] Priorisation des remédiations définie</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Critères d'acceptation (Definition of Done)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>### ✅ DONE si :
+
+1. **Inventaire Control-M**
+   - [ ] Liste exhaustive des jobs appelant des scripts SQL
+   - [ ] Mapping job → serveur → script → base
+   - [ ] Export validé par l'équipe infra
+
+2. **Analyse UTL_FILE**
+   - [ ] Tous les scripts contenant UTL_FILE sont identifiés
+   - [ ] Les DIRECTORY Oracle utilisés sont listés
+   - [ ] Les chemins de fichiers sont documentés
+
+3. **Matrice d'impact**
+   - [ ] Chaque job impacté est classifié (criticité)
+   - [ ] Les actions de remédiation sont définies
+   - [ ] Les dépendances entre jobs sont identifiées
+
+4. **Documentation**
+   - [ ] Le rapport d'audit est produit
+   - [ ] La matrice d'impact est partagée avec l'équipe projet
+
+### ❌ NOT DONE si :
+- L'inventaire des jobs est incomplet
+- Des scripts SQL n'ont pas été analysés
+- La matrice d'impact n'est pas produite</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Script d'analyse - Recherche UTL_FILE dans les scripts</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>#!/bin/bash
+# Script d'audit UTL_FILE dans les scripts SQL
+# Usage: ./audit_utl_file.sh /chemin/scripts
+
+SCRIPTS_DIR="${1:-.}"
+OUTPUT_FILE="audit_utl_file_$(date +%Y%m%d_%H%M%S).csv"
+
+echo "Script,Ligne,Occurrence" > "$OUTPUT_FILE"
+
+find "$SCRIPTS_DIR" -type f \( -name "*.sql" -o -name "*.pls" -o -name "*.pkb" -o -name "*.pks" \) | while read script; do
+    grep -n -i "UTL_FILE" "$script" 2>/dev/null | while read match; do
+        line_num=$(echo "$match" | cut -d: -f1)
+        content=$(echo "$match" | cut -d: -f2-)
+        echo "\"$script\",$line_num,\"$content\"" >> "$OUTPUT_FILE"
+    done
+done
+
+echo "Audit terminé. Résultat: $OUTPUT_FILE"
+echo "Nombre de scripts avec UTL_FILE: $(tail -n +2 "$OUTPUT_FILE" | cut -d, -f1 | sort -u | wc -l)"</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>JIRA - Labels suggérés</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>audit, control-m, utl_file, pre-migration, infra, sql-scripts</code></pre>
+        </div>
+    </section>
+
     <!-- RECAPITULATIF -->
     <section style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border: 2px solid #9c27b0;">
         <h2>📊 Récapitulatif des tickets</h2>
@@ -1397,6 +1565,13 @@ Le script doit :
                     <td>DBA</td>
                     <td>Ticket 2</td>
                 </tr>
+                <tr style="background-color: #fff3e0;">
+                    <td>5</td>
+                    <td>Audit Jobs Control-M</td>
+                    <td>Story</td>
+                    <td>Infra + DBA</td>
+                    <td>-</td>
+                </tr>
             </tbody>
         </table>
 
@@ -1405,7 +1580,8 @@ Le script doit :
             <div>
                 <strong>Notes :</strong><br>
                 - Le ticket "Configuration OCI" pour les admins cloud peut être créé séparément. Il est prérequis du Ticket 2.<br>
-                - Les tickets 3 et 4 peuvent être exécutés en parallèle après le ticket 2.
+                - Les tickets 3 et 4 peuvent être exécutés en parallèle après le ticket 2.<br>
+                - <strong>Le Ticket 5 (Audit Control-M)</strong> est un audit PRÉ-migration qui peut être exécuté en parallèle du Ticket 1.
             </div>
         </div>
     </section>
