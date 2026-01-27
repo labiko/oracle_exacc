@@ -889,6 +889,7 @@
     <ul class="tabs-nav">
         <li><a href="#guide" class="active" onclick="showTab('guide', this)">📋 Guide Migration</a></li>
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
+        <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
         <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
@@ -5162,6 +5163,457 @@ PROMPT ========================================</code></pre>
 
 </div>
 <!-- ==================== FIN ONGLET POST-MIGRATION ==================== -->
+<!-- ==================== ONGLET MODES DE CONNEXION ==================== -->
+<div id="modesconnexion" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%); border: 2px solid #3f51b5; margin-top: 20px;">
+        <h2>🔌 Modes de Connexion à ExaCC</h2>
+        <p style="margin: 15px 0;">Comprendre les différents modes de connexion disponibles sur Oracle ExaCC : mTLS, TLS simple et TCP classique.</p>
+    </section>
+
+    <!-- Introduction -->
+    <section>
+        <h2>📋 Vue d'ensemble des 3 Modes de Connexion</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Important :</strong> Le mode de connexion dépend de la configuration d'ExaCC par votre équipe DBA/Cloud Oracle.
+                Vérifiez avec eux quel mode est activé avant de configurer vos applications.
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Mode</th>
+                    <th>Port</th>
+                    <th>Wallet</th>
+                    <th>Chiffrement</th>
+                    <th>Sécurité</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: #e8f5e9;">
+                    <td><strong>mTLS</strong> (Mutual TLS)</td>
+                    <td>1522</td>
+                    <td>✅ Obligatoire</td>
+                    <td>✅ TLS 1.2/1.3</td>
+                    <td>🔒🔒🔒 Maximum</td>
+                </tr>
+                <tr style="background: #fff3e0;">
+                    <td><strong>TLS</strong> (One-Way)</td>
+                    <td>1522</td>
+                    <td>❌ Non requis</td>
+                    <td>✅ TLS 1.2/1.3</td>
+                    <td>🔒🔒 Bonne</td>
+                </tr>
+                <tr style="background: #ffebee;">
+                    <td><strong>TCP</strong> (Classique)</td>
+                    <td>1521</td>
+                    <td>❌ Non requis</td>
+                    <td>❌ Aucun</td>
+                    <td>🔒 Basique</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- MODE 1: mTLS -->
+    <section>
+        <h2 style="color: #2e7d32;">🔐 Mode 1 : mTLS (Mutual TLS) - Wallet OBLIGATOIRE</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Le plus sécurisé :</strong> Les DEUX parties (client et serveur) doivent prouver leur identité avec des certificats.
+                C'est le mode par défaut sur Autonomous Database.
+            </div>
+        </div>
+
+        <h3>Schéma de fonctionnement</h3>
+        <div style="background: #1a237e; color: white; padding: 20px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 0.9em; overflow-x: auto;">
+<pre style="margin: 0; color: white;">
+┌─────────────────────┐                          ┌─────────────────────┐
+│  SERVEUR APPLICATIF │                          │       ExaCC         │
+│                     │                          │                     │
+│  📦 Wallet LOCAL    │                          │  📦 Certificat      │
+│  - cwallet.sso      │                          │     Serveur         │
+│  - ewallet.p12      │                          │                     │
+└──────────┬──────────┘                          └──────────┬──────────┘
+           │                                                │
+           │  1️⃣ "Bonjour, voici MON certificat"            │
+           ├───────────────────────────────────────────────▶│
+           │     (cwallet.sso)                              │
+           │                                                │
+           │  2️⃣ "OK, voici MON certificat serveur"         │
+           │◀───────────────────────────────────────────────┤
+           │                                                │
+           │  3️⃣ Vérification MUTUELLE                      │
+           │     - Client vérifie certificat serveur ✅     │
+           │     - Serveur vérifie certificat client ✅     │
+           │                                                │
+           │  4️⃣ Signature avec clé privée (preuve)         │
+           ├───────────────────────────────────────────────▶│
+           │     (ewallet.p12 utilisé localement)           │
+           │                                                │
+           │  5️⃣ ✅ Connexion chiffrée établie               │
+           │◀──────────────────────────────────────────────▶│
+           │     (Port 1522 - TCPS)                         │
+           │                                                │
+           │  6️⃣ USER/PASSWORD envoyé (chiffré)             │
+           ├───────────────────────────────────────────────▶│
+</pre>
+        </div>
+
+        <h3>Caractéristiques</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Élément</th>
+                    <th>Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Port</strong></td><td>1522</td></tr>
+                <tr><td><strong>Wallet</strong></td><td>✅ OBLIGATOIRE</td></tr>
+                <tr><td><strong>Certificat client</strong></td><td>✅ Requis</td></tr>
+                <tr><td><strong>Certificat serveur</strong></td><td>✅ Requis</td></tr>
+                <tr><td><strong>Chiffrement</strong></td><td>TLS 1.2/1.3</td></tr>
+                <tr><td><strong>Qui vérifie qui ?</strong></td><td>Les DEUX se vérifient mutuellement</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Chaîne de connexion</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>JDBC avec Wallet (mTLS)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Format JDBC
+jdbc:oracle:thin:@tcps://exacc-host:1522/SERVICE?wallet_location=/path/to/wallet
+
+-- Format TNS
+jdbc:oracle:thin:@service_high?TNS_ADMIN=/path/to/wallet
+
+-- SQLPlus
+export TNS_ADMIN=/path/to/wallet
+sqlplus user/password@service_high</code></pre>
+        </div>
+
+        <h3>Quand ce mode est utilisé ?</h3>
+        <ul style="margin: 15px 0; padding-left: 25px; line-height: 1.8;">
+            <li>✅ Autonomous Database (par défaut)</li>
+            <li>✅ ExaCC avec configuration haute sécurité</li>
+            <li>✅ Connexions depuis Internet ou réseaux non sécurisés</li>
+            <li>✅ Environnements soumis à des normes de conformité (PCI-DSS, SOC2, etc.)</li>
+        </ul>
+    </section>
+
+    <!-- MODE 2: TLS Simple -->
+    <section>
+        <h2 style="color: #e65100;">🔒 Mode 2 : TLS Simple (One-Way) - Wallet PAS obligatoire</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Chiffrement sans Wallet client :</strong> Seul le SERVEUR (ExaCC) prouve son identité.
+                Le client fait confiance au serveur sans présenter de certificat.
+            </div>
+        </div>
+
+        <h3>Schéma de fonctionnement</h3>
+        <div style="background: #e65100; color: white; padding: 20px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 0.9em; overflow-x: auto;">
+<pre style="margin: 0; color: white;">
+┌─────────────────────┐                          ┌─────────────────────┐
+│  SERVEUR APPLICATIF │                          │       ExaCC         │
+│                     │                          │                     │
+│  ❌ Pas de Wallet   │                          │  📦 Certificat      │
+│     nécessaire      │                          │     Serveur         │
+└──────────┬──────────┘                          └──────────┬──────────┘
+           │                                                │
+           │  1️⃣ "Bonjour, je veux me connecter"            │
+           ├───────────────────────────────────────────────▶│
+           │     (Pas de certificat client)                 │
+           │                                                │
+           │  2️⃣ "OK, voici MON certificat serveur"         │
+           │◀───────────────────────────────────────────────┤
+           │                                                │
+           │  3️⃣ Vérification UNI-DIRECTIONNELLE            │
+           │     - Client vérifie certificat serveur ✅     │
+           │     - Serveur NE vérifie PAS le client ❌      │
+           │                                                │
+           │  4️⃣ ✅ Connexion chiffrée établie               │
+           │◀──────────────────────────────────────────────▶│
+           │     (Port 1522 - TCPS)                         │
+           │                                                │
+           │  5️⃣ USER/PASSWORD envoyé (chiffré)             │
+           ├───────────────────────────────────────────────▶│
+           │                                                │
+           │  6️⃣ Authentification par USER/PASSWORD seul    │
+           │◀───────────────────────────────────────────────┤
+</pre>
+        </div>
+
+        <h3>Caractéristiques</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Élément</th>
+                    <th>Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Port</strong></td><td>1522</td></tr>
+                <tr><td><strong>Wallet</strong></td><td>❌ PAS obligatoire</td></tr>
+                <tr><td><strong>Certificat client</strong></td><td>❌ Pas requis</td></tr>
+                <tr><td><strong>Certificat serveur</strong></td><td>✅ Requis (vérifié par client)</td></tr>
+                <tr><td><strong>Chiffrement</strong></td><td>TLS 1.2/1.3</td></tr>
+                <tr><td><strong>Qui vérifie qui ?</strong></td><td>Client vérifie serveur seulement</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Chaîne de connexion</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>JDBC sans Wallet (TLS simple)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Format JDBC simple
+jdbc:oracle:thin:@tcps://exacc-host:1522/SERVICE
+
+-- Format TNS complet
+jdbc:oracle:thin:@(DESCRIPTION=
+    (ADDRESS=(PROTOCOL=TCPS)(HOST=exacc-host)(PORT=1522))
+    (CONNECT_DATA=(SERVICE_NAME=SERVICE))
+)
+
+-- SQLPlus (nécessite configuration sqlnet.ora)
+sqlplus user/password@"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=exacc-host)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=SERVICE)))"</code></pre>
+        </div>
+
+        <h3>Configuration requise côté ExaCC</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>Désactiver mTLS sur Autonomous Database</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Le DBA doit exécuter cette commande pour désactiver mTLS
+BEGIN
+    ORDS_ADMIN.DISABLE_MTLS;
+END;
+/
+
+-- Ou via OCI Console :
+-- Database Details → Network → Mutual TLS (mTLS) → Disable</code></pre>
+        </div>
+
+        <h3>Quand ce mode est utilisé ?</h3>
+        <ul style="margin: 15px 0; padding-left: 25px; line-height: 1.8;">
+            <li>✅ ExaCC configuré sans mTLS obligatoire</li>
+            <li>✅ Connexions depuis réseau interne sécurisé</li>
+            <li>✅ Quand on veut chiffrement SANS gestion de Wallet client</li>
+            <li>✅ Applications legacy qui ne supportent pas bien le Wallet</li>
+        </ul>
+    </section>
+
+    <!-- MODE 3: TCP Classique -->
+    <section>
+        <h2 style="color: #c62828;">⚡ Mode 3 : TCP Classique - Connexion NON chiffrée</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🚨</span>
+            <div>
+                <strong>Mode traditionnel sans chiffrement :</strong> C'est le mode identique à On-Premise.
+                Les données circulent en CLAIR sur le réseau. Nécessite un réseau privé sécurisé.
+            </div>
+        </div>
+
+        <h3>Schéma de fonctionnement</h3>
+        <div style="background: #b71c1c; color: white; padding: 20px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 0.9em; overflow-x: auto;">
+<pre style="margin: 0; color: white;">
+┌─────────────────────┐                          ┌─────────────────────┐
+│  SERVEUR APPLICATIF │                          │       ExaCC         │
+│                     │                          │                     │
+│  ❌ Pas de Wallet   │                          │  ❌ Pas de          │
+│  ❌ Pas de certif   │                          │     certificat      │
+└──────────┬──────────┘                          └──────────┬──────────┘
+           │                                                │
+           │  1️⃣ "Bonjour, voici USER/PASSWORD"             │
+           ├───────────────────────────────────────────────▶│
+           │     ⚠️ En clair sur le réseau !                │
+           │                                                │
+           │  2️⃣ Vérification USER/PASSWORD                 │
+           │                                                │
+           │  3️⃣ ✅ Connexion établie                        │
+           │◀──────────────────────────────────────────────▶│
+           │     (Port 1521 - TCP)                          │
+           │                                                │
+           │  ⚠️ Toutes les données NON chiffrées           │
+           │◀──────────────────────────────────────────────▶│
+</pre>
+        </div>
+
+        <h3>Caractéristiques</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Élément</th>
+                    <th>Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Port</strong></td><td>1521</td></tr>
+                <tr><td><strong>Wallet</strong></td><td>❌ Pas nécessaire</td></tr>
+                <tr><td><strong>Certificat client</strong></td><td>❌ Pas nécessaire</td></tr>
+                <tr><td><strong>Certificat serveur</strong></td><td>❌ Pas nécessaire</td></tr>
+                <tr><td><strong>Chiffrement</strong></td><td>❌ AUCUN</td></tr>
+                <tr><td><strong>Qui vérifie qui ?</strong></td><td>Personne (juste USER/PASSWORD)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Chaîne de connexion</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>JDBC classique (identique On-Premise)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Format JDBC simple (identique à On-Premise)
+jdbc:oracle:thin:@exacc-host:1521/SERVICE
+
+-- Format TNS
+jdbc:oracle:thin:@(DESCRIPTION=
+    (ADDRESS=(PROTOCOL=TCP)(HOST=exacc-host)(PORT=1521))
+    (CONNECT_DATA=(SERVICE_NAME=SERVICE))
+)
+
+-- SQLPlus
+sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
+        </div>
+
+        <h3>⚠️ Conditions OBLIGATOIRES</h3>
+        <div style="background: #ffcdd2; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px solid #e53935;">
+            <p style="margin: 0 0 15px 0; font-weight: bold; color: #c62828;">Ce mode n'est possible QUE si :</p>
+            <ul style="margin: 0; padding-left: 25px; line-height: 1.8;">
+                <li>✅ Réseau <strong>privé</strong> entre serveur applicatif et ExaCC (VPN, FastConnect, Private Endpoint)</li>
+                <li>✅ Réseau totalement <strong>isolé d'Internet</strong></li>
+                <li>✅ Configuration spécifique validée par l'équipe Cloud Oracle</li>
+                <li>✅ Port 1521 ouvert sur ExaCC (pas toujours le cas)</li>
+            </ul>
+        </div>
+
+        <div style="background: #263238; color: white; padding: 20px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 0.9em;">
+<pre style="margin: 0; color: white;">
+┌─────────────────────────────────────────────────────────────┐
+│  RÉSEAU PRIVÉ OBLIGATOIRE                                   │
+│                                                             │
+│  Serveur Appli ◄────── VPN/FastConnect ──────► ExaCC       │
+│       │                                           │         │
+│       └─────────── Réseau privé isolé ───────────┘         │
+│                   (Pas d'accès Internet)                    │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+
+        <h3>Quand ce mode est possible ?</h3>
+        <ul style="margin: 15px 0; padding-left: 25px; line-height: 1.8;">
+            <li>✅ ExaCC avec réseau privé (VPN, FastConnect, Private Endpoint)</li>
+            <li>✅ Réseau totalement isolé d'Internet</li>
+            <li>✅ Configuration spécifique par l'équipe Cloud</li>
+            <li>❌ JAMAIS depuis Internet public</li>
+        </ul>
+    </section>
+
+    <!-- Questions à poser au DBA -->
+    <section>
+        <h2>❓ Questions à poser à votre DBA Cloud</h2>
+
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 25px; border-radius: 10px; margin: 15px 0;">
+            <p style="margin: 0 0 15px 0; font-weight: bold; color: #1565c0; font-size: 1.1em;">
+                Avant de configurer vos applications, posez ces questions à votre équipe DBA/Cloud Oracle :
+            </p>
+
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                <ol style="margin: 0; padding-left: 25px; line-height: 2;">
+                    <li><strong>Quel mode est configuré sur notre ExaCC ?</strong>
+                        <ul style="margin: 5px 0 10px 20px;">
+                            <li>☐ mTLS (Wallet obligatoire)</li>
+                            <li>☐ TLS simple (pas de Wallet)</li>
+                            <li>☐ TCP sur réseau privé</li>
+                        </ul>
+                    </li>
+                    <li><strong>Le port 1521 (TCP) est-il accessible ?</strong></li>
+                    <li><strong>Devons-nous déployer un Wallet sur les serveurs applicatifs ?</strong></li>
+                    <li><strong>Quelle est l'URL/hostname de connexion ?</strong></li>
+                    <li><strong>Quels sont les noms de services disponibles ?</strong> (service_high, service_medium, service_low)</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Conseil :</strong> La réponse à ces questions déterminera si vous devez modifier vos chaînes de connexion
+                et si vous devez déployer un Wallet sur vos serveurs applicatifs.
+            </div>
+        </div>
+    </section>
+
+    <!-- Récapitulatif -->
+    <section>
+        <h2>📊 Tableau Récapitulatif</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Mode</th>
+                    <th>Port</th>
+                    <th>Wallet</th>
+                    <th>Chiffrement</th>
+                    <th>Sécurité</th>
+                    <th>Chaîne de connexion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: #e8f5e9;">
+                    <td><strong>mTLS</strong></td>
+                    <td>1522</td>
+                    <td>✅ Obligatoire</td>
+                    <td>✅ TLS</td>
+                    <td>🔒🔒🔒</td>
+                    <td><code>@tcps://host:1522/SVC?wallet_location=...</code></td>
+                </tr>
+                <tr style="background: #fff3e0;">
+                    <td><strong>TLS</strong></td>
+                    <td>1522</td>
+                    <td>❌ Non</td>
+                    <td>✅ TLS</td>
+                    <td>🔒🔒</td>
+                    <td><code>@tcps://host:1522/SVC</code></td>
+                </tr>
+                <tr style="background: #ffebee;">
+                    <td><strong>TCP</strong></td>
+                    <td>1521</td>
+                    <td>❌ Non</td>
+                    <td>❌ Non</td>
+                    <td>🔒</td>
+                    <td><code>@host:1521/SVC</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="background: #fff9c4; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #fbc02d;">
+            <p style="margin: 0; color: #f57c00; font-weight: bold;">
+                💡 <strong>Résumé :</strong><br><br>
+                • <strong>Vos chaînes actuelles vont continuer à fonctionner</strong> uniquement si ExaCC est configuré en mode TCP (port 1521) avec réseau privé.<br><br>
+                • Si ExaCC est configuré en <strong>mTLS</strong> (le plus courant), vous devrez déployer le Wallet et modifier vos chaînes de connexion.<br><br>
+                • Si ExaCC est configuré en <strong>TLS simple</strong>, vous devrez juste changer le port (1522) et le protocole (TCPS).
+            </p>
+        </div>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET MODES DE CONNEXION ==================== -->
 
 <!-- ==================== ONGLET SCRIPTS ==================== -->
 <div id="scripts" class="tab-content">
