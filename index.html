@@ -614,11 +614,264 @@
         .add-script-btn:hover {
             background: var(--primary-dark);
         }
+
+        /* ===== STYLES ONGLET CAPTURES ===== */
+        .captures-container {
+            display: flex;
+            gap: 20px;
+            min-height: 500px;
+        }
+
+        .captures-list {
+            width: 300px;
+            flex-shrink: 0;
+            background: var(--white);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .captures-list h3 {
+            margin-bottom: 15px;
+            color: var(--secondary);
+            font-size: 1rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        .capture-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: var(--light-gray);
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .capture-item:hover {
+            background: #e8f0fe;
+            border-left-color: var(--secondary);
+        }
+
+        .capture-item.active {
+            background: #e8f0fe;
+            border-left-color: var(--primary);
+        }
+
+        .capture-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .capture-item .capture-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .capture-item .capture-date {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        .capture-item .capture-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .capture-btn {
+            flex: 1;
+            padding: 5px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .capture-btn-view {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .capture-btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .captures-paste-zone {
+            flex: 1;
+            background: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .paste-header {
+            background: var(--secondary);
+            color: var(--white);
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .paste-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .paste-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border: 3px dashed #ccc;
+            margin: 20px;
+            border-radius: 10px;
+            background: #fafafa;
+            transition: all 0.3s;
+            min-height: 300px;
+        }
+
+        .paste-zone:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: #e3f2fd;
+        }
+
+        .paste-zone.has-image {
+            border-style: solid;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .paste-zone .paste-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .paste-zone .paste-text {
+            font-size: 1.2rem;
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .paste-zone .paste-hint {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .paste-zone .paste-shortcut {
+            display: inline-block;
+            background: var(--dark);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1rem;
+            margin-top: 15px;
+        }
+
+        .paste-preview {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .paste-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .paste-action-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .paste-action-btn.save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .paste-action-btn.save:hover {
+            background: var(--primary-dark);
+        }
+
+        .paste-action-btn.clear {
+            background: var(--gray);
+            color: white;
+        }
+
+        .paste-action-btn.clear:hover {
+            background: #424242;
+        }
+
+        .upload-status {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .upload-status.success {
+            display: block;
+            background: #e8f5e9;
+            color: var(--primary);
+        }
+
+        .upload-status.error {
+            display: block;
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .upload-status.info {
+            display: block;
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .upload-status.loading {
+            display: block;
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .storage-info {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 </head>
 <body>
 
@@ -635,8 +888,12 @@
 <nav>
     <ul class="tabs-nav">
         <li><a href="#guide" class="active" onclick="showTab('guide', this)">📋 Guide Migration</a></li>
+        <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
         <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts</a></li>
+        <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
+        <li><a href="#captures" onclick="showTab('captures', this)">📷 Captures</a></li>
+        -->
     </ul>
 </nav>
 
@@ -2942,7 +3199,1969 @@ END;
         </div>
     </section>
 
+    <!-- Section DB Links - Identification et Migration -->
+    <section>
+        <h2>🔗 Audit des DB Links (Database Links)</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>IMPORTANT :</strong> Les DB Links existants ne fonctionneront pas sur ExaCC !<br>
+                Ils utilisent TCP/1521 alors qu'ExaCC requiert mTLS/TCPS/1522 avec certificats.
+            </div>
+        </div>
+
+        <h3>Pourquoi les DB Links ne marchent pas sur ExaCC ?</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>On-Premise (Avant)</th>
+                    <th>ExaCC (Apres)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Protocole</td>
+                    <td>TCP (non chiffre)</td>
+                    <td>TCPS (SSL/TLS)</td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>1521</td>
+                    <td>1522</td>
+                </tr>
+                <tr>
+                    <td>Authentification</td>
+                    <td>User/Password simple</td>
+                    <td>mTLS + Certificats</td>
+                </tr>
+                <tr>
+                    <td>tnsnames.ora</td>
+                    <td>Fichier sur le serveur</td>
+                    <td>Dans le Wallet (non modifiable)</td>
+                </tr>
+                <tr>
+                    <td>Methode de creation</td>
+                    <td>CREATE DATABASE LINK</td>
+                    <td>DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Script 1 : Identifier tous les DB Links existants</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Lister tous les DB Links</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- AUDIT DB LINKS - Identifier tous les DB Links existants
+-- ============================================================
+-- Executer en tant que DBA ou utilisateur avec privileges adequats
+
+-- 1. Lister TOUS les DB Links de la base
+SELECT
+    owner,
+    db_link AS nom_dblink,
+    username AS user_distant,
+    host AS chaine_connexion,
+    created AS date_creation
+FROM dba_db_links
+ORDER BY owner, db_link;
+
+-- 2. Lister les DB Links de l'utilisateur courant
+SELECT
+    db_link AS nom_dblink,
+    username AS user_distant,
+    host AS chaine_connexion,
+    created AS date_creation
+FROM user_db_links
+ORDER BY db_link;
+
+-- 3. Compter les DB Links par owner
+SELECT
+    owner,
+    COUNT(*) AS nb_dblinks
+FROM dba_db_links
+GROUP BY owner
+ORDER BY nb_dblinks DESC;</code></pre>
+        </div>
+
+        <h3>Script 2 : Identifier les objets qui utilisent ces DB Links</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Dependances des DB Links</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- Identifier les objets PL/SQL qui utilisent des DB Links
+-- ============================================================
+
+-- 1. Via les dependances Oracle
+SELECT
+    d.owner AS schema_owner,
+    d.name AS object_name,
+    d.type AS object_type,
+    d.referenced_link_name AS dblink_utilise
+FROM dba_dependencies d
+WHERE d.referenced_link_name IS NOT NULL
+ORDER BY d.owner, d.name;
+
+-- 2. Recherche dans le code source (plus exhaustif)
+SELECT DISTINCT
+    owner,
+    name AS object_name,
+    type AS object_type,
+    '@' || REGEXP_SUBSTR(UPPER(text), '@([A-Z0-9_]+)', 1, 1, NULL, 1) AS dblink_probable
+FROM dba_source
+WHERE UPPER(text) LIKE '%@%'
+  AND REGEXP_LIKE(text, '@[A-Za-z0-9_]+')
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+ORDER BY owner, name;
+
+-- 3. Resume : Impact par DB Link
+SELECT
+    d.referenced_link_name AS dblink_name,
+    COUNT(DISTINCT d.owner || '.' || d.name) AS nb_objets_impactes,
+    LISTAGG(DISTINCT d.type, ', ') WITHIN GROUP (ORDER BY d.type) AS types_objets
+FROM dba_dependencies d
+WHERE d.referenced_link_name IS NOT NULL
+GROUP BY d.referenced_link_name
+ORDER BY nb_objets_impactes DESC;</code></pre>
+        </div>
+
+        <h3>Script 3 : Migration d'un DB Link vers ExaCC</h3>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Sur ExaCC :</strong> Utilisez DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK<br>
+                Le tnsnames.ora est gere automatiquement (dans le Wallet).
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Exemple de migration DB Link</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- MIGRATION DB LINK : On-Premise vers ExaCC
+-- ============================================================
+
+-- Exemple : DB Link Q08449A qui pointait vers une autre instance
+-- AVANT (On-Premise) - NE FONCTIONNERA PAS SUR EXACC :
+/*
+CREATE DATABASE LINK "Q08449A"
+   CONNECT TO "BANKREC" IDENTIFIED BY "password"
+   USING '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=S01VL9975523)(PORT=1521))
+          (CONNECT_DATA=(SERVER=DEDICATED)(SID=Q08449AP10)))';
+*/
+
+-- APRES (ExaCC) - A EXECUTER SUR EXACC :
+
+-- Etape 1 : Supprimer l'ancien DB Link (s'il existe)
+DROP DATABASE LINK Q08449A;
+
+-- Etape 2 : Creer le credential pour l'authentification
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'CRED_Q08449A',
+        username        => 'BANKREC',
+        password        => 'NouveauMotDePasse'
+    );
+END;
+/
+
+-- Etape 3 : Creer le nouveau DB Link avec DBMS_CLOUD_ADMIN
+BEGIN
+    DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK(
+        db_link_name        => 'Q08449A',
+        hostname            => 'exacc-q08449a-scan.oraclecloud.com',  -- Nouveau hostname ExaCC
+        port                => 1522,                                   -- Port mTLS
+        service_name        => 'Q08449A_HIGH.adb.oraclecloud.com',    -- Service name ExaCC
+        ssl_server_dn_match => TRUE,
+        credential_name     => 'CRED_Q08449A'
+    );
+END;
+/
+
+-- Etape 4 : Tester le DB Link
+SELECT * FROM dual@Q08449A;
+
+-- Etape 5 : Verifier les objets dependants
+SELECT owner, name, type
+FROM dba_dependencies
+WHERE referenced_link_name = 'Q08449A';</code></pre>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">📋</span>
+            <div>
+                <strong>Checklist DB Links :</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Lister tous les DB Links avec le script 1</li>
+                    <li>Identifier les objets dependants avec le script 2</li>
+                    <li>Obtenir les nouveaux hostnames ExaCC aupres des admins OCI</li>
+                    <li>Recreer chaque DB Link avec DBMS_CLOUD_ADMIN</li>
+                    <li>Tester chaque DB Link et ses objets dependants</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Incompatibilites OCI -->
+    <section>
+        <h2>⚠️ Audit des Incompatibilites OCI/ExaCC</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🚨</span>
+            <div>
+                <strong>Elements NON compatibles avec OCI/ExaCC !</strong><br>
+                Ces fonctionnalites Oracle ne fonctionnent pas ou differemment sur ExaCC.
+            </div>
+        </div>
+
+        <h3>Tableau des incompatibilites</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>On-Premise</th>
+                    <th>ExaCC/OCI</th>
+                    <th>Solution</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>UTL_FILE</strong></td>
+                    <td>Filesystem serveur</td>
+                    <td>Non accessible</td>
+                    <td>DBMS_CLOUD + Object Storage (ce guide)</td>
+                </tr>
+                <tr>
+                    <td><strong>DB Links</strong></td>
+                    <td>TCP/1521</td>
+                    <td>mTLS/1522</td>
+                    <td>DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK</td>
+                </tr>
+                <tr>
+                    <td><strong>DIRECTORY</strong></td>
+                    <td>Pointe vers filesystem</td>
+                    <td>Filesystem non accessible</td>
+                    <td>Object Storage via DBMS_CLOUD</td>
+                </tr>
+                <tr>
+                    <td><strong>UTL_SMTP</strong></td>
+                    <td>Serveur SMTP interne</td>
+                    <td>Reseau restreint</td>
+                    <td>OCI Email Delivery / APEX_MAIL</td>
+                </tr>
+                <tr>
+                    <td><strong>UTL_TCP</strong></td>
+                    <td>Connexions TCP directes</td>
+                    <td>Bloque</td>
+                    <td>OCI Functions / API Gateway</td>
+                </tr>
+                <tr>
+                    <td><strong>UTL_HTTP</strong></td>
+                    <td>Appels HTTP directs</td>
+                    <td>ACL requises</td>
+                    <td>DBMS_CLOUD.SEND_REQUEST + ACL</td>
+                </tr>
+                <tr>
+                    <td><strong>DBMS_SCHEDULER (External)</strong></td>
+                    <td>Scripts OS externes</td>
+                    <td>Non supporte</td>
+                    <td>OCI Functions / PL/SQL pur</td>
+                </tr>
+                <tr>
+                    <td><strong>OS Authentication</strong></td>
+                    <td>Utilisateurs OS</td>
+                    <td>Non supporte</td>
+                    <td>Authentication base de donnees</td>
+                </tr>
+                <tr>
+                    <td><strong>Bequeath</strong></td>
+                    <td>Connexion locale sans listener</td>
+                    <td>Non supporte</td>
+                    <td>Connexion TNS standard</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Script d'audit global des incompatibilites</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Audit complet des incompatibilites OCI</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- AUDIT GLOBAL DES INCOMPATIBILITES OCI/EXACC
+-- ============================================================
+-- Executer en tant que DBA avant la migration
+
+SET SERVEROUTPUT ON
+SET LINESIZE 200
+
+PROMPT
+PROMPT ========================================
+PROMPT 1. AUDIT UTL_FILE
+PROMPT ========================================
+
+SELECT
+    owner,
+    name AS object_name,
+    type AS object_type,
+    COUNT(*) AS nb_references
+FROM dba_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+GROUP BY owner, name, type
+ORDER BY owner, name;
+
+PROMPT
+PROMPT ========================================
+PROMPT 2. AUDIT DIRECTORY (Repertoires)
+PROMPT ========================================
+
+SELECT
+    directory_name,
+    directory_path,
+    origin_con_id
+FROM dba_directories
+WHERE directory_name NOT LIKE 'ORACLE%'
+  AND directory_name NOT LIKE 'DATA_PUMP%'
+ORDER BY directory_name;
+
+PROMPT
+PROMPT ========================================
+PROMPT 3. AUDIT DB LINKS
+PROMPT ========================================
+
+SELECT
+    owner,
+    db_link,
+    username,
+    host
+FROM dba_db_links
+ORDER BY owner, db_link;
+
+PROMPT
+PROMPT ========================================
+PROMPT 4. AUDIT UTL_SMTP (Emails)
+PROMPT ========================================
+
+SELECT
+    owner,
+    name AS object_name,
+    type AS object_type
+FROM dba_dependencies
+WHERE referenced_name = 'UTL_SMTP'
+  AND owner NOT IN ('SYS', 'SYSTEM')
+ORDER BY owner, name;
+
+PROMPT
+PROMPT ========================================
+PROMPT 5. AUDIT UTL_TCP (Connexions TCP)
+PROMPT ========================================
+
+SELECT
+    owner,
+    name AS object_name,
+    type AS object_type
+FROM dba_dependencies
+WHERE referenced_name = 'UTL_TCP'
+  AND owner NOT IN ('SYS', 'SYSTEM')
+ORDER BY owner, name;
+
+PROMPT
+PROMPT ========================================
+PROMPT 6. AUDIT UTL_HTTP (Appels HTTP)
+PROMPT ========================================
+
+SELECT
+    owner,
+    name AS object_name,
+    type AS object_type
+FROM dba_dependencies
+WHERE referenced_name = 'UTL_HTTP'
+  AND owner NOT IN ('SYS', 'SYSTEM')
+ORDER BY owner, name;
+
+PROMPT
+PROMPT ========================================
+PROMPT 7. AUDIT DBMS_SCHEDULER (Jobs externes)
+PROMPT ========================================
+
+SELECT
+    owner,
+    job_name,
+    job_type,
+    program_name,
+    state
+FROM dba_scheduler_jobs
+WHERE job_type = 'EXECUTABLE'
+   OR program_name IN (
+       SELECT program_name FROM dba_scheduler_programs
+       WHERE program_type = 'EXECUTABLE'
+   )
+ORDER BY owner, job_name;
+
+PROMPT
+PROMPT ========================================
+PROMPT 8. AUDIT AUTHENTIFICATION OS
+PROMPT ========================================
+
+SELECT
+    username,
+    authentication_type,
+    account_status
+FROM dba_users
+WHERE authentication_type = 'EXTERNAL'
+ORDER BY username;
+
+PROMPT
+PROMPT ========================================
+PROMPT 9. AUDIT ACL (Network Access Control)
+PROMPT ========================================
+
+SELECT
+    host,
+    lower_port,
+    upper_port,
+    acl
+FROM dba_network_acls
+ORDER BY host;
+
+PROMPT
+PROMPT ========================================
+PROMPT 10. RESUME - COMPTAGE DES INCOMPATIBILITES
+PROMPT ========================================
+
+SELECT 'UTL_FILE' AS element, COUNT(DISTINCT owner || '.' || name) AS nb_objets
+FROM dba_source WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM', 'XDB', 'WMSYS')
+UNION ALL
+SELECT 'DB Links', COUNT(*) FROM dba_db_links
+UNION ALL
+SELECT 'DIRECTORY', COUNT(*) FROM dba_directories
+  WHERE directory_name NOT LIKE 'ORACLE%' AND directory_name NOT LIKE 'DATA_PUMP%'
+UNION ALL
+SELECT 'UTL_SMTP', COUNT(*) FROM dba_dependencies
+  WHERE referenced_name = 'UTL_SMTP' AND owner NOT IN ('SYS', 'SYSTEM')
+UNION ALL
+SELECT 'UTL_TCP', COUNT(*) FROM dba_dependencies
+  WHERE referenced_name = 'UTL_TCP' AND owner NOT IN ('SYS', 'SYSTEM')
+UNION ALL
+SELECT 'UTL_HTTP', COUNT(*) FROM dba_dependencies
+  WHERE referenced_name = 'UTL_HTTP' AND owner NOT IN ('SYS', 'SYSTEM')
+UNION ALL
+SELECT 'SCHEDULER External', COUNT(*) FROM dba_scheduler_jobs WHERE job_type = 'EXECUTABLE'
+UNION ALL
+SELECT 'OS Auth Users', COUNT(*) FROM dba_users WHERE authentication_type = 'EXTERNAL'
+ORDER BY nb_objets DESC;</code></pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Actions recommandees :</strong>
+                <ol style="margin: 10px 0 0 20px;">
+                    <li>Executer le script d'audit ci-dessus AVANT la migration</li>
+                    <li>Pour chaque element identifie, planifier la solution de remplacement</li>
+                    <li>Tester les solutions sur un environnement de dev/test</li>
+                    <li>Documenter les changements pour les equipes de dev</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Architecture Entreprise WildFly/CFT/Control-M -->
+    <section>
+        <h2>🏢 Architecture Entreprise - Impacts Migration</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">🔍</span>
+            <div>
+                <strong>Vue d'ensemble de l'architecture applicative</strong><br>
+                Cette section decrit l'architecture typique des applications entreprise et les impacts de la migration ExaCC sur chaque composant.
+            </div>
+        </div>
+
+        <h3>Schema d'architecture</h3>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; font-family: monospace; margin: 15px 0; overflow-x: auto;">
+<pre style="background: transparent; padding: 0; margin: 0; color: #333;">
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                           ARCHITECTURE APPLICATIVE                                   │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+    ┌─────────────────┐
+    │   Utilisateurs  │
+    │   (Navigateur)  │
+    └────────┬────────┘
+             │ HTTPS
+             ▼
+    ┌─────────────────┐
+    │  WildFly Server │  ◄── Presentation Web (Java EE)
+    │   (Port 8080)   │
+    └────────┬────────┘
+             │ Appels internes
+             ▼
+    ┌─────────────────┐      ┌───────────────────────────────┐
+    │  Server Appli   │      │         Control-M             │
+    │  (Metier/DAO)   │      │    (Ordonnanceur Jobs)        │
+    └────────┬────────┘      └──────────────┬────────────────┘
+             │                              │
+             │ JDBC/TNS                     │ Declenchement
+             │ mTLS:1522                    ▼
+             │                   ┌───────────────────────────┐
+             │                   │          CFT              │
+             │                   │   (Transfert Fichiers)    │
+             │                   └──────────────┬────────────┘
+             │                                  │
+             │                                  │ Fichiers XML
+             ▼                                  ▼
+    ┌─────────────────────────────────────────────────────────┐
+    │                    Oracle Database                       │
+    │                       (ExaCC)                            │
+    │  ┌─────────────────┐    ┌─────────────────────────────┐ │
+    │  │   DB Links      │    │   UTL_FILE_WRAPPER          │ │
+    │  │ (vers autres BD)│    │   (Integration XML/CFT)     │ │
+    │  └─────────────────┘    └─────────────────────────────┘ │
+    └─────────────────────────────────────────────────────────┘
+</pre>
+        </div>
+
+        <h3>Tableau des impacts par composant</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Composant</th>
+                    <th>Role</th>
+                    <th>Impact Migration ExaCC</th>
+                    <th>Action Requise</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>WildFly Server</strong></td>
+                    <td>Presentation web, serveur d'applications Java EE</td>
+                    <td>Connexion JDBC vers ExaCC via mTLS</td>
+                    <td>
+                        <span class="tag tag-attente">Config Wallet</span><br>
+                        Deployer le Wallet sur le serveur WildFly.<br>
+                        Modifier les datasources JDBC (port 1522, SSL).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Server Appli</strong></td>
+                    <td>Logique metier, couche DAO, appels DB Links</td>
+                    <td>
+                        - Connexion JDBC mTLS<br>
+                        - DB Links via DBMS_CLOUD_ADMIN
+                    </td>
+                    <td>
+                        <span class="tag tag-attente">Config Wallet</span><br>
+                        <span class="tag tag-admin">Migration DB Links</span><br>
+                        Voir section "DB Links vers ExaCC".
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Control-M</strong></td>
+                    <td>Ordonnanceur de jobs batch</td>
+                    <td>Aucun impact direct (n'execute pas de SQL)</td>
+                    <td>
+                        <span class="tag tag-toi">Aucune action</span><br>
+                        Control-M appelle le Server Appli, pas la base directement.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>CFT</strong></td>
+                    <td>Transfert de fichiers XML vers le serveur</td>
+                    <td>Les fichiers doivent etre accessibles pour UTL_FILE_WRAPPER</td>
+                    <td>
+                        <span class="tag tag-attente">Config Repertoire</span><br>
+                        S'assurer que le repertoire CFT est accessible au DIRECTORY Oracle.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Integration XML (UTL_FILE)</strong></td>
+                    <td>Lecture des fichiers XML en base</td>
+                    <td>UTL_FILE remplace par UTL_FILE_WRAPPER</td>
+                    <td>
+                        <span class="tag tag-toi">Deja couvert</span><br>
+                        Voir section "Solution UTL_FILE_WRAPPER".
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>DB Links (Server Appli)</strong></td>
+                    <td>Connexion vers autres bases de donnees</td>
+                    <td>Migration obligatoire vers DBMS_CLOUD_ADMIN</td>
+                    <td>
+                        <span class="tag tag-admin">Migration</span><br>
+                        Voir section "DB Links vers ExaCC".
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Checklist Migration Architecture Entreprise</h3>
+        <ul class="checklist">
+            <li class="pending">
+                <span class="step-number">1</span>
+                <div>
+                    <strong>Configuration WildFly</strong><br>
+                    <small>Deployer le Wallet Oracle sur le serveur WildFly, configurer les datasources JDBC avec mTLS (port 1522).</small>
+                </div>
+            </li>
+            <li class="pending">
+                <span class="step-number">2</span>
+                <div>
+                    <strong>Configuration Server Appli</strong><br>
+                    <small>Deployer le Wallet sur le Server Appli, mettre a jour les chaines de connexion JDBC.</small>
+                </div>
+            </li>
+            <li class="pending">
+                <span class="step-number">3</span>
+                <div>
+                    <strong>Migration DB Links</strong><br>
+                    <small>Recreer tous les DB Links utilises par le Server Appli avec DBMS_CLOUD_ADMIN (voir script d'audit).</small>
+                </div>
+            </li>
+            <li class="pending">
+                <span class="step-number">4</span>
+                <div>
+                    <strong>Configuration CFT/Repertoires</strong><br>
+                    <small>Verifier que le repertoire de depot CFT est accessible au DIRECTORY Oracle pour UTL_FILE_WRAPPER.</small>
+                </div>
+            </li>
+            <li class="pending">
+                <span class="step-number">5</span>
+                <div>
+                    <strong>Deploiement UTL_FILE_WRAPPER</strong><br>
+                    <small>Creer le package UTL_FILE_WRAPPER et le PUBLIC SYNONYM pour l'integration des fichiers XML.</small>
+                </div>
+            </li>
+            <li class="pending">
+                <span class="step-number">6</span>
+                <div>
+                    <strong>Tests d'integration</strong><br>
+                    <small>Tester le flux complet : Control-M → CFT → XML → UTL_FILE_WRAPPER → Base ExaCC.</small>
+                </div>
+            </li>
+        </ul>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Points cles :</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Control-M</strong> n'a pas besoin de modification (n'accede pas directement a la base)</li>
+                    <li><strong>WildFly et Server Appli</strong> necessitent le deploiement du Wallet Oracle</li>
+                    <li><strong>DB Links</strong> du Server Appli doivent etre migres via DBMS_CLOUD_ADMIN</li>
+                    <li><strong>CFT → XML → UTL_FILE</strong> fonctionne avec UTL_FILE_WRAPPER (transparent)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
 </div>
+
+<!-- ==================== ONGLET POST-MIGRATION ==================== -->
+<div id="postmigration" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; margin-top: 20px;">
+        <h2>✅ Actions Post-Migration ExaCC</h2>
+        <p style="margin: 15px 0;">Checklist des actions a realiser apres la migration vers ExaCC pour les applications entreprise (Accurate, etc.)</p>
+    </section>
+
+    <!-- SECTION 1: WALLET -->
+    <section>
+        <h2>1. Deploiement du Wallet Oracle</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🔐</span>
+            <div>
+                <strong>OBLIGATOIRE :</strong> Le Wallet est indispensable pour la connexion mTLS sur ExaCC (port 1522).
+                Sans Wallet, aucune connexion possible !
+            </div>
+        </div>
+
+        <h3>Qu'est-ce que le Wallet ?</h3>
+        <p>C'est un <strong>dossier securise</strong> contenant des fichiers de securite pour se connecter a la base de donnees cloud :</p>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Contenu du dossier Wallet</span>
+            </div>
+            <pre><code>📁 Wallet_MonExaCC/
+   ├── cwallet.sso      ← Certificats SSL (le plus important)
+   ├── tnsnames.ora     ← Noms des services de connexion
+   ├── sqlnet.ora       ← Configuration reseau
+   └── ewallet.p12      ← Cle privee (format PKCS12)</code></pre>
+        </div>
+
+        <h3>Pourquoi c'est obligatoire sur ExaCC ?</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>On-Premise (Avant)</th>
+                    <th>ExaCC (Apres)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Type de connexion</td>
+                    <td>Connexion simple TCP</td>
+                    <td>Connexion <strong>chiffree SSL/TLS</strong></td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>1521</td>
+                    <td><strong>1522</strong> (mTLS)</td>
+                </tr>
+                <tr>
+                    <td>Certificat</td>
+                    <td>Pas de certificat</td>
+                    <td><strong>Certificat obligatoire</strong></td>
+                </tr>
+                <tr>
+                    <td>Commande connexion</td>
+                    <td><code>sqlplus user/pwd@host:1521/service</code></td>
+                    <td><code>sqlplus user/pwd@service_high</code> (via Wallet)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Analogie simple</h3>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                Imagine le Wallet comme une <strong>carte d'acces securisee</strong> :<br><br>
+                <strong>Avant</strong> (on-premise) : Tu donnais juste ton nom et mot de passe a la porte<br>
+                <strong>Apres</strong> (ExaCC) : Tu dois presenter ta <strong>carte magnetique</strong> (le Wallet) + ton mot de passe<br><br>
+                Sans la carte (Wallet), meme avec le bon mot de passe, la porte reste fermee.
+            </div>
+        </div>
+
+        <h3>Comment ca marche ?</h3>
+
+        <!-- SCHÉMA D'ARCHITECTURE DÉTAILLÉ -->
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 25px; border-radius: 12px; margin: 20px 0; border: 2px solid #2196f3;">
+            <h4 style="color: #1565c0; margin-top: 0; text-align: center; font-size: 1.2em;">📊 Architecture Complète du Wallet</h4>
+
+            <!-- ÉTAPE 1: Téléchargement -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #ff9800;">
+                <div style="font-weight: bold; color: #e65100; margin-bottom: 10px;">
+                    🔸 ÉTAPE 1 : Téléchargement du Wallet depuis OCI
+                </div>
+                <div style="font-family: monospace; background: #fafafa; padding: 15px; border-radius: 5px;">
+<pre style="margin: 0;">┌──────────────────────────────────────────────────────────────┐
+│              ORACLE CLOUD INFRASTRUCTURE (OCI)               │
+│  ┌────────────────────────────────────────────────┐          │
+│  │  ExaCC Console - Database Details              │          │
+│  │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │          │
+│  │  [🔐 Download Wallet]  ← Clic DBA              │          │
+│  │                                                 │          │
+│  │  Génère:                                        │          │
+│  │  📦 Wallet_ExaCC_20250125.zip (~50 KB)        │          │
+│  └────────────────────────────────────────────────┘          │
+└──────────────────────────────────────────────────────────────┘
+                         │
+                         │ Téléchargement HTTPS
+                         ▼
+                  ┌─────────────┐
+                  │ 👨‍💼 DBA PC   │
+                  │ Wallet.zip  │
+                  └─────────────┘</pre>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2: Déploiement -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #4caf50;">
+                <div style="font-weight: bold; color: #2e7d32; margin-bottom: 10px;">
+                    🔸 ÉTAPE 2 : Déploiement sur Serveur Applicatif
+                </div>
+                <div style="font-family: monospace; background: #fafafa; padding: 15px; border-radius: 5px;">
+<pre style="margin: 0;">┌──────────────────────────────────────────────────────────────┐
+│         SERVEUR APPLICATIF (On-Premise ou VM Cloud)          │
+│                                                               │
+│  📂 /opt/oracle/wallet/  (ou C:\oracle\wallet\)              │
+│  ├── 🔐 cwallet.sso         ← Certificats SSL Client         │
+│  │    • Contient le certificat public d'ExaCC                │
+│  │    • Permet l'authentification mutuelle (mTLS)            │
+│  │    • Format Oracle SSO (Single Sign-On)                   │
+│  │                                                            │
+│  ├── 🔑 ewallet.p12          ← Clé Privée                    │
+│  │    • Format PKCS#12 (standard cryptographique)            │
+│  │    • Utilisé pour déchiffrer les données                  │
+│  │    • Protégé par mot de passe (optionnel)                 │
+│  │                                                            │
+│  ├── 📝 tnsnames.ora         ← Services de Connexion         │
+│  │    • service_high    = Haute disponibilité                │
+│  │    • service_medium  = Performance moyenne                │
+│  │    • service_low     = Requêtes batch                     │
+│  │    • Contient hostname ExaCC, port 1522, protocole TCPS   │
+│  │                                                            │
+│  └── ⚙️ sqlnet.ora           ← Configuration SSL             │
+│       • WALLET_LOCATION = (SOURCE=(METHOD=FILE)(...))        │
+│       • SSL_CLIENT_AUTHENTICATION = TRUE                     │
+│       • SSL_VERSION = 1.2                                    │
+└──────────────────────────────────────────────────────────────┘</pre>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 3: Configuration -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #9c27b0;">
+                <div style="font-weight: bold; color: #6a1b9a; margin-bottom: 10px;">
+                    🔸 ÉTAPE 3 : Configuration Environnement
+                </div>
+                <div style="font-family: monospace; background: #fafafa; padding: 15px; border-radius: 5px;">
+<pre style="margin: 0;">┌──────────────────────────────────────────────────────────────┐
+│  CONFIGURATION SYSTÈME                                        │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│  Linux/Unix:                                                  │
+│  ──────────                                                   │
+│  $ export TNS_ADMIN=/opt/oracle/wallet                       │
+│  $ export ORACLE_HOME=/opt/oracle/instantclient_19_8         │
+│                                                               │
+│  Ajouter dans: /etc/profile ou ~/.bash_profile               │
+│                                                               │
+│  Windows:                                                     │
+│  ────────                                                     │
+│  > set TNS_ADMIN=C:\oracle\wallet                            │
+│  > setx TNS_ADMIN "C:\oracle\wallet"  (persistant)           │
+│                                                               │
+│  Ou via: Panneau de configuration → Variables système        │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘</pre>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 4: Connexion avec Détails Techniques -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #2196f3;">
+                <div style="font-weight: bold; color: #1565c0; margin-bottom: 10px;">
+                    🔸 ÉTAPE 4 : Flux de Connexion mTLS (Mutual TLS)
+                </div>
+                <div style="font-family: monospace; background: #fafafa; padding: 15px; border-radius: 5px;">
+<pre style="margin: 0;">
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         FLUX DE CONNEXION DÉTAILLÉ                              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────┐              ┌─────────────────┐              ┌────────────────┐
+  │   APPLICATION    │              │  WALLET LOCAL   │              │  ORACLE ExaCC  │
+  │                  │              │  (Serveur App)  │              │   (OCI Cloud)  │
+  │  - Accurate      │              │                 │              │                │
+  │  - WildFly       │              │ /opt/oracle/    │              │  Hostname:     │
+  │  - Batch Jobs    │              │  wallet/        │              │  xxx.oraclecloud│
+  └────────┬─────────┘              └────────┬────────┘              └────────┬───────┘
+           │                                 │                                │
+           │ 1️⃣ Demande connexion             │                                │
+           │    jdbc:oracle:thin:@service_high│                               │
+           ├─────────────────────────────────▶│                                │
+           │                                 │                                │
+           │                                 │ 2️⃣ Lecture Wallet              │
+           │                                 │   - cwallet.sso (certificat)   │
+           │                                 │   - ewallet.p12 (clé privée)   │
+           │                                 │   - tnsnames.ora (service)     │
+           │                                 │                                │
+           │                                 │ 3️⃣ Établir connexion TLS       │
+           │                                 │    Port 1522 (TCPS)            │
+           │                                 ├───────────────────────────────▶│
+           │                                 │                                │
+           │                                 │    4️⃣ HANDSHAKE SSL/TLS        │
+           │                                 │   ┌──────────────────────────┐ │
+           │                                 │   │ a) Client Hello          │ │
+           │                                 │───┼─▶ Certificat client      │ │
+           │                                 │   │    (cwallet.sso)         │ │
+           │                                 │   │                          │ │
+           │                                 │   │ b) Server Hello          │ │
+           │                                 │◀──┼──  Certificat serveur    │ │
+           │                                 │   │                          │ │
+           │                                 │   │ c) Vérification mutuelle │ │
+           │                                 │───┼─▶ Signature avec clé     │ │
+           │                                 │   │    privée (ewallet.p12)  │ │
+           │                                 │   │                          │ │
+           │                                 │   │ d) ✅ Authentification OK │ │
+           │                                 │   │    Session chiffrée TLS  │ │
+           │                                 │   │    établie               │ │
+           │                                 │   └──────────────────────────┘ │
+           │                                 │                                │
+           │                                 │ 5️⃣ Authentification BDD        │
+           │                                 │    USER/PASSWORD               │
+           │                                 ├───────────────────────────────▶│
+           │                                 │                                │
+           │                                 │ 6️⃣ ✅ Connexion établie         │
+           │                                 │◀───────────────────────────────┤
+           │                                 │    Session ID: 12345           │
+           │ 7️⃣ Retour connexion OK           │                                │
+           │◀─────────────────────────────────┤                                │
+           │   Connection Pool Ready         │                                │
+           │                                 │                                │
+           │ 8️⃣ Exécution requêtes SQL        │                                │
+           │   (Données chiffrées TLS 1.2)   │                                │
+           ├─────────────────────────────────┼───────────────────────────────▶│
+           │   SELECT * FROM ...             │                                │
+           │                                 │                                │
+           │◀─────────────────────────────────┼────────────────────────────────┤
+           │   Résultats (chiffrés)          │                                │
+           │                                 │                                │
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  🔐 SÉCURITÉ mTLS (Mutual TLS)                                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  ✓ Authentification BIDIRECTIONNELLE :                                         │
+│    - Le CLIENT vérifie le certificat du SERVEUR (ExaCC)                        │
+│    - Le SERVEUR vérifie le certificat du CLIENT (Wallet)                       │
+│                                                                                 │
+│  ✓ Chiffrement TLS 1.2/1.3 de bout en bout                                     │
+│  ✓ Impossible de se connecter sans le Wallet (même avec bon USER/PASSWORD)     │
+│  ✓ Protection contre Man-in-the-Middle (MITM)                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+                </div>
+            </div>
+
+            <!-- EXPLICATION DÉTAILLÉE DU HANDSHAKE -->
+            <div style="background: #e8f5e9; padding: 25px; border-radius: 8px; margin: 20px 0; border: 3px solid #4caf50;">
+                <h4 style="color: #2e7d32; margin-top: 0; font-size: 1.3em;">
+                    🤝 EXPLICATION DÉTAILLÉE : Le HANDSHAKE SSL/TLS (Étape par Étape)
+                </h4>
+
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0 0 15px 0; line-height: 1.8; color: #333; font-size: 1.05em;">
+                        Le <strong>HANDSHAKE</strong> est la "poignée de main" entre le client (votre serveur applicatif)
+                        et le serveur (ExaCC) pour établir une connexion sécurisée. C'est un processus d'échange de messages
+                        qui permet de :
+                    </p>
+                    <ul style="margin: 10px 0 15px 20px; line-height: 1.8; color: #333;">
+                        <li>✅ <strong>Vérifier l'identité</strong> des deux parties (authentification mutuelle)</li>
+                        <li>✅ <strong>Négocier les algorithmes</strong> de chiffrement à utiliser</li>
+                        <li>✅ <strong>Échanger des clés</strong> de session pour chiffrer les données</li>
+                        <li>✅ <strong>Établir un canal sécurisé</strong> avant d'envoyer les données sensibles</li>
+                    </ul>
+                </div>
+
+                <!-- PHASE 1 : Client Hello -->
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #2196f3;">
+                    <h5 style="color: #1565c0; margin: 0 0 15px 0; font-size: 1.15em;">
+                        📤 PHASE 1 : Client Hello (Le client se présente)
+                    </h5>
+
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #1565c0;">Que fait le client ?</p>
+                        <p style="margin: 0 0 10px 0; line-height: 1.8;">
+                            Le serveur applicatif (client) envoie un message "Hello" à ExaCC contenant :
+                        </p>
+                        <ul style="margin: 5px 0 0 20px; line-height: 1.8;">
+                            <li><strong>Version TLS</strong> supportée (ex: TLS 1.2, TLS 1.3)</li>
+                            <li><strong>Liste des suites de chiffrement</strong> (cipher suites) supportées<br>
+                                <code style="background: white; padding: 2px 6px; border-radius: 3px; font-size: 0.9em;">
+                                    Ex: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+                                </code>
+                            </li>
+                            <li><strong>Nombre aléatoire</strong> (Client Random) - utilisé plus tard pour générer les clés</li>
+                            <li><strong>Session ID</strong> (pour réutiliser une session existante si possible)</li>
+                            <li><strong>Extensions</strong> (SNI - Server Name Indication, etc.)</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #1e88e5; color: white; padding: 12px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.95em;">
+                        📨 Message envoyé : "Bonjour ExaCC ! Je supporte TLS 1.2/1.3, voici mes algorithmes..."
+                    </div>
+                </div>
+
+                <!-- PHASE 2 : Server Hello -->
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #ff9800;">
+                    <h5 style="color: #e65100; margin: 0 0 15px 0; font-size: 1.15em;">
+                        📥 PHASE 2 : Server Hello (ExaCC répond et envoie son certificat)
+                    </h5>
+
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #e65100;">Que fait ExaCC ?</p>
+                        <p style="margin: 0 0 10px 0; line-height: 1.8;">
+                            ExaCC répond avec plusieurs messages :
+                        </p>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ffb74d;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">a) Server Hello</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li><strong>Version TLS choisie</strong> (celle qui est commune)</li>
+                                <li><strong>Suite de chiffrement choisie</strong> parmi celles proposées par le client</li>
+                                <li><strong>Nombre aléatoire</strong> (Server Random)</li>
+                                <li><strong>Session ID</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ffb74d;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">b) Certificate (Certificat du serveur)</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li><strong>Certificat SSL d'ExaCC</strong> signé par une autorité de certification (CA)</li>
+                                <li>Contient la <strong>clé publique d'ExaCC</strong></li>
+                                <li>Contient l'identité d'ExaCC (nom de domaine, organisation, etc.)</li>
+                                <li>Permet au client de <strong>vérifier l'identité du serveur</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ffb74d;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">c) Certificate Request (Demande de certificat client)</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>⚠️ <strong>Spécifique au mTLS</strong> (pas dans TLS simple)</li>
+                                <li>ExaCC demande au client d'<strong>envoyer son certificat</strong></li>
+                                <li>C'est l'authentification <strong>mutuelle</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ffb74d;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">d) Server Hello Done</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Message indiquant que le serveur a fini d'envoyer ses messages</li>
+                                <li>C'est maintenant au tour du client de répondre</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="background: #ff6f00; color: white; padding: 12px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.95em;">
+                        📨 Message reçu : "J'utilise TLS 1.2 + AES-256. Voici mon certificat. Envoie-moi le tien !"
+                    </div>
+                </div>
+
+                <!-- PHASE 3 : Client Certificate & Key Exchange -->
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #9c27b0;">
+                    <h5 style="color: #6a1b9a; margin: 0 0 15px 0; font-size: 1.15em;">
+                        🔐 PHASE 3 : Client Certificate & Key Exchange (Le client s'authentifie)
+                    </h5>
+
+                    <div style="background: #f3e5f5; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #6a1b9a;">Que fait le client ?</p>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ba68c8;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">a) Vérification du certificat serveur</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Le client vérifie que le certificat d'ExaCC est <strong>valide</strong></li>
+                                <li>Vérifie la <strong>signature de l'autorité de certification (CA)</strong></li>
+                                <li>Vérifie que le <strong>nom de domaine</strong> correspond</li>
+                                <li>Vérifie que le certificat n'est <strong>pas expiré</strong></li>
+                                <li>Si la vérification échoue → ❌ Connexion refusée</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ba68c8;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">b) Certificate (Envoi du certificat client)</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Le client envoie son <strong>certificat</strong> (extrait de <code>cwallet.sso</code>)</li>
+                                <li>Contient la <strong>clé publique du client</strong></li>
+                                <li>Permet à ExaCC de vérifier l'identité du client</li>
+                                <li><strong style="color: #c62828;">⚠️ La clé privée reste sur le serveur applicatif !</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ba68c8;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">c) Client Key Exchange (Échange de clé de session)</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Le client génère une <strong>"Pre-Master Secret"</strong> (clé temporaire aléatoire)</li>
+                                <li>Chiffre cette clé avec la <strong>clé publique d'ExaCC</strong> (du certificat serveur)</li>
+                                <li>Envoie cette clé chiffrée à ExaCC</li>
+                                <li>✅ Seul ExaCC peut déchiffrer avec sa clé privée</li>
+                                <li>Cette clé servira à <strong>générer les clés de session symétriques</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ba68c8;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">d) Certificate Verify (Preuve de possession de la clé privée)</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Le client <strong>signe</strong> tous les messages précédents du handshake</li>
+                                <li>Utilise sa <strong>clé privée</strong> (<code>ewallet.p12</code>) pour créer la signature</li>
+                                <li>Envoie la <strong>signature</strong> à ExaCC</li>
+                                <li>ExaCC <strong>vérifie</strong> la signature avec la clé publique du certificat client</li>
+                                <li>✅ Prouve que le client possède bien la clé privée correspondant au certificat</li>
+                                <li><strong style="color: #2e7d32;">C'est ici que la clé privée est utilisée (JAMAIS envoyée !)</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ba68c8;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">e) Change Cipher Spec</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Le client indique qu'il va maintenant utiliser le <strong>chiffrement négocié</strong></li>
+                                <li>Tous les messages suivants seront <strong>chiffrés</strong></li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #ba68c8;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">f) Finished</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Message <strong>chiffré</strong> contenant un hash de tous les messages du handshake</li>
+                                <li>Permet de vérifier que le handshake n'a pas été altéré</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="background: #7b1fa2; color: white; padding: 12px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.95em;">
+                        📨 Message envoyé : "Ton certificat est OK. Voici le mien + preuve que j'ai la clé privée !"
+                    </div>
+                </div>
+
+                <!-- PHASE 4 : Server Finished -->
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 5px solid #4caf50;">
+                    <h5 style="color: #2e7d32; margin: 0 0 15px 0; font-size: 1.15em;">
+                        ✅ PHASE 4 : Server Finished (ExaCC confirme et établit la connexion)
+                    </h5>
+
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #2e7d32;">Que fait ExaCC ?</p>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #81c784;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">a) Vérification du certificat client</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>ExaCC vérifie le certificat client reçu</li>
+                                <li>Vérifie la signature de la CA</li>
+                                <li>Vérifie que le certificat est dans la liste autorisée</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #81c784;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">b) Vérification de la signature (Certificate Verify)</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>ExaCC utilise la <strong>clé publique du certificat client</strong></li>
+                                <li>Vérifie la <strong>signature numérique</strong> envoyée par le client</li>
+                                <li>Si valide → ✅ Le client possède bien la clé privée correspondante</li>
+                                <li>Si invalide → ❌ Connexion refusée</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #81c784;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">c) Génération des clés de session</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>ExaCC déchiffre le "Pre-Master Secret" avec sa clé privée</li>
+                                <li>Combine : <code>Pre-Master Secret + Client Random + Server Random</code></li>
+                                <li>Génère les <strong>clés de session symétriques</strong> (AES par exemple)</li>
+                                <li>Ces clés seront utilisées pour chiffrer toutes les données de la session</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #81c784;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">d) Change Cipher Spec</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>ExaCC indique qu'il passe en mode chiffré</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0; border: 1px solid #81c784;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold;">e) Finished</p>
+                            <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Message chiffré confirmant que le handshake est terminé</li>
+                                <li>Contient un hash de tous les messages pour vérifier l'intégrité</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="background: #2e7d32; color: white; padding: 12px; border-radius: 5px; margin: 10px 0; font-family: monospace; font-size: 0.95em;">
+                        📨 Message reçu : "Ton certificat est valide ! Canal sécurisé établi. Tu peux envoyer tes données."
+                    </div>
+                </div>
+
+                <!-- RÉSULTAT FINAL -->
+                <div style="background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h5 style="color: white; margin: 0 0 15px 0; font-size: 1.2em; text-align: center;">
+                        🎉 HANDSHAKE TERMINÉ - CONNEXION SÉCURISÉE ÉTABLIE
+                    </h5>
+                    <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 5px;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold;">Ce qui a été accompli :</p>
+                        <ul style="margin: 0 0 0 20px; line-height: 1.8;">
+                            <li>✅ <strong>Authentification mutuelle</strong> : Les deux parties ont prouvé leur identité</li>
+                            <li>✅ <strong>Clés de session générées</strong> : Chiffrement symétrique rapide (AES)</li>
+                            <li>✅ <strong>Canal sécurisé</strong> : Toutes les données seront chiffrées</li>
+                            <li>✅ <strong>Intégrité garantie</strong> : Impossible de modifier les données en transit</li>
+                        </ul>
+                        <p style="margin: 15px 0 0 0; font-weight: bold; text-align: center; font-size: 1.1em;">
+                            → Maintenant l'application peut envoyer USER/PASSWORD de manière sécurisée
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SCHÉMA RÉCAPITULATIF -->
+                <div style="background: #263238; color: white; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: monospace; font-size: 0.9em;">
+                    <h5 style="color: #4db6ac; margin: 0 0 15px 0;">📊 SCHÉMA RÉCAPITULATIF DU HANDSHAKE mTLS</h5>
+<pre style="margin: 0; color: white;">
+CLIENT (Serveur Appli)                                    SERVEUR (ExaCC)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 1 : Client Hello                                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+   "Bonjour, je supporte TLS 1.2..."  ────────────────────────▶
+   + Version TLS, Cipher Suites
+   + Client Random
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 2 : Server Hello + Certificate                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+                                       ◀──────────────────────  "OK, TLS 1.2 + AES-256"
+                                                                 + Server Random
+                                                                 + Certificat Serveur
+                                                                 + "Envoie ton certificat"
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 3 : Client Certificate + Proof                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+   📋 Vérification Certificat Serveur ✅
+
+   "Voici mon certificat"             ────────────────────────▶
+   + Certificat Client (clé publique)
+   + Pre-Master Secret (chiffré)
+   + SIGNATURE (avec clé privée 🔑)
+   + "Je passe en mode chiffré"
+
+   ⚠️  Clé privée utilisée ICI
+       mais JAMAIS envoyée !
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 4 : Server Finished                                              │
+└─────────────────────────────────────────────────────────────────────────┘
+                                                                 📋 Vérif Certificat Client ✅
+                                                                 📋 Vérif Signature ✅
+                                                                 🔑 Génération clés session
+                                       ◀──────────────────────  "Authentification OK ✅"
+                                                                 + "Mode chiffré activé"
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ✅ CONNEXION SÉCURISÉE ÉTABLIE - Tunnel TLS actif                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+   Données chiffrées (USER/PASSWORD)  ────────────────────────▶
+                                       ◀──────────────────────  Session établie
+
+   Requêtes SQL chiffrées             ────────────────────────▶
+                                       ◀──────────────────────  Résultats chiffrés
+</pre>
+                </div>
+
+                <!-- POINT CLÉ -->
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #ffc107;">
+                    <p style="margin: 0; color: #f57c00; font-weight: bold; font-size: 1.05em;">
+                        💡 <strong>Point clé du HANDSHAKE :</strong><br><br>
+                        Le handshake est comme un <strong>contrôle de sécurité à l'aéroport</strong> :<br>
+                        1️⃣ Vous montrez votre passeport (certificat)<br>
+                        2️⃣ L'agent vérifie que c'est bien le vôtre (signature avec clé privée)<br>
+                        3️⃣ Une fois vérifié, vous pouvez passer (tunnel TLS établi)<br>
+                        4️⃣ Vous ne donnez JAMAIS votre passeport à l'agent, vous le montrez juste !<br>
+                        <br>
+                        De même, la <strong>clé privée n'est jamais transmise</strong>, elle sert uniquement à
+                        <strong>prouver votre identité</strong> en créant une signature que le serveur peut vérifier.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CLARIFICATION IMPORTANTE : Clé Privée -->
+            <div style="background: #ffebee; padding: 25px; border-radius: 8px; margin: 20px 0; border: 3px solid #e53935;">
+                <h4 style="color: #c62828; margin-top: 0; font-size: 1.2em;">
+                    ⚠️ CLARIFICATION IMPORTANTE : La clé privée est-elle envoyée au serveur ExaCC ?
+                </h4>
+
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <h5 style="color: #d32f2f; margin-top: 0;">❌ NON ! La clé privée NE QUITTE JAMAIS le serveur applicatif</h5>
+
+                    <p style="margin: 15px 0; line-height: 1.8; color: #333;">
+                        C'est un point crucial de la <strong>cryptographie à clé publique</strong> (asymétrique).
+                        Voici ce qui se passe réellement :
+                    </p>
+
+                    <div style="background: #2c3e50; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace;">
+<pre style="margin: 0; color: white;">
+🔑 CRYPTOGRAPHIE ASYMÉTRIQUE : Clé Publique vs Clé Privée
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 Wallet contient 2 éléments distincts :
+
+   1️⃣ CERTIFICAT (dans cwallet.sso)
+      ├─ Contient la CLÉ PUBLIQUE du client
+      ├─ Contient l'identité du client (DN, organisation, etc.)
+      ├─ Signé par une autorité de certification (CA)
+      └─ ✅ PEUT être envoyé au serveur (pas de risque)
+
+   2️⃣ CLÉ PRIVÉE (dans ewallet.p12)
+      ├─ Reste TOUJOURS sur le serveur applicatif
+      ├─ Utilisée UNIQUEMENT pour SIGNER des messages
+      ├─ Ne voyage JAMAIS sur le réseau
+      └─ ❌ NE DOIT JAMAIS quitter le serveur applicatif
+</pre>
+                    </div>
+
+                    <h5 style="color: #1565c0; margin-top: 20px;">🔐 Comment fonctionne la signature numérique ?</h5>
+
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #2196f3;">
+                        <p style="margin: 0 0 10px 0;"><strong>Étape par étape :</strong></p>
+                        <ol style="margin: 10px 0; padding-left: 25px; line-height: 1.8;">
+                            <li>
+                                <strong>Client crée un message</strong><br>
+                                <code style="background: white; padding: 3px 8px; border-radius: 3px;">
+                                    Message = "Je suis le serveur applicatif X"
+                                </code>
+                            </li>
+                            <li style="margin-top: 10px;">
+                                <strong>Client SIGNE le message avec sa clé privée (ewallet.p12)</strong><br>
+                                <code style="background: white; padding: 3px 8px; border-radius: 3px;">
+                                    Signature = SIGN(Message, Clé_Privée_Client)
+                                </code><br>
+                                <span style="color: #d32f2f;">⚠️ La clé privée reste sur le serveur applicatif !</span>
+                            </li>
+                            <li style="margin-top: 10px;">
+                                <strong>Client envoie à ExaCC :</strong><br>
+                                <code style="background: white; padding: 3px 8px; border-radius: 3px; display: block; margin-top: 5px;">
+                                    ➜ Certificat (contient CLÉ PUBLIQUE)<br>
+                                    ➜ Message<br>
+                                    ➜ Signature
+                                </code><br>
+                                <span style="color: #2e7d32;">✅ La clé privée n'est PAS envoyée !</span>
+                            </li>
+                            <li style="margin-top: 10px;">
+                                <strong>ExaCC VÉRIFIE la signature avec la clé publique du certificat</strong><br>
+                                <code style="background: white; padding: 3px 8px; border-radius: 3px;">
+                                    VERIFY(Signature, Message, Clé_Publique_Client) == OK ✅
+                                </code><br>
+                                <span style="color: #1565c0;">ℹ️ ExaCC utilise la clé PUBLIQUE (dans le certificat) pour vérifier</span>
+                            </li>
+                            <li style="margin-top: 10px;">
+                                <strong>Si la vérification réussit :</strong><br>
+                                <span style="color: #2e7d32;">
+                                    ✅ ExaCC sait que le client possède la clé privée correspondante<br>
+                                    ✅ Le client est authentifié<br>
+                                    ✅ La connexion mTLS est établie
+                                </span>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <h5 style="color: #f57c00; margin-top: 20px;">🔄 Analogie : Signature manuscrite</h5>
+
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #ff9800;">
+                        <p style="margin: 0; line-height: 1.8;">
+                            <strong>Clé Privée</strong> = Votre main qui signe un document<br>
+                            <strong>Signature</strong> = La signature manuscrite sur le papier<br>
+                            <strong>Clé Publique</strong> = Modèle de votre signature pour vérification<br>
+                            <br>
+                            <span style="color: #e65100;">
+                                ➜ Vous n'envoyez PAS votre main au destinataire !<br>
+                                ➜ Vous envoyez seulement le document SIGNÉ<br>
+                                ➜ Le destinataire compare votre signature avec le modèle public
+                            </span>
+                        </p>
+                    </div>
+
+                    <h5 style="color: #6a1b9a; margin-top: 20px;">📊 Flux de données réel lors du handshake TLS</h5>
+
+                    <div style="background: #4a235a; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace; font-size: 0.9em;">
+<pre style="margin: 0; color: white;">
+SERVEUR APPLICATIF                    RÉSEAU                    EXACC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 Wallet LOCAL:
+   ├─ cwallet.sso
+   └─ ewallet.p12
+        ↓
+   [Lecture clé privée]
+        ↓
+   [Création signature]
+        ↓
+   ┌─────────────────┐
+   │ Certificat      │────────────▶  Transfert   ────────▶  ┌─────────────┐
+   │ (clé publique)  │               HTTPS                   │ Réception   │
+   │                 │                                       │ Certificat  │
+   │ + Signature     │────────────▶  Transfert   ────────▶  │             │
+   │                 │               HTTPS                   │ Vérification│
+   └─────────────────┘                                       │ avec        │
+                                                             │ clé publique│
+   🔑 Clé privée                                             └─────────────┘
+      reste ICI !                                                  ✅ OK
+      (NE BOUGE PAS)
+</pre>
+                    </div>
+
+                </div>
+
+                <div style="background: #c8e6c9; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #4caf50;">
+                    <h5 style="color: #2e7d32; margin: 0 0 10px 0;">✅ RÉSUMÉ : Ce qui est envoyé vs ce qui reste local</h5>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background: #a5d6a7;">
+                                <th style="padding: 10px; border: 1px solid #81c784; text-align: left;">Élément</th>
+                                <th style="padding: 10px; border: 1px solid #81c784; text-align: left;">Envoyé à ExaCC ?</th>
+                                <th style="padding: 10px; border: 1px solid #81c784; text-align: left;">Détails</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: white;">
+                                <td style="padding: 10px; border: 1px solid #81c784;"><strong>Certificat (cwallet.sso)</strong></td>
+                                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">✅ OUI</td>
+                                <td style="padding: 10px; border: 1px solid #81c784;">Contient la clé PUBLIQUE + identité client</td>
+                            </tr>
+                            <tr style="background: #f1f8e9;">
+                                <td style="padding: 10px; border: 1px solid #81c784;"><strong>Clé Privée (ewallet.p12)</strong></td>
+                                <td style="padding: 10px; border: 1px solid #81c784; color: #c62828;">❌ NON</td>
+                                <td style="padding: 10px; border: 1px solid #81c784;">Reste sur le serveur applicatif, jamais transmise</td>
+                            </tr>
+                            <tr style="background: white;">
+                                <td style="padding: 10px; border: 1px solid #81c784;"><strong>Signature numérique</strong></td>
+                                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">✅ OUI</td>
+                                <td style="padding: 10px; border: 1px solid #81c784;">Créée avec la clé privée, vérifiée avec clé publique</td>
+                            </tr>
+                            <tr style="background: #f1f8e9;">
+                                <td style="padding: 10px; border: 1px solid #81c784;"><strong>USER/PASSWORD</strong></td>
+                                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">✅ OUI</td>
+                                <td style="padding: 10px; border: 1px solid #81c784;">Après établissement tunnel TLS (chiffré)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="background: #fff9c4; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #fbc02d;">
+                    <p style="margin: 0; color: #f57c00; font-weight: bold;">
+                        💡 Point clé : Si la clé privée était envoyée sur le réseau, n'importe qui pourrait l'intercepter
+                        et se faire passer pour votre serveur ! C'est pour cette raison qu'elle reste TOUJOURS locale
+                        et n'est utilisée que pour SIGNER des preuves d'identité.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Résumé visuel -->
+            <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px solid #ff9800;">
+                <h4 style="color: #e65100; margin-top: 0;">📌 RÉSUMÉ : Où se trouve quoi ?</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #ffe0b2;">
+                            <th style="padding: 10px; border: 1px solid #ffb74d; text-align: left;">Composant</th>
+                            <th style="padding: 10px; border: 1px solid #ffb74d; text-align: left;">Emplacement</th>
+                            <th style="padding: 10px; border: 1px solid #ffb74d; text-align: left;">Rôle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: white;">
+                            <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>Base de données</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">☁️ Oracle Cloud (ExaCC)</td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">Stocke les données, écoute sur port 1522</td>
+                        </tr>
+                        <tr style="background: #fff8f0;">
+                            <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>Wallet</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">🖥️ Serveur Applicatif (local)</td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">Contient certificats + clé privée pour mTLS</td>
+                        </tr>
+                        <tr style="background: white;">
+                            <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>Application</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">🖥️ Serveur Applicatif (local)</td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">Utilise le Wallet pour se connecter</td>
+                        </tr>
+                        <tr style="background: #fff8f0;">
+                            <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>TNS_ADMIN</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">🖥️ Variable d'environnement système</td>
+                            <td style="padding: 10px; border: 1px solid #ffb74d;">Pointe vers le dossier contenant le Wallet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <h3>Actions Wallet</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Responsable</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Telecharger le Wallet depuis OCI Console</td>
+                    <td>DBA Cloud</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>Deployer le Wallet sur les serveurs applicatifs</td>
+                    <td>Admin Systeme</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>Configurer TNS_ADMIN pour pointer vers le dossier Wallet</td>
+                    <td>Admin Systeme</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>Tester la connexion avec sqlplus</td>
+                    <td>DBA</td>
+                    <td>☐</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Test connexion avec Wallet</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Definir la variable d'environnement
+export TNS_ADMIN=/path/to/wallet
+
+-- Tester la connexion
+sqlplus user/password@service_name_high
+
+-- Verifier le service
+SELECT sys_context('USERENV', 'SERVICE_NAME') FROM dual;</code></pre>
+        </div>
+    </section>
+
+    <!-- SECTION 2: CHAINE DE CONNEXION -->
+    <section>
+        <h2>2. Chaines de Connexion Applicatives</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>ATTENTION :</strong> Les chaines de connexion changent completement apres migration ExaCC !
+                Port 1522 (mTLS) au lieu de 1521.
+            </div>
+        </div>
+
+        <h3>Comparaison Avant/Apres</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>On-Premise (Avant)</th>
+                    <th>ExaCC (Apres)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Port</td>
+                    <td>1521</td>
+                    <td><strong>1522</strong> (mTLS)</td>
+                </tr>
+                <tr>
+                    <td>Protocole</td>
+                    <td>TCP</td>
+                    <td><strong>TCPS</strong> (SSL/TLS)</td>
+                </tr>
+                <tr>
+                    <td>Wallet</td>
+                    <td>Non requis</td>
+                    <td><strong>Obligatoire</strong></td>
+                </tr>
+                <tr>
+                    <td>Hostname</td>
+                    <td>serveur.interne.local</td>
+                    <td>adb.eu-paris-1.oraclecloud.com</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Exemple tnsnames.ora ExaCC</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Service HIGH (batch, reporting)
+EXACC_HIGH = (description=
+    (retry_count=20)(retry_delay=3)
+    (address=(protocol=tcps)(port=1522)
+    (host=adb.eu-paris-1.oraclecloud.com))
+    (connect_data=(service_name=xxxxx_exacc_high.adb.oraclecloud.com))
+    (security=(ssl_server_dn_match=yes))
+)
+
+-- Service MEDIUM (applications interactives)
+EXACC_MEDIUM = (description=
+    (retry_count=20)(retry_delay=3)
+    (address=(protocol=tcps)(port=1522)
+    (host=adb.eu-paris-1.oraclecloud.com))
+    (connect_data=(service_name=xxxxx_exacc_medium.adb.oraclecloud.com))
+    (security=(ssl_server_dn_match=yes))
+)</code></pre>
+        </div>
+
+        <h3>Actions Chaines de Connexion</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Application</th>
+                    <th>Action</th>
+                    <th>Responsable</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Accurate</td>
+                    <td>Mettre a jour le fichier de configuration</td>
+                    <td>Editeur / Admin</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>Jobs Control-M</td>
+                    <td>Modifier les scripts de connexion</td>
+                    <td>Ordonnanceur</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>Reporting</td>
+                    <td>Reconfigurer les sources de donnees</td>
+                    <td>BI Team</td>
+                    <td>☐</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECTION 3: UTL_FILE -->
+    <section>
+        <h2>3. Configuration UTL_FILE (70 references)</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">📦</span>
+            <div>
+                <strong>Strategie retenue :</strong> PUBLIC SYNONYM + UTL_FILE_WRAPPER
+                <br>Aucune modification du code applicatif necessaire pour les 70 references !
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">📋</span>
+            <div>
+                <strong>Scripts complets disponibles dans l'onglet</strong> <a href="#guide" onclick="showTab('guide', document.querySelector('a[href=\'#guide\']'))" style="color: #1565c0; font-weight: bold;">Guide Migration</a>
+                <br>Section "Implementation du Wrapper" avec tous les scripts SQL.
+            </div>
+        </div>
+
+        <h3>Checklist UTL_FILE</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Etape</th>
+                    <th>Action</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Creer la table <code>utl_file_directory_mapping</code></td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Inserer les mappings (directory → Object Storage URI)</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Deployer le package <code>UTL_FILE_WRAPPER</code> (spec + body)</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Creer le PUBLIC SYNONYM <code>UTL_FILE → UTL_FILE_WRAPPER</code></td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Accorder les privileges aux schemas applicatifs</td>
+                    <td>☐</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Tester ecriture/lecture fichier</td>
+                    <td>☐</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Verification rapide</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>Verifier la configuration UTL_FILE</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Verifier le synonyme
+SELECT synonym_name, table_owner, table_name
+FROM all_synonyms WHERE synonym_name = 'UTL_FILE';
+
+-- Verifier le package
+SELECT object_name, object_type, status
+FROM user_objects WHERE object_name = 'UTL_FILE_WRAPPER';
+
+-- Verifier les mappings
+SELECT oracle_directory, is_active FROM utl_file_directory_mapping;</code></pre>
+        </div>
+    </section>
+
+    <!-- SECTION 4: DB LINK -->
+    <section>
+        <h2>4. Recreation des DB Links</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Contexte :</strong> Les deux instances migrent vers ExaCC.
+                <br>Les DB Links doivent etre recrees avec DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Etape 1 : Creer le credential pour le DB Link</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Creer un credential dedie pour le DB Link
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'DBLINK_INSTANCE2_CRED',
+        username        => 'USER_INSTANCE2',       -- Utilisateur sur l'instance cible
+        password        => 'MotDePasseSecurise'    -- Mot de passe
+    );
+END;
+/</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Etape 2 : Creer le DB Link ExaCC vers ExaCC</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Recreer le DB Link avec DBMS_CLOUD_ADMIN
+BEGIN
+    DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK(
+        db_link_name        => 'LINK_INSTANCE2',
+        hostname            => 'adb.eu-paris-1.oraclecloud.com',
+        port                => 1522,
+        service_name        => 'xxxxx_instance2_high.adb.oraclecloud.com',
+        ssl_server_dn_match => TRUE,
+        credential_name     => 'DBLINK_INSTANCE2_CRED'
+    );
+END;
+/</code></pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Etape 3 : Tester le DB Link</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Verifier que le DB Link existe
+SELECT db_link, username, host FROM user_db_links;
+
+-- Tester la connexion
+SELECT 'DB Link OK' AS test_result FROM dual@LINK_INSTANCE2;
+
+-- Tester une vraie requete
+SELECT COUNT(*) FROM schema.table@LINK_INSTANCE2;</code></pre>
+        </div>
+    </section>
+
+    <!-- SECTION 5: VERIFICATION -->
+    <section>
+        <h2>5. Script de Verification Globale</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">🔍</span>
+            <div>
+                Executez ce script apres toutes les configurations pour valider l'ensemble.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Script de verification post-migration</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- SCRIPT DE VERIFICATION POST-MIGRATION EXACC
+-- ============================================================
+
+SET SERVEROUTPUT ON
+SET LINESIZE 200
+
+PROMPT
+PROMPT ========================================
+PROMPT 1. VERIFICATION SYNONYME UTL_FILE
+PROMPT ========================================
+
+SELECT synonym_name, table_owner, table_name
+FROM all_synonyms
+WHERE synonym_name = 'UTL_FILE';
+
+PROMPT
+PROMPT ========================================
+PROMPT 2. VERIFICATION PACKAGE UTL_FILE_WRAPPER
+PROMPT ========================================
+
+SELECT object_name, object_type, status
+FROM all_objects
+WHERE object_name = 'UTL_FILE_WRAPPER'
+ORDER BY object_type;
+
+PROMPT
+PROMPT ========================================
+PROMPT 3. VERIFICATION TABLE MAPPING
+PROMPT ========================================
+
+SELECT oracle_directory,
+       SUBSTR(object_storage_uri, 1, 60) AS uri_short,
+       is_active
+FROM utl_file_directory_mapping
+ORDER BY oracle_directory;
+
+PROMPT
+PROMPT ========================================
+PROMPT 4. VERIFICATION DB LINKS
+PROMPT ========================================
+
+SELECT db_link, username, host
+FROM user_db_links;
+
+PROMPT
+PROMPT ========================================
+PROMPT 5. VERIFICATION CREDENTIALS
+PROMPT ========================================
+
+SELECT credential_name, username, enabled
+FROM user_credentials;
+
+PROMPT
+PROMPT ========================================
+PROMPT 6. TEST DB LINK (si existe)
+PROMPT ========================================
+
+-- Decommenter et adapter selon votre DB Link
+-- SELECT 'OK' AS dblink_test FROM dual@LINK_INSTANCE2;
+
+PROMPT
+PROMPT ========================================
+PROMPT VERIFICATION TERMINEE
+PROMPT ========================================</code></pre>
+        </div>
+    </section>
+
+    <!-- SECTION 6: PLANNING -->
+    <section>
+        <h2>6. Planning d'Execution</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">📅</span>
+            <div>
+                <strong>Recommandation :</strong> Executer ces actions dans l'ordre suivant pour minimiser les risques.
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Jour</th>
+                    <th>Action</th>
+                    <th>Impact</th>
+                    <th>Rollback</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>J</strong></td>
+                    <td>Migration base vers ExaCC</td>
+                    <td>Indisponibilite planifiee</td>
+                    <td>Restauration on-premise</td>
+                </tr>
+                <tr>
+                    <td><strong>J</strong></td>
+                    <td>Deploiement Wallet sur serveurs</td>
+                    <td>Aucun</td>
+                    <td>Supprimer le wallet</td>
+                </tr>
+                <tr>
+                    <td><strong>J</strong></td>
+                    <td>Mise a jour chaines de connexion</td>
+                    <td>Reconnexion apps</td>
+                    <td>Revenir config precedente</td>
+                </tr>
+                <tr>
+                    <td><strong>J+1</strong></td>
+                    <td>Deploiement UTL_FILE_WRAPPER + Synonyme</td>
+                    <td>Aucun si synonyme OK</td>
+                    <td>DROP SYNONYM, retour UTL_FILE natif</td>
+                </tr>
+                <tr>
+                    <td><strong>J+1</strong></td>
+                    <td>Recreation DB Links</td>
+                    <td>Requetes inter-instances</td>
+                    <td>Recreer ancien DB Link</td>
+                </tr>
+                <tr>
+                    <td><strong>J+2</strong></td>
+                    <td>Tests applicatifs complets</td>
+                    <td>Validation metier</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td><strong>J+3</strong></td>
+                    <td>Validation finale + Mise en production</td>
+                    <td>GO/NO-GO</td>
+                    <td>Plan de rollback complet</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECTION 7: CHECKLIST FINALE -->
+    <section>
+        <h2>7. Checklist Finale</h2>
+
+        <div style="background: #fff; border: 2px solid #4caf50; border-radius: 8px; padding: 20px;">
+            <h3 style="color: #2e7d32; margin-bottom: 15px;">Validation Post-Migration</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="color: #1565c0; margin-bottom: 10px;">Infrastructure</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Wallet deploye sur tous les serveurs</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ TNS_ADMIN configure correctement</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Connexion sqlplus OK</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Firewall ouvert port 1522</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #1565c0; margin-bottom: 10px;">Base de donnees</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ UTL_FILE_WRAPPER VALID</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ PUBLIC SYNONYM UTL_FILE cree</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Table mapping renseignee</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ DB Links recrees et testes</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #1565c0; margin-bottom: 10px;">Applications</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Accurate connecte a ExaCC</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Jobs Control-M mis a jour</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Reporting fonctionnel</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Interfaces OK</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #1565c0; margin-bottom: 10px;">Validation Metier</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Ecriture fichiers Object Storage OK</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Lecture fichiers Object Storage OK</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Requetes inter-instances OK</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">☐ Performance acceptable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET POST-MIGRATION ==================== -->
 
 <!-- ==================== ONGLET SCRIPTS ==================== -->
 <div id="scripts" class="tab-content">
@@ -2983,6 +5202,54 @@ END;
 
 </div>
 <!-- ==================== FIN ONGLET SCRIPTS ==================== -->
+
+<!-- ==================== ONGLET CAPTURES ==================== -->
+<div id="captures" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; margin-top: 20px;">
+        <h2>📷 Captures d'ecran - Coller avec Ctrl+V</h2>
+        <p style="margin: 15px 0;">Faites une capture d'ecran (Win+Shift+S) puis collez-la ici avec <strong>Ctrl+V</strong>. Elle sera sauvegardee automatiquement.</p>
+    </section>
+
+    <div id="storage-status" class="storage-info status-connected">
+        Pret a recevoir vos captures
+    </div>
+
+    <div class="captures-container">
+        <!-- Liste des captures -->
+        <div class="captures-list">
+            <h3>📂 Mes Captures</h3>
+            <div id="captures-list-container">
+                <p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px;">Aucune capture. Collez une image avec Ctrl+V.</p>
+            </div>
+        </div>
+
+        <!-- Zone de collage -->
+        <div class="captures-paste-zone">
+            <div class="paste-header">
+                <h3>📋 Zone de collage</h3>
+            </div>
+            <div class="paste-zone" id="paste-zone" tabindex="0">
+                <div id="paste-placeholder">
+                    <div class="paste-icon">📋</div>
+                    <div class="paste-text">Cliquez ici puis collez votre capture</div>
+                    <div class="paste-hint">Faites Win+Shift+S pour capturer, puis</div>
+                    <div class="paste-shortcut">Ctrl + V</div>
+                </div>
+                <div id="paste-preview-container" style="display: none; text-align: center;">
+                    <img id="paste-preview" class="paste-preview" src="" alt="Preview">
+                    <div class="paste-actions">
+                        <button class="paste-action-btn save" onclick="saveCapture()">💾 Sauvegarder</button>
+                        <button class="paste-action-btn clear" onclick="clearPaste()">🗑️ Effacer</button>
+                    </div>
+                    <div id="upload-status" class="upload-status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- ==================== FIN ONGLET CAPTURES ==================== -->
 
 </div>
 
@@ -3328,6 +5595,246 @@ function copyScriptContent() {
         }, 2000);
     });
 }
+
+// ===== CAPTURES - PASTE FROM CLIPBOARD + FIREBASE STORAGE =====
+let currentPastedImage = null;
+let capturesData = {};
+
+// Initialiser Firebase Storage et charger les captures
+function initCapturesStorage() {
+    const storage = firebase.storage();
+    const db = firebase.database();
+    const capturesRef = db.ref('captures');
+
+    // Ecouter les changements en temps reel
+    capturesRef.on('value', (snapshot) => {
+        capturesData = snapshot.val() || {};
+        renderCapturesList();
+    }, (error) => {
+        console.error('Erreur chargement captures:', error);
+    });
+}
+
+// Afficher la liste des captures
+function renderCapturesList() {
+    const container = document.getElementById('captures-list-container');
+    if (!container) return;
+
+    const captureIds = Object.keys(capturesData);
+
+    if (captureIds.length === 0) {
+        container.innerHTML = '<p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px;">Aucune capture. Collez une image avec Ctrl+V.</p>';
+        return;
+    }
+
+    // Trier par date (plus recent en premier)
+    captureIds.sort((a, b) => {
+        const dateA = capturesData[a].createdAt || 0;
+        const dateB = capturesData[b].createdAt || 0;
+        return dateB - dateA;
+    });
+
+    let html = '';
+    captureIds.forEach(id => {
+        const capture = capturesData[id];
+        const date = new Date(capture.createdAt);
+        const dateStr = date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+
+        html += `
+            <div class="capture-item" onclick="viewCapture('${id}')">
+                <img src="${capture.url}" alt="${capture.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2280%22><rect fill=%22%23eee%22 width=%22100%22 height=%2280%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23999%22 text-anchor=%22middle%22>Image</text></svg>'">
+                <div class="capture-name">${capture.name || 'Sans nom'}</div>
+                <div class="capture-date">${dateStr}</div>
+                <div class="capture-actions">
+                    <button class="capture-btn capture-btn-view" onclick="event.stopPropagation(); window.open('${capture.url}', '_blank')">Ouvrir</button>
+                    <button class="capture-btn capture-btn-delete" onclick="event.stopPropagation(); deleteCapture('${id}')">Supprimer</button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// Ecouter le paste (Ctrl+V)
+function setupPasteListener() {
+    const pasteZone = document.getElementById('paste-zone');
+    if (!pasteZone) return;
+
+    // Ecouter le paste sur la zone
+    pasteZone.addEventListener('paste', handlePaste);
+
+    // Ecouter aussi sur tout le document quand l'onglet captures est actif
+    document.addEventListener('paste', (e) => {
+        const capturesTab = document.getElementById('captures');
+        if (capturesTab && capturesTab.classList.contains('active')) {
+            handlePaste(e);
+        }
+    });
+
+    // Focus automatique sur la zone quand on clique
+    pasteZone.addEventListener('click', () => {
+        pasteZone.focus();
+    });
+}
+
+// Gerer le paste
+function handlePaste(e) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = items[i].getAsFile();
+            displayPastedImage(blob);
+            break;
+        }
+    }
+}
+
+// Afficher l'image collee (QUALITE ORIGINALE PRESERVEE - aucun redimensionnement)
+function displayPastedImage(blob) {
+    currentPastedImage = blob;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const preview = document.getElementById('paste-preview');
+        const previewContainer = document.getElementById('paste-preview-container');
+        const placeholder = document.getElementById('paste-placeholder');
+        const pasteZone = document.getElementById('paste-zone');
+
+        preview.src = e.target.result;
+        previewContainer.style.display = 'block';
+        placeholder.style.display = 'none';
+        pasteZone.classList.add('has-image');
+
+        // Afficher les infos de l'image originale
+        const statusEl = document.getElementById('upload-status');
+        const sizeKB = (blob.size / 1024).toFixed(1);
+        const img = new Image();
+        img.onload = () => {
+            statusEl.className = 'upload-status info';
+            statusEl.textContent = `Qualite originale: ${img.width} x ${img.height} px (${sizeKB} KB)`;
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(blob);
+}
+
+// Effacer l'image collee
+function clearPaste() {
+    currentPastedImage = null;
+
+    const preview = document.getElementById('paste-preview');
+    const previewContainer = document.getElementById('paste-preview-container');
+    const placeholder = document.getElementById('paste-placeholder');
+    const pasteZone = document.getElementById('paste-zone');
+    const statusEl = document.getElementById('upload-status');
+
+    preview.src = '';
+    previewContainer.style.display = 'none';
+    placeholder.style.display = 'block';
+    pasteZone.classList.remove('has-image');
+    statusEl.className = 'upload-status';
+    statusEl.textContent = '';
+}
+
+// Sauvegarder la capture dans Firebase Storage
+function saveCapture() {
+    if (!currentPastedImage) {
+        alert('Aucune image a sauvegarder. Collez une capture avec Ctrl+V.');
+        return;
+    }
+
+    const statusEl = document.getElementById('upload-status');
+    statusEl.className = 'upload-status loading';
+    statusEl.textContent = 'Sauvegarde en cours...';
+
+    const storage = firebase.storage();
+    const db = firebase.database();
+
+    // Generer un nom unique
+    const timestamp = Date.now();
+    const fileName = `capture_${timestamp}.png`;
+    const storageRef = storage.ref('captures/' + fileName);
+
+    // Upload
+    storageRef.put(currentPastedImage)
+        .then(snapshot => snapshot.ref.getDownloadURL())
+        .then(url => {
+            // Sauvegarder les metadonnees dans Realtime Database
+            const captureData = {
+                name: fileName,
+                url: url,
+                createdAt: timestamp,
+                size: currentPastedImage.size
+            };
+
+            return db.ref('captures').push(captureData);
+        })
+        .then(() => {
+            statusEl.className = 'upload-status success';
+            statusEl.textContent = 'Capture sauvegardee avec succes !';
+
+            // Effacer apres 2 secondes
+            setTimeout(() => {
+                clearPaste();
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('Erreur upload:', error);
+            statusEl.className = 'upload-status error';
+            statusEl.textContent = 'Erreur: ' + error.message;
+        });
+}
+
+// Voir une capture en grand
+function viewCapture(captureId) {
+    const capture = capturesData[captureId];
+    if (capture && capture.url) {
+        window.open(capture.url, '_blank');
+    }
+}
+
+// Supprimer une capture
+function deleteCapture(captureId) {
+    const capture = capturesData[captureId];
+    if (!capture) return;
+
+    if (!confirm('Supprimer cette capture ?')) return;
+
+    const storage = firebase.storage();
+    const db = firebase.database();
+
+    // Supprimer de Storage
+    const storageRef = storage.ref('captures/' + capture.name);
+    storageRef.delete()
+        .then(() => {
+            // Supprimer de Database
+            return db.ref('captures/' + captureId).remove();
+        })
+        .then(() => {
+            console.log('Capture supprimee');
+        })
+        .catch(error => {
+            console.error('Erreur suppression:', error);
+            // Supprimer quand meme de la database si le fichier n'existe plus
+            db.ref('captures/' + captureId).remove();
+        });
+}
+
+// Initialiser au chargement
+const originalOnload = window.onload;
+window.onload = function() {
+    if (originalOnload) originalOnload();
+
+    // Attendre que Firebase soit pret
+    setTimeout(() => {
+        initCapturesStorage();
+        setupPasteListener();
+    }, 500);
+};
 </script>
 
 </body>
