@@ -1665,19 +1665,18 @@ ORDER BY nb_lignes DESC;
 
 
 -- 4. Voir le code exact (lignes contenant UTL_FILE) avec Directory utilisé
+-- Fonctions UTL_FILE avec directory en paramètre : FOPEN, FOPEN_NCHAR, FREMOVE, FCOPY, FRENAME, FGETATTR
 SELECT
     name AS object_name,
     type AS object_type,
     line AS numero_ligne,
-    -- Extraction du directory (premier paramètre de FOPEN/FOPEN_NCHAR)
-    CASE
-        WHEN UPPER(text) LIKE '%FOPEN%' THEN
-            NVL(
-                REGEXP_SUBSTR(text, 'FOPEN[_NCHAR]*\s*\(\s*''([^'']+)''', 1, 1, 'i', 1),
-                REGEXP_SUBSTR(text, 'FOPEN[_NCHAR]*\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)', 1, 1, 'i', 1)
-            )
-        ELSE NULL
-    END AS directory_utilise,
+    -- Extraction du directory (1er paramètre des fonctions UTL_FILE qui utilisent un directory)
+    NVL(
+        -- Directory en chaîne littérale 'DIR_NAME'
+        REGEXP_SUBSTR(text, 'UTL_FILE\.(FOPEN|FOPEN_NCHAR|FREMOVE|FCOPY|FRENAME|FGETATTR)\s*\(\s*''([^'']+)''', 1, 1, 'i', 2),
+        -- Directory en variable PL/SQL
+        REGEXP_SUBSTR(text, 'UTL_FILE\.(FOPEN|FOPEN_NCHAR|FREMOVE|FCOPY|FRENAME|FGETATTR)\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)', 1, 1, 'i', 2)
+    ) AS directory_utilise,
     text AS code
 FROM user_source
 WHERE UPPER(text) LIKE '%UTL_FILE%'
