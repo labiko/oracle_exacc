@@ -1664,11 +1664,20 @@ GROUP BY name, type
 ORDER BY nb_lignes DESC;
 
 
--- 4. Voir le code exact (lignes contenant UTL_FILE)
+-- 4. Voir le code exact (lignes contenant UTL_FILE) avec Directory utilisé
 SELECT
     name AS object_name,
     type AS object_type,
     line AS numero_ligne,
+    -- Extraction du directory (premier paramètre de FOPEN/FOPEN_NCHAR)
+    CASE
+        WHEN UPPER(text) LIKE '%FOPEN%' THEN
+            NVL(
+                REGEXP_SUBSTR(text, 'FOPEN[_NCHAR]*\s*\(\s*''([^'']+)''', 1, 1, 'i', 1),
+                REGEXP_SUBSTR(text, 'FOPEN[_NCHAR]*\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)', 1, 1, 'i', 1)
+            )
+        ELSE NULL
+    END AS directory_utilise,
     text AS code
 FROM user_source
 WHERE UPPER(text) LIKE '%UTL_FILE%'
