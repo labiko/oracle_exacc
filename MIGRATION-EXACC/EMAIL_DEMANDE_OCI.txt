@@ -1,0 +1,80 @@
+Objet: Migration ExaCC - Demande création Object Storage pour remplacement UTL_FILE
+
+Bonjour l'équipe OCI,
+
+Dans le cadre de notre migration vers ExaCC, nous devons remplacer les accès UTL_FILE
+par Oracle Object Storage via DBMS_CLOUD.
+
+=============================================================================
+📋 BESOIN : Création Bucket Object Storage + Credentials
+=============================================================================
+
+1️⃣ BUCKET À CRÉER
+-----------------
+Nom du bucket: parna-exacc-files
+Région: [Votre région OCI]
+Type: Standard (Tier 1)
+Visibilité: Private
+
+2️⃣ STRUCTURE DE RÉPERTOIRES À CRÉER DANS LE BUCKET
+---------------------------------------------------
+Les répertoires suivants doivent être créés dans le bucket :
+
+├── archive/         (correspond à DIR_ARCH_RNA: /applis/08449-parna-p1/archive)
+├── in/             (correspond à DIR_IN_RNA: /applis/08449-parna-p1/in)
+├── logs/           (correspond à DIR_LOG_RNA: /applis/logs/08449-parna-p1)
+├── out/            (correspond à DIR_OUT_RNA: /applis/08449-parna-p1/out)
+└── temp/           (correspond à DIR_TEMP_RNA: /applis/08449-parna-p1/temp)
+
+3️⃣ CREDENTIALS OCI À FOURNIR
+------------------------------
+Nous avons besoin des informations suivantes pour configurer DBMS_CLOUD :
+
+✅ User OCID: ocid1.user.oc1..aaaa[...]
+✅ Tenancy OCID: ocid1.tenancy.oc1..aaaa[...]
+✅ Fingerprint: aa:bb:cc:dd[...]
+✅ Clé API privée (format PEM)
+✅ Région: eu-paris-1 (ou votre région)
+✅ Namespace Object Storage: [À compléter]
+✅ Bucket URI complet: https://objectstorage.[region].oraclecloud.com/n/[namespace]/b/parna-exacc-files/o/
+
+4️⃣ DROITS REQUIS
+-----------------
+Le user OCI doit avoir les droits suivants :
+- OBJECT_READ sur le bucket
+- OBJECT_WRITE sur le bucket
+- OBJECT_DELETE sur le bucket (pour opérations de maintenance)
+
+=============================================================================
+📊 CONTEXTE TECHNIQUE
+=============================================================================
+
+6 directories Oracle actuels à migrer :
+• DIR_ARCH_RNA   → /applis/08449-parna-p1/archive    → archive/
+• DIR_IN_RNA     → /applis/08449-parna-p1/in         → in/
+• DIR_LOG_RNA    → /applis/logs/08449-parna-p1       → logs/
+• DIR_OUT_RNA    → /applis/08449-parna-p1/out        → out/
+• DIR_TEMP_RNA   → /applis/08449-parna-p1/temp       → temp/
+• IN_APPLI_DIR   → /applis/08449-parna-p1/in/        → in/
+
+Ces directories seront mappés vers Object Storage via notre wrapper UTL_FILE_WRAPPER.
+
+Packages PL/SQL concernés :
+- PKG_TEC_FICHIERS (61 occurrences UTL_FILE)
+- PKG_DTC (21 occurrences)
+- PKG_LOG (14 occurrences)
+- + 8 autres packages
+Total : 111 lignes de code utilisant UTL_FILE
+
+=============================================================================
+📅 DÉLAI
+=============================================================================
+Merci de nous fournir ces éléments pour le : [Date souhaitée]
+
+=============================================================================
+👤 CONTACT
+=============================================================================
+Pour toute question: [Votre nom/email]
+
+Cordialement,
+L'équipe DBA
