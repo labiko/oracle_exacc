@@ -5981,7 +5981,7 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
         <div class="alert alert-success">
             <span class="alert-icon">✅</span>
             <div>
-                <strong>1 DB Link identifié</strong> - À recréer avec DBMS_CLOUD_ADMIN sur ExaCC
+                <strong>3 DB Links identifiés</strong> - À recréer avec DBMS_CLOUD_ADMIN sur ExaCC
             </div>
         </div>
 
@@ -5989,65 +5989,101 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
             <thead>
                 <tr>
                     <th>DB Link</th>
+                    <th>Environnement</th>
                     <th>User distant</th>
                     <th>Host actuel</th>
-                    <th>Date création</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><strong>P08449A</strong></td>
+                    <td><span style="background: #d32f2f; color: white; padding: 3px 10px; border-radius: 10px;">PRODUCTION</span></td>
                     <td>BANKREC</td>
                     <td>S01VL9976319:1521 (SID: P08449AP10)</td>
-                    <td>23/09/22</td>
+                </tr>
+                <tr>
+                    <td><strong>Q08449A</strong></td>
+                    <td><span style="background: #f57c00; color: white; padding: 3px 10px; border-radius: 10px;">RECETTE</span></td>
+                    <td>BANKREC</td>
+                    <td>S01VL9975523:1521 (SID: Q08449AP10)</td>
+                </tr>
+                <tr>
+                    <td><strong>D08449AP</strong></td>
+                    <td><span style="background: #1976d2; color: white; padding: 3px 10px; border-radius: 10px;">DEV</span></td>
+                    <td>BANKREC</td>
+                    <td>s01vl9973227:1521 (SERVICE: D08449AP10)</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3>🔧 Étape 1 : Créer le Credential</h3>
+        <h3>🔧 Étape 1 : Créer les 3 Credentials</h3>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Créer credential pour DB Link P08449A</span>
+                <span>SQL - Créer credentials pour les 3 DB Links</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>-- ============================================================
--- CRÉATION CREDENTIAL POUR DB LINK P08449A
+-- CRÉATION CREDENTIALS POUR LES 3 DB LINKS
 -- ============================================================
--- À exécuter sur ExaCC AVANT de créer le DB Link
+-- À exécuter sur ExaCC AVANT de créer les DB Links
 
+-- 1. Credential PRODUCTION (P08449A)
 BEGIN
     DBMS_CLOUD.CREATE_CREDENTIAL(
         credential_name => 'CRED_P08449A',
         username        => 'BANKREC',
-        password        => '[MOT_DE_PASSE_BANKREC]'  -- À remplacer
+        password        => '[MOT_DE_PASSE_BANKREC_PROD]'  -- À remplacer
     );
 END;
 /
 
--- Vérification
+-- 2. Credential RECETTE (Q08449A)
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'CRED_Q08449A',
+        username        => 'BANKREC',
+        password        => '[MOT_DE_PASSE_BANKREC_RECETTE]'  -- À remplacer
+    );
+END;
+/
+
+-- 3. Credential DEV (D08449AP)
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'CRED_D08449AP',
+        username        => 'BANKREC',
+        password        => '[MOT_DE_PASSE_BANKREC_DEV]'  -- À remplacer
+    );
+END;
+/
+
+-- Vérification des 3 credentials
 SELECT credential_name, username
 FROM user_credentials
-WHERE credential_name = 'CRED_P08449A';</code></pre>
+WHERE credential_name IN ('CRED_P08449A', 'CRED_Q08449A', 'CRED_D08449AP')
+ORDER BY credential_name;</code></pre>
         </div>
 
-        <h3>🔧 Étape 2 : Créer le DB Link ExaCC</h3>
+        <h3>🔧 Étape 2 : Créer les 3 DB Links ExaCC</h3>
         <div class="alert alert-warning">
             <span class="alert-icon">⚠️</span>
             <div>
-                <strong>IMPORTANT :</strong> Demander à l'équipe OCI le hostname et service_name ExaCC de P08449A
+                <strong>IMPORTANT :</strong> Demander à l'équipe OCI les hostname et service_name ExaCC pour chaque environnement
             </div>
         </div>
 
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Créer DB Link P08449A sur ExaCC</span>
+                <span>SQL - Créer les 3 DB Links sur ExaCC</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>-- ============================================================
--- CRÉATION DB LINK P08449A SUR EXACC
+-- CRÉATION DES 3 DB LINKS SUR EXACC
 -- ============================================================
 -- IMPORTANT : Remplacer les valeurs [HOSTNAME_EXACC] et [SERVICE_NAME]
 
+-- 1. DB LINK PRODUCTION (P08449A)
+-- ---------------------------------
 -- Supprimer l'ancien DB Link s'il existe
 BEGIN
     EXECUTE IMMEDIATE 'DROP DATABASE LINK P08449A';
@@ -6056,56 +6092,122 @@ EXCEPTION
 END;
 /
 
--- Créer le nouveau DB Link avec DBMS_CLOUD_ADMIN
+-- Créer le nouveau DB Link PRODUCTION
 BEGIN
     DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK(
         db_link_name        => 'P08449A',
-        hostname            => '[HOSTNAME_EXACC_P08449A]',  -- Ex: exacc-p08449a-scan.oraclecloud.com
+        hostname            => '[HOSTNAME_EXACC_PROD]',     -- Ex: exacc-p08449a-scan.oraclecloud.com
         port                => 1522,                         -- Port mTLS ExaCC
-        service_name        => '[SERVICE_NAME_P08449A]',     -- Ex: P08449A_HIGH.adb.oraclecloud.com
+        service_name        => '[SERVICE_NAME_PROD]',        -- Ex: P08449A_HIGH.adb.oraclecloud.com
         ssl_server_dn_match => TRUE,
         credential_name     => 'CRED_P08449A'
+    );
+END;
+/
+
+-- 2. DB LINK RECETTE (Q08449A)
+-- -----------------------------
+-- Supprimer l'ancien DB Link s'il existe
+BEGIN
+    EXECUTE IMMEDIATE 'DROP DATABASE LINK Q08449A';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+-- Créer le nouveau DB Link RECETTE
+BEGIN
+    DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK(
+        db_link_name        => 'Q08449A',
+        hostname            => '[HOSTNAME_EXACC_RECETTE]',  -- Ex: exacc-q08449a-scan.oraclecloud.com
+        port                => 1522,                         -- Port mTLS ExaCC
+        service_name        => '[SERVICE_NAME_RECETTE]',     -- Ex: Q08449A_HIGH.adb.oraclecloud.com
+        ssl_server_dn_match => TRUE,
+        credential_name     => 'CRED_Q08449A'
+    );
+END;
+/
+
+-- 3. DB LINK DEV (D08449AP)
+-- -------------------------
+-- Supprimer l'ancien DB Link s'il existe
+BEGIN
+    EXECUTE IMMEDIATE 'DROP DATABASE LINK D08449AP';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+-- Créer le nouveau DB Link DEV
+BEGIN
+    DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK(
+        db_link_name        => 'D08449AP',
+        hostname            => '[HOSTNAME_EXACC_DEV]',      -- Ex: exacc-d08449ap-scan.oraclecloud.com
+        port                => 1522,                         -- Port mTLS ExaCC
+        service_name        => '[SERVICE_NAME_DEV]',         -- Ex: D08449AP_HIGH.adb.oraclecloud.com
+        ssl_server_dn_match => TRUE,
+        credential_name     => 'CRED_D08449AP'
     );
 END;
 /</code></pre>
         </div>
 
-        <h3>🧪 Étape 3 : Tester le DB Link</h3>
+        <h3>🧪 Étape 3 : Tester les 3 DB Links</h3>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Tests DB Link P08449A</span>
+                <span>SQL - Tests des 3 DB Links</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre><code>-- ============================================================
--- TEST DB LINK P08449A
+-- TESTS DES 3 DB LINKS
 -- ============================================================
 
--- Test 1 : Vérifier que le DB Link existe
+-- Test 1 : Vérifier que les 3 DB Links existent
 SELECT db_link, host, username
 FROM user_db_links
-WHERE db_link = 'P08449A';
+WHERE db_link IN ('P08449A', 'Q08449A', 'D08449AP')
+ORDER BY db_link;
 
--- Test 2 : Tester la connexion
-SELECT 'DB Link P08449A OK' AS status FROM dual@P08449A;
+-- Test 2 : Tester les connexions
+-- PRODUCTION
+SELECT 'DB Link P08449A PROD OK' AS status FROM dual@P08449A;
+
+-- RECETTE
+SELECT 'DB Link Q08449A RECETTE OK' AS status FROM dual@Q08449A;
+
+-- DEV
+SELECT 'DB Link D08449AP DEV OK' AS status FROM dual@D08449AP;
 
 -- Test 3 : Tester une table distante (adapter selon votre besoin)
--- SELECT COUNT(*) FROM [TABLE_DISTANTE]@P08449A;</code></pre>
+-- SELECT COUNT(*) FROM [TABLE_DISTANTE]@P08449A;
+-- SELECT COUNT(*) FROM [TABLE_DISTANTE]@Q08449A;
+-- SELECT COUNT(*) FROM [TABLE_DISTANTE]@D08449AP;</code></pre>
         </div>
 
         <div class="alert alert-info">
             <span class="alert-icon">📝</span>
             <div>
-                <strong>Informations à demander à l'équipe OCI :</strong><br><br>
-                <strong>Ancien (On-Premise) :</strong><br>
-                • HOST: S01VL9976319<br>
-                • PORT: 1521<br>
-                • PROTOCOL: TCP<br>
-                • SID: P08449AP10<br><br>
-                <strong>Nouveau (ExaCC) - À compléter :</strong><br>
-                • HOST: [À demander]<br>
-                • PORT: 1522<br>
-                • PROTOCOL: TCPS (mTLS)<br>
-                • SERVICE_NAME: [À demander]<br>
+                <strong>Informations à demander à l'équipe OCI pour les 3 environnements :</strong><br><br>
+
+                <strong>🔴 PRODUCTION (P08449A)</strong><br>
+                • Ancien HOST: S01VL9976319:1521 (SID: P08449AP10)<br>
+                • Nouveau HOST ExaCC: [À demander]<br>
+                • Nouveau SERVICE_NAME: [À demander]<br>
+                • Port: 1522 (mTLS)<br>
+                • Mot de passe BANKREC: [À confirmer]<br><br>
+
+                <strong>🟠 RECETTE (Q08449A)</strong><br>
+                • Ancien HOST: S01VL9975523:1521 (SID: Q08449AP10)<br>
+                • Nouveau HOST ExaCC: [À demander]<br>
+                • Nouveau SERVICE_NAME: [À demander]<br>
+                • Port: 1522 (mTLS)<br>
+                • Mot de passe BANKREC: [À confirmer]<br><br>
+
+                <strong>🔵 DEV (D08449AP)</strong><br>
+                • Ancien HOST: s01vl9973227:1521 (SERVICE_NAME: D08449AP10)<br>
+                • Nouveau HOST ExaCC: [À demander]<br>
+                • Nouveau SERVICE_NAME: [À demander]<br>
+                • Port: 1522 (mTLS)<br>
                 • Mot de passe BANKREC: [À confirmer]
             </div>
         </div>
