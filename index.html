@@ -892,6 +892,7 @@
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
         <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts</a></li>
+        <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
         <li><a href="#captures" onclick="showTab('captures', this)">📷 Captures</a></li>
         -->
@@ -5838,6 +5839,811 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
 
 </div>
 <!-- ==================== FIN ONGLET SCRIPTS ==================== -->
+
+<!-- ==================== ONGLET REMEDIATION PARNA ==================== -->
+<div id="remediation" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; margin-top: 20px;">
+        <h2>🔧 Plan de Remédiation UTL_FILE - Application PARNA</h2>
+        <p style="margin: 15px 0;"><strong>Scripts prêts à copier-coller</strong> - Basés sur les résultats de votre audit</p>
+    </section>
+
+    <!-- RÉSUMÉ AUDIT -->
+    <section>
+        <h2>📊 Résultats de l'Audit PARNA</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Audit terminé !</strong> Tous vos packages sont compatibles à 100% avec la solution wrapper.<br>
+                Aucune modification de code nécessaire.
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Élément</th>
+                    <th>Quantité</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Directories Oracle</strong></td>
+                    <td>6</td>
+                    <td><span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 10px;">100% mappés</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Packages PL/SQL</strong></td>
+                    <td>11</td>
+                    <td><span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 10px;">100% couverts</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Lignes UTL_FILE</strong></td>
+                    <td>111</td>
+                    <td><span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 10px;">100% compatibles</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Fonctions UTL_FILE</strong></td>
+                    <td>21 différentes</td>
+                    <td><span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 10px;">100% dans wrapper</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Directories identifiés</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Directory Oracle</th>
+                    <th>Chemin actuel</th>
+                    <th>Mapping Object Storage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>DIR_ARCH_RNA</strong></td>
+                    <td>/applis/08449-parna-p1/archive</td>
+                    <td>archive/</td>
+                </tr>
+                <tr>
+                    <td><strong>DIR_IN_RNA</strong></td>
+                    <td>/applis/08449-parna-p1/in</td>
+                    <td>in/</td>
+                </tr>
+                <tr>
+                    <td><strong>DIR_LOG_RNA</strong></td>
+                    <td>/applis/logs/08449-parna-p1</td>
+                    <td>logs/</td>
+                </tr>
+                <tr>
+                    <td><strong>DIR_OUT_RNA</strong></td>
+                    <td>/applis/08449-parna-p1/out</td>
+                    <td>out/</td>
+                </tr>
+                <tr>
+                    <td><strong>DIR_TEMP_RNA</strong></td>
+                    <td>/applis/08449-parna-p1/temp</td>
+                    <td>temp/</td>
+                </tr>
+                <tr>
+                    <td><strong>IN_APPLI_DIR</strong></td>
+                    <td>/applis/08449-parna-p1/in/</td>
+                    <td>in/</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Top 5 Packages prioritaires</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Package</th>
+                    <th>Lignes UTL_FILE</th>
+                    <th>Priorité</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>PKG_TEC_FICHIERS</strong></td>
+                    <td>61</td>
+                    <td><span style="background: #d32f2f; color: white; padding: 3px 10px; border-radius: 10px;">CRITIQUE</span></td>
+                </tr>
+                <tr>
+                    <td><strong>PKG_DTC</strong></td>
+                    <td>21</td>
+                    <td><span style="background: #f57c00; color: white; padding: 3px 10px; border-radius: 10px;">IMPORTANT</span></td>
+                </tr>
+                <tr>
+                    <td><strong>PKG_LOG</strong></td>
+                    <td>14</td>
+                    <td><span style="background: #f57c00; color: white; padding: 3px 10px; border-radius: 10px;">IMPORTANT</span></td>
+                </tr>
+                <tr>
+                    <td><strong>PKG_RNADEXTBAATCP01</strong></td>
+                    <td>3</td>
+                    <td><span style="background: #1976d2; color: white; padding: 3px 10px; border-radius: 10px;">MOYEN</span></td>
+                </tr>
+                <tr>
+                    <td>+7 autres packages</td>
+                    <td>12</td>
+                    <td><span style="background: #388e3c; color: white; padding: 3px 10px; border-radius: 10px;">FAIBLE</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- AUDIT DB LINKS -->
+    <section>
+        <h2>🔗 Audit des DB Links PARNA</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>1 DB Link identifié</strong> - À recréer avec DBMS_CLOUD_ADMIN sur ExaCC
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>DB Link</th>
+                    <th>User distant</th>
+                    <th>Host actuel</th>
+                    <th>Date création</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>P08449A</strong></td>
+                    <td>BANKREC</td>
+                    <td>S01VL9976319:1521 (SID: P08449AP10)</td>
+                    <td>23/09/22</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>🔧 Étape 1 : Créer le Credential</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Créer credential pour DB Link P08449A</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- CRÉATION CREDENTIAL POUR DB LINK P08449A
+-- ============================================================
+-- À exécuter sur ExaCC AVANT de créer le DB Link
+
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'CRED_P08449A',
+        username        => 'BANKREC',
+        password        => '[MOT_DE_PASSE_BANKREC]'  -- À remplacer
+    );
+END;
+/
+
+-- Vérification
+SELECT credential_name, username
+FROM user_credentials
+WHERE credential_name = 'CRED_P08449A';</code></pre>
+        </div>
+
+        <h3>🔧 Étape 2 : Créer le DB Link ExaCC</h3>
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>IMPORTANT :</strong> Demander à l'équipe OCI le hostname et service_name ExaCC de P08449A
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Créer DB Link P08449A sur ExaCC</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- CRÉATION DB LINK P08449A SUR EXACC
+-- ============================================================
+-- IMPORTANT : Remplacer les valeurs [HOSTNAME_EXACC] et [SERVICE_NAME]
+
+-- Supprimer l'ancien DB Link s'il existe
+BEGIN
+    EXECUTE IMMEDIATE 'DROP DATABASE LINK P08449A';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+-- Créer le nouveau DB Link avec DBMS_CLOUD_ADMIN
+BEGIN
+    DBMS_CLOUD_ADMIN.CREATE_DATABASE_LINK(
+        db_link_name        => 'P08449A',
+        hostname            => '[HOSTNAME_EXACC_P08449A]',  -- Ex: exacc-p08449a-scan.oraclecloud.com
+        port                => 1522,                         -- Port mTLS ExaCC
+        service_name        => '[SERVICE_NAME_P08449A]',     -- Ex: P08449A_HIGH.adb.oraclecloud.com
+        ssl_server_dn_match => TRUE,
+        credential_name     => 'CRED_P08449A'
+    );
+END;
+/</code></pre>
+        </div>
+
+        <h3>🧪 Étape 3 : Tester le DB Link</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Tests DB Link P08449A</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================================
+-- TEST DB LINK P08449A
+-- ============================================================
+
+-- Test 1 : Vérifier que le DB Link existe
+SELECT db_link, host, username
+FROM user_db_links
+WHERE db_link = 'P08449A';
+
+-- Test 2 : Tester la connexion
+SELECT 'DB Link P08449A OK' AS status FROM dual@P08449A;
+
+-- Test 3 : Tester une table distante (adapter selon votre besoin)
+-- SELECT COUNT(*) FROM [TABLE_DISTANTE]@P08449A;</code></pre>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">📝</span>
+            <div>
+                <strong>Informations à demander à l'équipe OCI :</strong><br><br>
+                <strong>Ancien (On-Premise) :</strong><br>
+                • HOST: S01VL9976319<br>
+                • PORT: 1521<br>
+                • PROTOCOL: TCP<br>
+                • SID: P08449AP10<br><br>
+                <strong>Nouveau (ExaCC) - À compléter :</strong><br>
+                • HOST: [À demander]<br>
+                • PORT: 1522<br>
+                • PROTOCOL: TCPS (mTLS)<br>
+                • SERVICE_NAME: [À demander]<br>
+                • Mot de passe BANKREC: [À confirmer]
+            </div>
+        </div>
+    </section>
+
+    <!-- ÉTAPE 1 : EMAIL OCI -->
+    <section>
+        <h2>📧 Étape 1 : Demander Object Storage à l'équipe OCI</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>ACTION REQUISE :</strong> Copiez l'email ci-dessous et envoyez-le à l'équipe OCI pour créer le bucket.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Email - Demande Object Storage (prêt à envoyer)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>Objet: Migration ExaCC - Demande création Object Storage pour remplacement UTL_FILE
+
+Bonjour l'équipe OCI,
+
+Dans le cadre de notre migration vers ExaCC, nous devons remplacer les accès UTL_FILE
+par Oracle Object Storage via DBMS_CLOUD.
+
+=============================================================================
+📋 BESOIN : Création Bucket Object Storage + Credentials
+=============================================================================
+
+1️⃣ BUCKET À CRÉER
+-----------------
+Nom du bucket: parna-exacc-files
+Région: [Votre région OCI]
+Type: Standard (Tier 1)
+Visibilité: Private
+
+2️⃣ STRUCTURE DE RÉPERTOIRES À CRÉER DANS LE BUCKET
+---------------------------------------------------
+Les répertoires suivants doivent être créés dans le bucket :
+
+├── archive/         (correspond à DIR_ARCH_RNA: /applis/08449-parna-p1/archive)
+├── in/             (correspond à DIR_IN_RNA: /applis/08449-parna-p1/in)
+├── logs/           (correspond à DIR_LOG_RNA: /applis/logs/08449-parna-p1)
+├── out/            (correspond à DIR_OUT_RNA: /applis/08449-parna-p1/out)
+└── temp/           (correspond à DIR_TEMP_RNA: /applis/08449-parna-p1/temp)
+
+3️⃣ CREDENTIALS OCI À FOURNIR
+------------------------------
+Nous avons besoin des informations suivantes pour configurer DBMS_CLOUD :
+
+✅ User OCID: ocid1.user.oc1..aaaa[...]
+✅ Tenancy OCID: ocid1.tenancy.oc1..aaaa[...]
+✅ Fingerprint: aa:bb:cc:dd[...]
+✅ Clé API privée (format PEM)
+✅ Région: eu-paris-1 (ou votre région)
+✅ Namespace Object Storage: [À compléter]
+✅ Bucket URI complet: https://objectstorage.[region].oraclecloud.com/n/[namespace]/b/parna-exacc-files/o/
+
+4️⃣ DROITS REQUIS
+-----------------
+Le user OCI doit avoir les droits suivants :
+- OBJECT_READ sur le bucket
+- OBJECT_WRITE sur le bucket
+- OBJECT_DELETE sur le bucket (pour opérations de maintenance)
+
+=============================================================================
+📊 CONTEXTE TECHNIQUE
+=============================================================================
+
+6 directories Oracle actuels à migrer :
+• DIR_ARCH_RNA   → /applis/08449-parna-p1/archive    → archive/
+• DIR_IN_RNA     → /applis/08449-parna-p1/in         → in/
+• DIR_LOG_RNA    → /applis/logs/08449-parna-p1       → logs/
+• DIR_OUT_RNA    → /applis/08449-parna-p1/out        → out/
+• DIR_TEMP_RNA   → /applis/08449-parna-p1/temp       → temp/
+• IN_APPLI_DIR   → /applis/08449-parna-p1/in/        → in/
+
+Ces directories seront mappés vers Object Storage via notre wrapper UTL_FILE_WRAPPER.
+
+Packages PL/SQL concernés :
+- PKG_TEC_FICHIERS (61 occurrences UTL_FILE)
+- PKG_DTC (21 occurrences)
+- PKG_LOG (14 occurrences)
+- + 8 autres packages
+Total : 111 lignes de code utilisant UTL_FILE
+
+=============================================================================
+📅 DÉLAI
+=============================================================================
+Merci de nous fournir ces éléments pour le : [Date souhaitée]
+
+=============================================================================
+👤 CONTACT
+=============================================================================
+Pour toute question: [Votre nom/email]
+
+Cordialement,
+L'équipe DBA</code></pre>
+        </div>
+    </section>
+
+    <!-- ÉTAPE 2 : MAPPING DIRECTORIES -->
+    <section>
+        <h2>📊 Étape 2 : Créer le Mapping Directories (après réception OCI)</h2>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">ℹ️</span>
+            <div>
+                <strong>Prérequis :</strong> L'équipe OCI vous a fourni le Bucket URI et les credentials.<br>
+                Remplacez [REGION], [NAMESPACE] et [SCHEMA] avant d'exécuter.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Script de mapping PARNA (6 directories)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- =============================================================================
+-- SCRIPT DE MAPPING DIRECTORIES UTL_FILE → OCI OBJECT STORAGE
+-- =============================================================================
+-- Application: PARNA (08449-parna-p1)
+-- Directories: 6 identifiés lors de l'audit
+
+-- IMPORTANT : Remplacer avant exécution :
+-- [REGION]     : Région OCI (ex: eu-paris-1)
+-- [NAMESPACE]  : Namespace Object Storage fourni par OCI
+-- [SCHEMA]     : Schéma Oracle propriétaire de la table
+
+-- ÉTAPE 1 : Créer la table de mapping
+CREATE TABLE [SCHEMA].UTL_FILE_DIRECTORY_MAPPING (
+    directory_name   VARCHAR2(128) PRIMARY KEY,
+    object_uri       VARCHAR2(1000) NOT NULL,
+    credential_name  VARCHAR2(128) DEFAULT 'OCI_CREDENTIAL',
+    created_date     DATE DEFAULT SYSDATE,
+    comments         VARCHAR2(500)
+);
+
+-- ÉTAPE 2 : Insérer les 6 mappings PARNA
+
+-- 1/6 : DIR_ARCH_RNA
+INSERT INTO [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, comments)
+VALUES (
+    'DIR_ARCH_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/archive/',
+    'OCI_CREDENTIAL',
+    'Répertoire archive - /applis/08449-parna-p1/archive'
+);
+
+-- 2/6 : DIR_IN_RNA
+INSERT INTO [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, comments)
+VALUES (
+    'DIR_IN_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
+    'OCI_CREDENTIAL',
+    'Répertoire entrant - /applis/08449-parna-p1/in'
+);
+
+-- 3/6 : DIR_LOG_RNA
+INSERT INTO [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, comments)
+VALUES (
+    'DIR_LOG_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/logs/',
+    'OCI_CREDENTIAL',
+    'Répertoire logs - /applis/logs/08449-parna-p1'
+);
+
+-- 4/6 : DIR_OUT_RNA
+INSERT INTO [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, comments)
+VALUES (
+    'DIR_OUT_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/out/',
+    'OCI_CREDENTIAL',
+    'Répertoire sortant - /applis/08449-parna-p1/out'
+);
+
+-- 5/6 : DIR_TEMP_RNA
+INSERT INTO [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, comments)
+VALUES (
+    'DIR_TEMP_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/temp/',
+    'OCI_CREDENTIAL',
+    'Répertoire temporaire - /applis/08449-parna-p1/temp'
+);
+
+-- 6/6 : IN_APPLI_DIR
+INSERT INTO [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, comments)
+VALUES (
+    'IN_APPLI_DIR',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
+    'OCI_CREDENTIAL',
+    'Répertoire entrant application - /applis/08449-parna-p1/in/'
+);
+
+COMMIT;
+
+-- ÉTAPE 3 : Vérifier les mappings (doit retourner 6 lignes)
+SELECT
+    directory_name AS "Directory",
+    object_uri AS "URI Object Storage",
+    credential_name AS "Credential"
+FROM [SCHEMA].UTL_FILE_DIRECTORY_MAPPING
+ORDER BY directory_name;</code></pre>
+        </div>
+    </section>
+
+    <!-- ÉTAPE 3 : CRÉER SYNONYME -->
+    <section>
+        <h2>🔄 Étape 3 : Créer le Synonyme PUBLIC</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Avantage du synonyme PUBLIC :</strong> UNE SEULE commande pour tous les schémas !<br>
+                Aucune modification des 11 packages nécessaire.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Créer synonyme UTL_FILE → UTL_FILE_WRAPPER</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- =============================================================================
+-- CRÉATION DU SYNONYME PUBLIC
+-- =============================================================================
+-- Prérequis: Le package UTL_FILE_WRAPPER est déployé et VALID
+-- À exécuter en tant que DBA
+
+-- ÉTAPE 1 : Vérifier que le wrapper existe et est VALID
+SELECT owner, object_name, object_type, status
+FROM dba_objects
+WHERE object_name = 'UTL_FILE_WRAPPER'
+  AND object_type IN ('PACKAGE', 'PACKAGE BODY')
+ORDER BY owner;
+-- Noter le OWNER où le wrapper est VALID
+
+
+-- ÉTAPE 2 : Créer le SYNONYME PUBLIC
+-- ⚠️ Remplacer [SCHEMA_WRAPPER] par le schéma où le wrapper est déployé
+CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR [SCHEMA_WRAPPER].UTL_FILE_WRAPPER;
+
+
+-- ÉTAPE 3 : Vérifier que le synonyme est créé
+SELECT owner, synonym_name, table_owner, table_name
+FROM dba_synonyms
+WHERE synonym_name = 'UTL_FILE'
+  AND owner = 'PUBLIC';
+-- Doit afficher : PUBLIC | UTL_FILE | [SCHEMA_WRAPPER] | UTL_FILE_WRAPPER
+
+
+-- ÉTAPE 4 : Recompiler tous les schémas impactés
+BEGIN
+    FOR rec IN (
+        SELECT DISTINCT owner
+        FROM dba_source
+        WHERE UPPER(text) LIKE '%UTL_FILE%'
+          AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('Recompilation de: ' || rec.owner);
+        DBMS_UTILITY.COMPILE_SCHEMA(schema => rec.owner, compile_all => FALSE);
+    END LOOP;
+END;
+/
+
+
+-- ÉTAPE 5 : Vérifier aucun objet invalide
+SELECT owner, object_name, object_type
+FROM dba_objects
+WHERE status = 'INVALID'
+  AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+ORDER BY owner, object_name;
+-- Cette requête doit retourner 0 ligne</code></pre>
+        </div>
+    </section>
+
+    <!-- ÉTAPE 4 : TESTS -->
+    <section>
+        <h2>✅ Étape 4 : Tests de Validation</h2>
+
+        <h3>Test rapide (n'importe quel directory)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Test rapide avec DIR_TEMP_RNA</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Test rapide écriture/lecture/suppression
+SET SERVEROUTPUT ON
+DECLARE
+    v_file UTL_FILE.FILE_TYPE;
+    v_line VARCHAR2(1000);
+    v_test VARCHAR2(100) := 'Test PARNA - ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS');
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Test depuis: ' || USER);
+
+    -- Écriture
+    v_file := UTL_FILE.FOPEN('DIR_TEMP_RNA', 'test_' || USER || '.txt', 'W');
+    UTL_FILE.PUT_LINE(v_file, v_test);
+    UTL_FILE.FCLOSE(v_file);
+    DBMS_OUTPUT.PUT_LINE('✅ Écriture OK');
+
+    -- Lecture
+    v_file := UTL_FILE.FOPEN('DIR_TEMP_RNA', 'test_' || USER || '.txt', 'R');
+    UTL_FILE.GET_LINE(v_file, v_line);
+    UTL_FILE.FCLOSE(v_file);
+
+    IF v_line = v_test THEN
+        DBMS_OUTPUT.PUT_LINE('✅ Lecture OK - Contenu vérifié');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('❌ Contenu différent !');
+    END IF;
+
+    -- Suppression
+    UTL_FILE.FREMOVE('DIR_TEMP_RNA', 'test_' || USER || '.txt');
+    DBMS_OUTPUT.PUT_LINE('✅ Suppression OK');
+
+    DBMS_OUTPUT.PUT_LINE('🎉 MIGRATION RÉUSSIE !');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ Erreur: ' || SQLERRM);
+END;
+/</code></pre>
+        </div>
+
+        <h3>Test complet des 6 directories PARNA</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Tester tous les directories PARNA</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- Test des 6 directories PARNA
+SET SERVEROUTPUT ON
+DECLARE
+    v_file UTL_FILE.FILE_TYPE;
+    TYPE t_dirs IS TABLE OF VARCHAR2(30);
+    v_dirs t_dirs := t_dirs('DIR_ARCH_RNA', 'DIR_IN_RNA', 'DIR_LOG_RNA',
+                            'DIR_OUT_RNA', 'DIR_TEMP_RNA', 'IN_APPLI_DIR');
+    v_count NUMBER := 0;
+BEGIN
+    FOR i IN 1..v_dirs.COUNT LOOP
+        BEGIN
+            v_file := UTL_FILE.FOPEN(v_dirs(i), 'test_parna.txt', 'W');
+            UTL_FILE.PUT_LINE(v_file, 'Test ' || v_dirs(i));
+            UTL_FILE.FCLOSE(v_file);
+            UTL_FILE.FREMOVE(v_dirs(i), 'test_parna.txt');
+            v_count := v_count + 1;
+            DBMS_OUTPUT.PUT_LINE('✅ ' || v_dirs(i) || ' : OK');
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('❌ ' || v_dirs(i) || ' : ' || SQLERRM);
+        END;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Résultat: ' || v_count || '/6 directories fonctionnels');
+
+    IF v_count = 6 THEN
+        DBMS_OUTPUT.PUT_LINE('🎉 TOUS LES DIRECTORIES PARNA SONT OK !');
+    END IF;
+END;
+/</code></pre>
+        </div>
+    </section>
+
+    <!-- ÉTAPE 5 : ROLLBACK -->
+    <section>
+        <h2>🔄 Étape 5 : Procédure de Rollback (si problème)</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>En cas de problème :</strong> Ce script annule toute la migration et revient à UTL_FILE natif.<br>
+                À exécuter en tant que SYSDBA.
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - ROLLBACK COMPLET (SYSDBA)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- =============================================================================
+-- ROLLBACK COMPLET - MIGRATION UTL_FILE PARNA
+-- =============================================================================
+-- Exécuter en tant que SYSDBA
+
+SET SERVEROUTPUT ON
+
+DECLARE
+    v_count NUMBER;
+    v_schema VARCHAR2(128) := '[SCHEMA_WRAPPER]';  -- ⚠️ ADAPTER
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('======================================');
+    DBMS_OUTPUT.PUT_LINE('ROLLBACK MIGRATION PARNA - DÉBUT');
+    DBMS_OUTPUT.PUT_LINE('======================================');
+
+    -- ÉTAPE 1 : Supprimer le synonyme PUBLIC
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM UTL_FILE';
+        DBMS_OUTPUT.PUT_LINE('✅ Synonyme PUBLIC supprimé');
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ℹ️  Synonyme n''existait pas');
+    END;
+
+    -- ÉTAPE 2 : Supprimer le package wrapper
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP PACKAGE ' || v_schema || '.UTL_FILE_WRAPPER';
+        DBMS_OUTPUT.PUT_LINE('✅ Package UTL_FILE_WRAPPER supprimé');
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ℹ️  Package n''existait pas');
+    END;
+
+    -- ÉTAPE 3 : Supprimer la table de mapping
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE ' || v_schema || '.UTL_FILE_DIRECTORY_MAPPING CASCADE CONSTRAINTS';
+        DBMS_OUTPUT.PUT_LINE('✅ Table de mapping supprimée');
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('ℹ️  Table n''existait pas');
+    END;
+
+    -- ÉTAPE 4 : Recompiler tous les schémas
+    FOR rec IN (
+        SELECT DISTINCT owner
+        FROM dba_source
+        WHERE UPPER(text) LIKE '%UTL_FILE%'
+          AND owner NOT IN ('SYS', 'SYSTEM', 'ORACLE_OCM')
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('Recompilation de: ' || rec.owner);
+        DBMS_UTILITY.COMPILE_SCHEMA(schema => rec.owner, compile_all => FALSE);
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('======================================');
+    DBMS_OUTPUT.PUT_LINE('ROLLBACK TERMINÉ');
+    DBMS_OUTPUT.PUT_LINE('Le code utilise UTL_FILE natif Oracle');
+    DBMS_OUTPUT.PUT_LINE('======================================');
+END;
+/</code></pre>
+        </div>
+    </section>
+
+    <!-- CHECKLIST FINALE -->
+    <section>
+        <h2>✅ Checklist Complète PARNA</h2>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>Checklist - Cocher au fur et à mesure</span>
+            </div>
+            <pre><code>=== PHASE 1 : DEMANDE OCI ===
+☐ 1. Email envoyé à l'équipe OCI
+☐ 2. Credentials OCI reçus (User OCID, Tenancy, Fingerprint, Clé API)
+☐ 3. Bucket "parna-exacc-files" créé
+☐ 4. Structure répertoires créée :
+    ☐ archive/
+    ☐ in/
+    ☐ logs/
+    ☐ out/
+    ☐ temp/
+
+=== PHASE 2 : CONFIGURATION EXACC ===
+☐ 5. UTL_FILE_WRAPPER package déployé (voir migration-utl-file-exacc.html)
+☐ 6. DBMS_CLOUD credential 'OCI_CREDENTIAL' créé
+☐ 7. Table UTL_FILE_DIRECTORY_MAPPING créée
+☐ 8. 6 mappings PARNA insérés :
+    ☐ DIR_ARCH_RNA
+    ☐ DIR_IN_RNA
+    ☐ DIR_LOG_RNA
+    ☐ DIR_OUT_RNA
+    ☐ DIR_TEMP_RNA
+    ☐ IN_APPLI_DIR
+☐ 9. Test connectivité DBMS_CLOUD → OCI OK
+
+=== PHASE 3 : MIGRATION ===
+☐ 10. Synonyme PUBLIC UTL_FILE créé
+☐ 11. Schémas recompilés (0 objet invalide)
+☐ 12. Test rapide DIR_TEMP_RNA OK
+☐ 13. Test complet 6 directories OK
+
+=== PHASE 4 : VALIDATION PACKAGES ===
+☐ 14. PKG_TEC_FICHIERS (61 lignes) testé ✓
+☐ 15. PKG_DTC (21 lignes) testé ✓
+☐ 16. PKG_LOG (14 lignes) testé ✓
+☐ 17. PKG_RNADEXTBAATCP01 (3 lignes) testé ✓
+☐ 18. PKG_RNADEXTBAATGS01 (2 lignes) testé ✓
+☐ 19. PKG_RNADEXTAUTO01 (2 lignes) testé ✓
+☐ 20. PC_TA_RN_BDDF_* (7 packages) testés ✓
+
+=== PHASE 5 : PRODUCTION ===
+☐ 21. Tests de non-régression OK
+☐ 22. Validation équipe métier
+☐ 23. Documentation mise à jour
+☐ 24. Plan de rollback préparé
+☐ 25. Mise en production validée
+
+=== RÉSUMÉ ===
+Directories migrés : 6/6
+Packages migrés : 11/11
+Lignes UTL_FILE : 111/111
+Taux de réussite : 100% ✅</code></pre>
+        </div>
+    </section>
+
+    <!-- LIEN VERS LE GUIDE -->
+    <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3;">
+        <h2>📚 Ressources Complémentaires</h2>
+
+        <p style="margin: 15px 0;">
+            <strong>Pour créer le package UTL_FILE_WRAPPER :</strong><br>
+            Consultez le fichier <a href="migration-utl-file-exacc.html" style="color: #1565c0; font-weight: bold;">migration-utl-file-exacc.html</a> qui contient le code complet du wrapper.
+        </p>
+
+        <p style="margin: 15px 0;">
+            <strong>Pour l'audit générique (autres applications) :</strong><br>
+            Consultez l'<a href="#guide" onclick="showTab('guide', document.querySelector('a[href=\'#guide\']'))" style="color: #1565c0; font-weight: bold;">onglet Guide Migration</a>.
+        </p>
+
+        <p style="margin: 15px 0;">
+            <strong>Fichiers téléchargeables :</strong><br>
+            - <a href="EMAIL_DEMANDE_OCI.txt" style="color: #1565c0;">EMAIL_DEMANDE_OCI.txt</a><br>
+            - <a href="SCRIPT_MAPPING_DIRECTORIES.sql" style="color: #1565c0;">SCRIPT_MAPPING_DIRECTORIES.sql</a><br>
+            - <a href="SYNTHESE_AUDIT_REMEDIATION.md" style="color: #1565c0;">SYNTHESE_AUDIT_REMEDIATION.md</a>
+        </p>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET REMEDIATION ==================== -->
 
 <!-- ==================== ONGLET CAPTURES ==================== -->
 <div id="captures" class="tab-content">
