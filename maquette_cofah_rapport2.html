@@ -743,7 +743,7 @@
             <div class="filters">
                 <div class="filter-group">
                     <label for="filter-annee">Annee :</label>
-                    <select id="filter-annee">
+                    <select id="filter-annee" onchange="updateChart()">
                         <option value="2024">2024</option>
                         <option value="2025" selected>2025</option>
                         <option value="2026">2026</option>
@@ -751,7 +751,7 @@
                 </div>
                 <div class="filter-group">
                     <label for="filter-mois">Mois :</label>
-                    <select id="filter-mois">
+                    <select id="filter-mois" onchange="updateChart()">
                         <option value="tous" selected>Tous</option>
                         <option value="01">Janvier</option>
                         <option value="02">Fevrier</option>
@@ -770,7 +770,7 @@
             </div>
         </div>
 
-        <div class="bar-chart">
+        <div id="bar-chart-container" class="bar-chart">
             <div class="y-axis">
                 <span>8.00</span>
                 <span>6.00</span>
@@ -778,62 +778,7 @@
                 <span>2.00</span>
                 <span>0.00</span>
             </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 120px;" onclick="showDetail('Janvier 2025')">
-                    <span class="bar-value">3.45</span>
-                </div>
-                <span class="bar-label">janv. 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 160px;" onclick="showDetail('Fevrier 2025')">
-                    <span class="bar-value">4.73</span>
-                </div>
-                <span class="bar-label">fevr. 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 145px;" onclick="showDetail('Mars 2025')">
-                    <span class="bar-value">4.14</span>
-                </div>
-                <span class="bar-label">mars 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 115px;" onclick="showDetail('Avril 2025')">
-                    <span class="bar-value">3.36</span>
-                </div>
-                <span class="bar-label">avr. 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 170px;" onclick="showDetail('Mai 2025')">
-                    <span class="bar-value">4.89</span>
-                </div>
-                <span class="bar-label">mai 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 245px;" onclick="showDetail('Juin 2025')">
-                    <span class="bar-value">7.01</span>
-                </div>
-                <span class="bar-label">juin 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 125px;" onclick="showDetail('Juillet 2025')">
-                    <span class="bar-value">3.61</span>
-                </div>
-                <span class="bar-label">juil. 2025</span>
-            </div>
-
-            <div class="bar-item">
-                <div class="bar" style="height: 55px;" onclick="showDetail('Aout 2025')">
-                    <span class="bar-value">1.28</span>
-                </div>
-                <span class="bar-label">aout 2025</span>
-            </div>
+            <!-- Bars generated dynamically by JavaScript -->
         </div>
 
         <p class="chart-description">
@@ -1196,6 +1141,113 @@ function toggleSidebarMenu(menuId, parentElement) {
 }
 
 // ============================================================================
+// DONNEES DU GRAPHIQUE PAR ANNEE/MOIS (delai moyen)
+// ============================================================================
+const chartData = {
+    '2024': {
+        '01': { delai: 5.2, label: 'janv. 2024' },
+        '02': { delai: 4.8, label: 'fevr. 2024' },
+        '03': { delai: 6.1, label: 'mars 2024' },
+        '04': { delai: 5.5, label: 'avr. 2024' },
+        '05': { delai: 4.2, label: 'mai 2024' },
+        '06': { delai: 5.9, label: 'juin 2024' },
+        '07': { delai: 6.8, label: 'juil. 2024' },
+        '08': { delai: 3.1, label: 'aout 2024' },
+        '09': { delai: 4.5, label: 'sept. 2024' },
+        '10': { delai: 5.3, label: 'oct. 2024' },
+        '11': { delai: 4.9, label: 'nov. 2024' },
+        '12': { delai: 6.2, label: 'dec. 2024' }
+    },
+    '2025': {
+        '01': { delai: 3.45, label: 'janv. 2025' },
+        '02': { delai: 4.73, label: 'fevr. 2025' },
+        '03': { delai: 4.14, label: 'mars 2025' },
+        '04': { delai: 3.36, label: 'avr. 2025' },
+        '05': { delai: 4.89, label: 'mai 2025' },
+        '06': { delai: 7.01, label: 'juin 2025' },
+        '07': { delai: 3.61, label: 'juil. 2025' },
+        '08': { delai: 1.28, label: 'aout 2025' },
+        '09': { delai: 2.95, label: 'sept. 2025' },
+        '10': { delai: 3.82, label: 'oct. 2025' },
+        '11': { delai: 4.15, label: 'nov. 2025' },
+        '12': { delai: 3.67, label: 'dec. 2025' }
+    },
+    '2026': {
+        '01': { delai: 2.8, label: 'janv. 2026' },
+        '02': { delai: 3.2, label: 'fevr. 2026' }
+    }
+};
+
+// Noms des mois pour affichage
+const moisNoms = {
+    '01': 'Janvier', '02': 'Fevrier', '03': 'Mars', '04': 'Avril',
+    '05': 'Mai', '06': 'Juin', '07': 'Juillet', '08': 'Aout',
+    '09': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Decembre'
+};
+
+// ============================================================================
+// FONCTION DE MISE A JOUR DU GRAPHIQUE
+// ============================================================================
+function updateChart() {
+    const annee = document.getElementById('filter-annee').value;
+    const mois = document.getElementById('filter-mois').value;
+    const container = document.getElementById('bar-chart-container');
+
+    // Garder l'axe Y
+    let html = `<div class="y-axis">
+        <span>8.00</span>
+        <span>6.00</span>
+        <span>4.00</span>
+        <span>2.00</span>
+        <span>0.00</span>
+    </div>`;
+
+    const yearData = chartData[annee] || {};
+
+    if (mois === 'tous') {
+        // Afficher tous les mois de l'annee
+        for (const m in yearData) {
+            const data = yearData[m];
+            const height = Math.min(data.delai * 35, 280); // 35px par jour, max 280px
+            const moisKey = moisNoms[m] + ' ' + annee;
+            html += `
+                <div class="bar-item">
+                    <div class="bar" style="height: ${height}px;" onclick="showDetail('${moisKey}')">
+                        <span class="bar-value">${data.delai.toFixed(2)}</span>
+                    </div>
+                    <span class="bar-label">${data.label}</span>
+                </div>`;
+        }
+    } else {
+        // Afficher un seul mois
+        const data = yearData[mois];
+        if (data) {
+            const height = Math.min(data.delai * 35, 280);
+            const moisKey = moisNoms[mois] + ' ' + annee;
+            html += `
+                <div class="bar-item" style="flex: 0 0 150px;">
+                    <div class="bar" style="height: ${height}px; width: 80px;" onclick="showDetail('${moisKey}')">
+                        <span class="bar-value">${data.delai.toFixed(2)}</span>
+                    </div>
+                    <span class="bar-label">${data.label}</span>
+                </div>`;
+        } else {
+            html += `<div style="padding: 50px; color: #666; text-align: center; width: 100%;">Aucune donnee pour ${moisNoms[mois]} ${annee}</div>`;
+        }
+    }
+
+    container.innerHTML = html;
+
+    // Masquer le detail si affiche
+    hideDetail();
+}
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    updateChart();
+});
+
+// ============================================================================
 // Donnees de test par mois (avec toutes les colonnes)
 const testData = {
     'Janvier 2025': [
@@ -1240,6 +1292,43 @@ const testData = {
     'Aout 2025': [
         { uid: 'j05678', nom: 'PETIT Nicolas', reference: '13:41', dateCreation: '01/08/2025', dateTraitement: '02/08/2025', delai: 1, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '09:12:05', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'BETA INDUSTRIE', isin: 'FR0000125007', compteBancaire: 'FR76 3000 4025 6700 0400 0345 678', montant: '2 340.00 EUR', libelle: 'Urgent cheque UC-2025-0801', interlocuteur: 'Valerie PERRIN - Urgences' },
         { uid: 'j07155', nom: 'DUPONT Marie', reference: '13:42', dateCreation: '10/08/2025', dateTraitement: '12/08/2025', delai: 2, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '11:45:38', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'COFAH SA', isin: 'FR0000120578', compteBancaire: 'FR76 3000 4025 6700 0100 0123 456', montant: '5 120.75 EUR', libelle: 'Facture ete FE-2025-08', interlocuteur: 'Bruno CHEVALIER - Comptabilite' },
+    ],
+    'Septembre 2025': [
+        { uid: 'j07155', nom: 'DUPONT Marie', reference: '13:43', dateCreation: '02/09/2025', dateTraitement: '05/09/2025', delai: 3, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '09:30:15', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'COFAH SA', isin: 'FR0000120578', compteBancaire: 'FR76 3000 4025 6700 0100 0123 456', montant: '14 780.00 EUR', libelle: 'Rentree septembre RS-2025', interlocuteur: 'Pierre MARTIN - Comptabilite' },
+        { uid: 'j08234', nom: 'MARTIN Jean', reference: '13:44', dateCreation: '10/09/2025', dateTraitement: '13/09/2025', delai: 3, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '14:22:08', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'GROUPE ALPHA', isin: 'FR0000131104', compteBancaire: 'FR76 3000 4025 6700 0200 0456 789', montant: '22 450.00 EUR', libelle: 'Trimestre Q3 TQ3-2025', interlocuteur: 'Sophie DURAND - Tresorerie' },
+    ],
+    'Octobre 2025': [
+        { uid: 'j09412', nom: 'BERNARD Sophie', reference: '13:45', dateCreation: '01/10/2025', dateTraitement: '05/10/2025', delai: 4, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '10:15:42', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'FINEXIA', isin: 'FR0000127771', compteBancaire: 'FR76 3000 4025 6700 0300 0789 012', montant: '31 200.00 EUR', libelle: 'Contrat octobre CO-2025', interlocuteur: 'Marc LEFEBVRE - Commercial' },
+        { uid: 'j05678', nom: 'PETIT Nicolas', reference: '13:46', dateCreation: '15/10/2025', dateTraitement: '19/10/2025', delai: 4, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '11:50:30', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'BETA INDUSTRIE', isin: 'FR0000125007', compteBancaire: 'FR76 3000 4025 6700 0400 0345 678', montant: '8 670.50 EUR', libelle: 'Facture automne FA-2025-10', interlocuteur: 'Julie MOREAU - Comptabilite' },
+    ],
+    'Novembre 2025': [
+        { uid: 'j07155', nom: 'DUPONT Marie', reference: '13:47', dateCreation: '03/11/2025', dateTraitement: '07/11/2025', delai: 4, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '09:05:22', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'COFAH SA', isin: 'FR0000120578', compteBancaire: 'FR76 3000 4025 6700 0100 0123 456', montant: '19 340.00 EUR', libelle: 'Pre-cloture novembre PCN-2025', interlocuteur: 'Thomas GARCIA - Direction' },
+        { uid: 'j08234', nom: 'MARTIN Jean', reference: '13:48', dateCreation: '12/11/2025', dateTraitement: '17/11/2025', delai: 5, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '15:40:18', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'GROUPE ALPHA', isin: 'FR0000131104', compteBancaire: 'FR76 3000 4025 6700 0200 0456 789', montant: '45 780.25 EUR', libelle: 'Solde annuel SA-2025', interlocuteur: 'Claire VINCENT - Tresorerie' },
+    ],
+    'Decembre 2025': [
+        { uid: 'j09412', nom: 'BERNARD Sophie', reference: '13:49', dateCreation: '01/12/2025', dateTraitement: '04/12/2025', delai: 3, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '08:45:10', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'FINEXIA', isin: 'FR0000127771', compteBancaire: 'FR76 3000 4025 6700 0300 0789 012', montant: '56 900.00 EUR', libelle: 'Cloture annuelle CL-2025', interlocuteur: 'Philippe ROBERT - Direction' },
+        { uid: 'j05678', nom: 'PETIT Nicolas', reference: '13:50', dateCreation: '10/12/2025', dateTraitement: '14/12/2025', delai: 4, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '13:22:45', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'BETA INDUSTRIE', isin: 'FR0000125007', compteBancaire: 'FR76 3000 4025 6700 0400 0345 678', montant: '12 450.75 EUR', libelle: 'Derniere facture DF-2025', interlocuteur: 'Emma SIMON - Comptabilite' },
+    ],
+    // Donnees 2024
+    'Janvier 2024': [
+        { uid: 'j07155', nom: 'DUPONT Marie', reference: '12:01', dateCreation: '05/01/2024', dateTraitement: '10/01/2024', delai: 5, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '10:30:22', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'COFAH SA', isin: 'FR0000120578', compteBancaire: 'FR76 3000 4025 6700 0100 0123 456', montant: '7 890.00 EUR', libelle: 'Facture janvier FJ-2024', interlocuteur: 'Pierre DURAND - Comptabilite' },
+        { uid: 'j08234', nom: 'MARTIN Jean', reference: '12:02', dateCreation: '15/01/2024', dateTraitement: '21/01/2024', delai: 6, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '14:15:38', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'GROUPE ALPHA', isin: 'FR0000131104', compteBancaire: 'FR76 3000 4025 6700 0200 0456 789', montant: '18 340.50 EUR', libelle: 'Reglement Q4-2023 RQ4-2023', interlocuteur: 'Marie LEFEBVRE - Tresorerie' },
+    ],
+    'Juin 2024': [
+        { uid: 'j09412', nom: 'BERNARD Sophie', reference: '12:15', dateCreation: '03/06/2024', dateTraitement: '09/06/2024', delai: 6, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '09:45:12', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'FINEXIA', isin: 'FR0000127771', compteBancaire: 'FR76 3000 4025 6700 0300 0789 012', montant: '42 560.00 EUR', libelle: 'Semestre S1-2024', interlocuteur: 'Marc DUVAL - Direction' },
+    ],
+    'Decembre 2024': [
+        { uid: 'j07155', nom: 'DUPONT Marie', reference: '12:30', dateCreation: '02/12/2024', dateTraitement: '08/12/2024', delai: 6, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '11:20:55', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'COFAH SA', isin: 'FR0000120578', compteBancaire: 'FR76 3000 4025 6700 0100 0123 456', montant: '67 890.00 EUR', libelle: 'Cloture 2024 CL-2024', interlocuteur: 'Thomas GARCIA - Direction Financiere' },
+        { uid: 'j08234', nom: 'MARTIN Jean', reference: '12:31', dateCreation: '10/12/2024', dateTraitement: '17/12/2024', delai: 7, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '15:48:30', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'GROUPE ALPHA', isin: 'FR0000131104', compteBancaire: 'FR76 3000 4025 6700 0200 0456 789', montant: '34 560.75 EUR', libelle: 'Solde annuel SA-2024', interlocuteur: 'Claire VINCENT - Tresorerie' },
+    ],
+    // Donnees 2026
+    'Janvier 2026': [
+        { uid: 'j07155', nom: 'DUPONT Marie', reference: '14:01', dateCreation: '02/01/2026', dateTraitement: '05/01/2026', delai: 3, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '09:15:10', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'COFAH SA', isin: 'FR0000120578', compteBancaire: 'FR76 3000 4025 6700 0100 0123 456', montant: '11 230.00 EUR', libelle: 'Ouverture 2026 OUV-2026', interlocuteur: 'Pierre MARTIN - Comptabilite' },
+        { uid: 'j09412', nom: 'BERNARD Sophie', reference: '14:02', dateCreation: '08/01/2026', dateTraitement: '11/01/2026', delai: 3, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '14:30:45', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'FINEXIA', isin: 'FR0000127771', compteBancaire: 'FR76 3000 4025 6700 0300 0789 012', montant: '28 670.50 EUR', libelle: 'Premier contrat PC-2026', interlocuteur: 'Sophie DURAND - Commercial' },
+    ],
+    'Fevrier 2026': [
+        { uid: 'j08234', nom: 'MARTIN Jean', reference: '14:03', dateCreation: '03/02/2026', dateTraitement: '06/02/2026', delai: 3, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '10:45:22', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'GROUPE ALPHA', isin: 'FR0000131104', compteBancaire: 'FR76 3000 4025 6700 0200 0456 789', montant: '19 450.00 EUR', libelle: 'Facture fevrier FF-2026', interlocuteur: 'Julie MOREAU - Tresorerie' },
+        { uid: 'j05678', nom: 'PETIT Nicolas', reference: '14:04', dateCreation: '05/02/2026', dateTraitement: '09/02/2026', delai: 4, service: 'CPTA DFAR FIAB', etat: 'Traite', heure: '11:22:18', verrouille: 'Non', typeTache: 'Encaissement CHEQUE', societe: 'BETA INDUSTRIE', isin: 'FR0000125007', compteBancaire: 'FR76 3000 4025 6700 0400 0345 678', montant: '8 920.75 EUR', libelle: 'Commande express CE-2026-02', interlocuteur: 'Antoine GIRARD - Logistique' },
     ],
 };
 
