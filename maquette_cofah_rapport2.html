@@ -41,6 +41,23 @@
 
         .sidebar-item.parent {
             font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sidebar-item.parent:hover {
+            background-color: #ddd;
+        }
+
+        .sidebar-item.parent .expand {
+            display: inline-block;
+            width: 12px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .submenu {
+            overflow: hidden;
         }
 
         .sidebar-item .icon {
@@ -610,51 +627,95 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <div class="sidebar-item parent">
+    <!-- ADC_FINANCE -->
+    <div class="sidebar-item parent" onclick="toggleSidebarMenu('menu-adc-finance', this)">
         <span class="expand">></span>
         <span class="checkbox"></span>
         ADC_FINANCE
     </div>
+    <div id="menu-adc-finance" class="submenu" style="display: none;">
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-red"></span>
+            Encours
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-yellow"></span>
+            Valide
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-green"></span>
+            Termine
+        </div>
+    </div>
 
-    <div class="sidebar-item parent">
+    <!-- METIER_COFAH_COMPTA -->
+    <div class="sidebar-item parent" onclick="toggleSidebarMenu('menu-cofah-compta', this)">
         <span class="expand">v</span>
         <span class="checkbox"></span>
         METIER_COFAH_COMPTA
     </div>
-
-    <div class="sidebar-item" style="padding-left: 35px;">
-        <span class="checkbox"></span>
-        <span class="color-box color-red"></span>
-        Ouverture
+    <div id="menu-cofah-compta" class="submenu" style="display: block;">
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-red"></span>
+            Ouverture
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-yellow"></span>
+            Cree
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-orange"></span>
+            A Traiter
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox checked"></span>
+            <span class="color-box color-orange"></span>
+            Traite
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-green"></span>
+            Cloture
+        </div>
     </div>
 
-    <div class="sidebar-item" style="padding-left: 35px;">
-        <span class="checkbox"></span>
-        <span class="color-box color-yellow"></span>
-        Cree
-    </div>
-
-    <div class="sidebar-item" style="padding-left: 35px;">
-        <span class="checkbox"></span>
-        <span class="color-box color-orange"></span>
-        A Traiter
-    </div>
-
-    <div class="sidebar-item" style="padding-left: 35px;">
-        <span class="checkbox checked"></span>
-        <span class="color-box color-orange"></span>
-        Traite
-    </div>
-
-    <div class="sidebar-item" style="padding-left: 35px;">
-        <span class="checkbox"></span>
-        <span class="color-box color-green"></span>
-        Cloture
-    </div>
-
-    <div class="sidebar-item parent" style="margin-top: 10px;">
+    <!-- METIERS -->
+    <div class="sidebar-item parent" style="margin-top: 10px;" onclick="toggleSidebarMenu('menu-metiers', this)">
         <span class="expand">></span>
         METIERS
+    </div>
+    <div id="menu-metiers" class="submenu" style="display: none;">
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-red"></span>
+            Ouverture
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-yellow"></span>
+            Cree
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-orange"></span>
+            A Traiter
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-orange"></span>
+            Traite
+        </div>
+        <div class="sidebar-item" style="padding-left: 35px;">
+            <span class="checkbox"></span>
+            <span class="color-box color-green"></span>
+            Cloture
+        </div>
     </div>
 </div>
 
@@ -667,6 +728,7 @@
         <div class="menu-item">Cas <span class="arrow">v</span></div>
         <div class="menu-item">Afficher <span class="arrow">v</span></div>
         <div class="menu-item">Exportation <span class="arrow">v</span></div>
+        <div class="menu-item" onclick="openSFDModal()">SFD <span class="arrow">v</span></div>
     </div>
 
     <!-- Section Title -->
@@ -926,7 +988,214 @@
     </div>
 </div>
 
+<!-- Modal SFD - Specification Fonctionnelle Detaillee -->
+<div id="sfd-modal" class="modal-overlay" onclick="closeSFDModalOnOverlay(event)">
+    <div class="modal" style="max-width: 1100px;">
+        <div class="modal-header" style="background: linear-gradient(to bottom, #5b7c99, #4a6a85);">
+            <h3>SFD - Specification Fonctionnelle Detaillee</h3>
+            <button class="modal-close" onclick="closeSFDModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+
+            <!-- Section 1: Contexte -->
+            <div class="modal-section">
+                <div class="modal-section-title">1. CONTEXTE ET OBJECTIF</div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; margin-bottom: 15px;">
+                    <p><strong>Application :</strong> METIER_COFAH_COMPTA</p>
+                    <p><strong>Module :</strong> Gestion des taches comptables (Encaissements CHEQUES)</p>
+                    <p><strong>Objectif :</strong> Permettre au metier d'ouvrir des taches qui seront traitees par l'equipe METIER_COFAH_COMPTA, avec suivi des delais de traitement.</p>
+                </div>
+            </div>
+
+            <!-- Section 2: Workflow -->
+            <div class="modal-section">
+                <div class="modal-section-title">2. WORKFLOW DES TACHES</div>
+                <div style="display: flex; align-items: center; justify-content: space-around; padding: 20px; background: #f8f9fa; border-radius: 4px; flex-wrap: wrap; gap: 10px;">
+                    <div style="text-align: center;">
+                        <div style="width: 80px; height: 40px; background: #dc2626; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Ouverture</div>
+                        <div style="font-size: 10px; margin-top: 5px;">Metier cree</div>
+                    </div>
+                    <div style="font-size: 20px;">→</div>
+                    <div style="text-align: center;">
+                        <div style="width: 80px; height: 40px; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Cree</div>
+                        <div style="font-size: 10px; margin-top: 5px;">En attente</div>
+                    </div>
+                    <div style="font-size: 20px;">→</div>
+                    <div style="text-align: center;">
+                        <div style="width: 80px; height: 40px; background: #ea580c; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">A Traiter</div>
+                        <div style="font-size: 10px; margin-top: 5px;">Assignee</div>
+                    </div>
+                    <div style="font-size: 20px;">→</div>
+                    <div style="text-align: center;">
+                        <div style="width: 80px; height: 40px; background: #ea580c; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Traite</div>
+                        <div style="font-size: 10px; margin-top: 5px;">COFAH traite</div>
+                    </div>
+                    <div style="font-size: 20px;">→</div>
+                    <div style="text-align: center;">
+                        <div style="width: 80px; height: 40px; background: #22c55e; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Cloture</div>
+                        <div style="font-size: 10px; margin-top: 5px;">Termine</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Etats -->
+            <div class="modal-section">
+                <div class="modal-section-title">3. DESCRIPTION DES ETATS</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #e8e4d9;">
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Etat</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Couleur</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Description</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Acteur</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Actions possibles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ouverture</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #dc2626; color: white; padding: 2px 8px; border-radius: 3px;">Rouge</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">La tache vient d'etre creee par le metier. Elle n'est pas encore prise en charge.</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">METIER (demandeur)</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Modifier, Annuler, Assigner</td>
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Cree</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 3px;">Jaune</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">La tache est validee et en attente de prise en charge par COFAH_COMPTA.</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Systeme (automatique)</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Prendre en charge, Rejeter</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">A Traiter</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ea580c; color: white; padding: 2px 8px; border-radius: 3px;">Orange</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">La tache est assignee a un utilisateur COFAH_COMPTA. Le delai commence.</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">METIER_COFAH_COMPTA</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Traiter, Reassigner, Mettre en attente</td>
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Traite</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ea580c; color: white; padding: 2px 8px; border-radius: 3px;">Orange</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">La tache a ete traitee par COFAH_COMPTA. En attente de validation metier.</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">METIER_COFAH_COMPTA</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Valider (cloturer), Rejeter (reouvrir)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Cloture</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">Vert</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">La tache est terminee et validee. Archivage automatique apres 30 jours.</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">METIER (validation)</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Consulter, Exporter</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Section 4: Regles de gestion -->
+            <div class="modal-section">
+                <div class="modal-section-title">4. REGLES DE GESTION</div>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                    <p style="margin-bottom: 10px;"><strong>RG01 - Creation de tache :</strong> Seul un utilisateur du groupe METIER peut creer une tache en statut "Ouverture".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG02 - Prise en charge :</strong> Seul un utilisateur du groupe METIER_COFAH_COMPTA peut prendre en charge une tache en statut "Cree" ou "A Traiter".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG03 - Calcul du delai :</strong> Le delai de traitement = Date de passage en "Traite" - Date de passage en "A Traiter" (en jours ouvres).</p>
+                    <p style="margin-bottom: 10px;"><strong>RG04 - Indicateur delai :</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li><span style="color: #22c55e; font-weight: bold;">Vert</span> : Delai <= 3 jours (conforme SLA)</li>
+                        <li><span style="color: #f59e0b; font-weight: bold;">Orange</span> : Delai 4-5 jours (attention)</li>
+                        <li><span style="color: #dc2626; font-weight: bold;">Rouge</span> : Delai > 5 jours (SLA depasse)</li>
+                    </ul>
+                    <p style="margin-bottom: 10px; margin-top: 10px;"><strong>RG05 - Verrouillage :</strong> Une tache en cours de traitement est verrouillee pour l'utilisateur qui la traite.</p>
+                    <p style="margin-bottom: 0;"><strong>RG06 - Cloture :</strong> Seul le demandeur initial (METIER) peut valider et cloturer une tache traitee.</p>
+                </div>
+            </div>
+
+            <!-- Section 5: Champs obligatoires -->
+            <div class="modal-section">
+                <div class="modal-section-title">5. DONNEES DE LA TACHE</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #e8e4d9;">
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Champ</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Type</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Obligatoire</th>
+                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Reference</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui (auto)</td><td style="padding: 6px; border: 1px solid #ddd;">Identifiant unique genere (format: HH:MM)</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Date Ouverture</td><td style="padding: 6px; border: 1px solid #ddd;">Date</td><td style="padding: 6px; border: 1px solid #ddd;">Oui (auto)</td><td style="padding: 6px; border: 1px solid #ddd;">Date de creation de la tache</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Date Traitement</td><td style="padding: 6px; border: 1px solid #ddd;">Date</td><td style="padding: 6px; border: 1px solid #ddd;">Non</td><td style="padding: 6px; border: 1px solid #ddd;">Date de passage en statut "Traite"</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">UID</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Identifiant de l'utilisateur traitant</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Service Correcteur</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Service COFAH responsable (ex: CPTA DFAR FIAB)</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Type Tache</td><td style="padding: 6px; border: 1px solid #ddd;">Enum</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Encaissement CHEQUE, Virement, Prelevement...</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Societe</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Societe concernee (ex: COFAH SA)</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Montant</td><td style="padding: 6px; border: 1px solid #ddd;">Decimal</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Montant de l'operation en EUR</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Compte Bancaire</td><td style="padding: 6px; border: 1px solid #ddd;">IBAN</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">IBAN du compte concerne</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Libelle</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Description de l'operation</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Interlocuteur</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Non</td><td style="padding: 6px; border: 1px solid #ddd;">Contact metier pour cette tache</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Section 6: Rapport -->
+            <div class="modal-section">
+                <div class="modal-section-title">6. RAPPORT 2 - DELAIS DE TRAITEMENT</div>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                    <p style="margin-bottom: 10px;"><strong>Objectif :</strong> Afficher la moyenne des delais de traitement par mois pour les taches en statut "Traite".</p>
+                    <p style="margin-bottom: 10px;"><strong>Graphique :</strong> Histogramme avec barres cliquables. Clic sur une barre affiche le detail des taches du mois.</p>
+                    <p style="margin-bottom: 10px;"><strong>Filtres disponibles :</strong></p>
+                    <ul style="margin-left: 20px; margin-bottom: 10px;">
+                        <li>Annee (liste deroulante)</li>
+                        <li>Mois (liste deroulante ou "Tous")</li>
+                    </ul>
+                    <p style="margin-bottom: 10px;"><strong>Tableau de detail :</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Regroupement par utilisateur (UID) avec accordeon</li>
+                        <li>Affichage: Nb taches, Delai moyen, Delai min, Delai max, Service</li>
+                        <li>Clic sur une tache ouvre la modale de detail complet</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <script>
+// ============================================================================
+// SFD MODAL FUNCTIONS
+// ============================================================================
+function openSFDModal() {
+    document.getElementById('sfd-modal').classList.add('visible');
+}
+
+function closeSFDModal() {
+    document.getElementById('sfd-modal').classList.remove('visible');
+}
+
+function closeSFDModalOnOverlay(event) {
+    if (event.target === document.getElementById('sfd-modal')) {
+        closeSFDModal();
+    }
+}
+
+// ============================================================================
+// SIDEBAR TOGGLE FUNCTION
+// ============================================================================
+function toggleSidebarMenu(menuId, parentElement) {
+    const submenu = document.getElementById(menuId);
+    const expandIcon = parentElement.querySelector('.expand');
+
+    if (submenu.style.display === 'none' || submenu.style.display === '') {
+        submenu.style.display = 'block';
+        expandIcon.textContent = 'v';
+    } else {
+        submenu.style.display = 'none';
+        expandIcon.textContent = '>';
+    }
+}
+
+// ============================================================================
 // Donnees de test par mois (avec toutes les colonnes)
 const testData = {
     'Janvier 2025': [
@@ -1143,6 +1412,7 @@ function closeModalOnOverlay(event) {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeTaskModal();
+        closeSFDModal();
     }
 });
 </script>
