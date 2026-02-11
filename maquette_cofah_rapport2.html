@@ -949,8 +949,24 @@
                 <div style="padding: 15px; background: #f8f9fa; border-radius: 4px;">
                     <p><strong>Application :</strong> ACCURATE</p>
                     <p><strong>Module :</strong> Workflow Metiers - Gestion des taches entre equipes</p>
-                    <p><strong>Objectif :</strong> Permettre aux equipes <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">METIER_COFAH (GDR)</span> de creer des taches qui seront traitees par les equipes <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">ADC_FINANCE / COMPTA</span>, avec validation manageriale et suivi des statuts.</p>
-                    <p style="margin-top: 10px;"><strong>Equipes impliquees :</strong></p>
+                    <p><strong>Objectif fonctionnel :</strong> Permettre aux equipes <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">METIER_COFAH (GDR)</span> de creer des taches qui seront traitees par les equipes <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">ADC_FINANCE / COMPTA</span>, avec validation manageriale et suivi des statuts.</p>
+
+                    <!-- Objectif principal : Delais de traitement -->
+                    <div style="margin-top: 15px; padding: 15px; background: #dbeafe; border-radius: 6px; border-left: 4px solid #2563eb;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #1e40af; font-size: 13px;">OBJECTIF PRINCIPAL : Mesurer les delais de traitement entre equipes</p>
+                        <p style="margin: 0 0 10px 0;">Ce workflow permet de <strong>suivre et analyser les delais de traitement des taches</strong> lorsqu'elles transitent entre les differentes equipes :</p>
+                        <ul style="margin: 0 0 10px 20px;">
+                            <li><strong>Delai de prise en charge :</strong> Temps entre la creation par METIER_COFAH et la validation par ADC Manager</li>
+                            <li><strong>Delai de traitement :</strong> Temps entre l'assignation (A traiter) et le traitement effectif (Traite)</li>
+                            <li><strong>Delai de correction :</strong> Temps de retour apres un rejet (boucle Traitement non valide)</li>
+                            <li><strong>Delai total :</strong> Temps entre l'ouverture et la cloture de la tache</li>
+                        </ul>
+                        <p style="margin: 0; padding: 8px; background: #fef3c7; border-radius: 4px; font-size: 11px;">
+                            <strong>Indicateurs de performance (KPI) :</strong> Ces delais permettent d'identifier les goulots d'etranglement, d'optimiser les processus et de garantir le respect des SLA (Service Level Agreement) entre les equipes METIER et ADC.
+                        </p>
+                    </div>
+
+                    <p style="margin-top: 15px;"><strong>Equipes impliquees :</strong></p>
                     <ul style="margin-left: 20px; margin-top: 5px;">
                         <li><span style="background: #ef4444; color: white; padding: 1px 6px; border-radius: 3px; font-weight: bold;">METIER_COFAH (GDR)</span> - Demandeur, createur de taches (ouvre et corrige les taches)</li>
                         <li><span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC</span> = <span style="background: #f97316; color: white; padding: 1px 6px; border-radius: 3px;">ADC_FINANCE / COMPTA</span> - Traitement des taches (Manager valide, Compta traite)</li>
@@ -1234,11 +1250,27 @@ function autoClotureJob() {
                 <div style="padding: 15px; background: #f0fdf4; border-radius: 4px; border-left: 4px solid #22c55e;">
                     <p><strong>Application :</strong> ACCURATE</p>
                     <p><strong>Module :</strong> Workflow ADC - Gestion des taches internes ADC</p>
-                    <p><strong>Objectif :</strong> Permettre a l'equipe <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">ADC</span> de creer ET traiter les taches en interne, sans intervention du METIER.</p>
-                    <p style="margin-top: 10px; padding: 10px; background: #fef3c7; border-radius: 4px; border-left: 4px solid #f59e0b;">
+                    <p><strong>Objectif fonctionnel :</strong> Permettre a l'equipe <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">ADC</span> de creer ET traiter les taches en interne, sans intervention du METIER.</p>
+
+                    <!-- Objectif principal : Delais de traitement -->
+                    <div style="margin-top: 15px; padding: 15px; background: #dcfce7; border-radius: 6px; border-left: 4px solid #16a34a;">
+                        <p style="margin: 0 0 10px 0; font-weight: bold; color: #166534; font-size: 13px;">OBJECTIF PRINCIPAL : Mesurer les delais de traitement internes ADC</p>
+                        <p style="margin: 0 0 10px 0;">Ce workflow permet de <strong>suivre et analyser les delais de traitement des taches</strong> au sein de l'equipe ADC :</p>
+                        <ul style="margin: 0 0 10px 20px;">
+                            <li><strong>Delai de validation Manager :</strong> Temps entre la creation et la validation par le Manager ADC</li>
+                            <li><strong>Delai de traitement Compta :</strong> Temps entre l'assignation (A traiter) et le traitement effectif (Traite)</li>
+                            <li><strong>Delai de correction :</strong> Temps de retour apres un rejet interne (boucle Traitement non valide)</li>
+                            <li><strong>Delai total :</strong> Temps entre l'ouverture et la cloture de la tache</li>
+                        </ul>
+                        <p style="margin: 0; padding: 8px; background: #fef3c7; border-radius: 4px; font-size: 11px;">
+                            <strong>Indicateurs de performance (KPI) :</strong> Ces delais permettent de mesurer l'efficacite interne de l'equipe ADC, sans dependance externe au METIER.
+                        </p>
+                    </div>
+
+                    <p style="margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 4px; border-left: 4px solid #f59e0b;">
                         <strong>DIFFERENCE avec Workflow Metier :</strong><br/>
-                        Dans le <strong>Workflow ADC</strong>, la tache est creee par ADC et traitee par ADC.<br/>
-                        Dans le <strong>Workflow Metier</strong>, la tache est creee par METIER_COFAH et traitee par ADC.
+                        Dans le <strong>Workflow ADC</strong>, la tache est creee par ADC et traitee par ADC (circuit interne).<br/>
+                        Dans le <strong>Workflow Metier</strong>, la tache est creee par METIER_COFAH et traitee par ADC (circuit inter-equipes).
                     </p>
                 </div>
             </div>
