@@ -728,7 +728,8 @@
         <div class="menu-item">Cas <span class="arrow">v</span></div>
         <div class="menu-item">Afficher <span class="arrow">v</span></div>
         <div class="menu-item">Exportation <span class="arrow">v</span></div>
-        <div class="menu-item" onclick="openSFDModal()">SFD <span class="arrow">v</span></div>
+        <div class="menu-item" onclick="openSFDModal()">Workflow Metier <span class="arrow">v</span></div>
+        <div class="menu-item" onclick="openADCWorkflowModal()">Workflow ADC <span class="arrow">v</span></div>
     </div>
 
     <!-- Section Title -->
@@ -933,11 +934,11 @@
     </div>
 </div>
 
-<!-- Modal SFD - Specification Fonctionnelle Detaillee -->
+<!-- Modal SFD - Specification Fonctionnelle Detaillee - ACCURATE WORKFLOW -->
 <div id="sfd-modal" class="modal-overlay" onclick="closeSFDModalOnOverlay(event)">
-    <div class="modal" style="max-width: 1100px;">
+    <div class="modal" style="max-width: 1200px;">
         <div class="modal-header" style="background: linear-gradient(to bottom, #5b7c99, #4a6a85);">
-            <h3>SFD - Specification Fonctionnelle Detaillee</h3>
+            <h3>SFD - ACCURATE : Workflow METIER_COFAH (GDR) / ADC_FINANCE</h3>
             <button class="modal-close" onclick="closeSFDModal()">&times;</button>
         </div>
         <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
@@ -945,160 +946,542 @@
             <!-- Section 1: Contexte -->
             <div class="modal-section">
                 <div class="modal-section-title">1. CONTEXTE ET OBJECTIF</div>
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; margin-bottom: 15px;">
-                    <p><strong>Application :</strong> METIER_COFAH_COMPTA</p>
-                    <p><strong>Module :</strong> Gestion des taches comptables (Encaissements CHEQUES)</p>
-                    <p><strong>Objectif :</strong> Permettre au metier d'ouvrir des taches qui seront traitees par l'equipe METIER_COFAH_COMPTA, avec suivi des delais de traitement.</p>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                    <p><strong>Application :</strong> ACCURATE</p>
+                    <p><strong>Module :</strong> Workflow Metiers - Gestion des taches entre equipes</p>
+                    <p><strong>Objectif :</strong> Permettre aux equipes <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">METIER_COFAH (GDR)</span> de creer des taches qui seront traitees par les equipes <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">ADC_FINANCE / COMPTA</span>, avec validation manageriale et suivi des statuts.</p>
+                    <p style="margin-top: 10px;"><strong>Equipes impliquees :</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li><span style="background: #ef4444; color: white; padding: 1px 6px; border-radius: 3px; font-weight: bold;">METIER_COFAH (GDR)</span> - Demandeur, createur de taches (ouvre et corrige les taches)</li>
+                        <li><span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC</span> = <span style="background: #f97316; color: white; padding: 1px 6px; border-radius: 3px;">ADC_FINANCE / COMPTA</span> - Traitement des taches (Manager valide, Compta traite)</li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Section 2: Workflow -->
+            <!-- Section 2: Workflow Visuel -->
             <div class="modal-section">
-                <div class="modal-section-title">2. WORKFLOW DES TACHES</div>
-                <div style="display: flex; align-items: center; justify-content: space-around; padding: 20px; background: #f8f9fa; border-radius: 4px; flex-wrap: wrap; gap: 10px;">
-                    <div style="text-align: center;">
-                        <div style="width: 80px; height: 40px; background: #dc2626; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Ouverture</div>
-                        <div style="font-size: 10px; margin-top: 5px;">Metier cree</div>
+                <div class="modal-section-title">2. WORKFLOW DES TACHES - FLUX COMPLET</div>
+                <div style="padding: 20px; background: #1e293b; border-radius: 8px; color: white;">
+                    <!-- Ligne principale -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #ef4444, #dc2626); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Ouverture</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #fca5a5;">METIER_COFAH<br/>(GDR)</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #f97316, #ea580c); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Creer</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #fca5a5;">METIER_COFAH<br/>(GDR)</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #fbbf24, #f59e0b); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">A valider</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">ADC_FINANCE<br/>(Manager)</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #fb923c, #f97316); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">A traiter</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">COMPTA</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #f97316, #ea580c); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Traite</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">COMPTA</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #22c55e, #16a34a); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Cloture</div>
+                            <div style="font-size: 10px; margin-top: 5px; color: #fcd34d;">Auto >90j</div>
+                        </div>
                     </div>
-                    <div style="font-size: 20px;">→</div>
-                    <div style="text-align: center;">
-                        <div style="width: 80px; height: 40px; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Cree</div>
-                        <div style="font-size: 10px; margin-top: 5px;">En attente</div>
-                    </div>
-                    <div style="font-size: 20px;">→</div>
-                    <div style="text-align: center;">
-                        <div style="width: 80px; height: 40px; background: #ea580c; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">A Traiter</div>
-                        <div style="font-size: 10px; margin-top: 5px;">Assignee</div>
-                    </div>
-                    <div style="font-size: 20px;">→</div>
-                    <div style="text-align: center;">
-                        <div style="width: 80px; height: 40px; background: #ea580c; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Traite</div>
-                        <div style="font-size: 10px; margin-top: 5px;">COFAH traite</div>
-                    </div>
-                    <div style="font-size: 20px;">→</div>
-                    <div style="text-align: center;">
-                        <div style="width: 80px; height: 40px; background: #22c55e; color: white; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold;">Cloture</div>
-                        <div style="font-size: 10px; margin-top: 5px;">Termine</div>
+                    <!-- Boucle de retour -->
+                    <div style="border: 2px dashed #f87171; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <div style="text-align: center; margin-bottom: 10px;">
+                            <span style="background: #dc2626; padding: 4px 12px; border-radius: 4px; font-size: 11px;">BOUCLE DE RETOUR - Traitement non valide</span>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                            <span style="font-size: 11px;">A traiter / Traite</span>
+                            <span style="font-size: 20px; color: #f87171;">↺</span>
+                            <div style="text-align: center;">
+                                <div style="width: 100px; height: 40px; background: linear-gradient(to bottom, #f97316, #ea580c); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 10px;">Creer<br/>(Apres correction)</div>
+                                <div style="font-size: 9px; margin-top: 3px; color: #fca5a5;">METIER_COFAH(GDR)<br/>corrige</div>
+                            </div>
+                            <span style="font-size: 20px; color: #22c55e;">→</span>
+                            <span style="font-size: 11px;">Retour vers A valider</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 3: Etats -->
+            <!-- Section 3: Transitions detaillees -->
             <div class="modal-section">
-                <div class="modal-section-title">3. DESCRIPTION DES ETATS</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <div class="modal-section-title">3. TRANSITIONS ENTRE ETATS - DETAIL POUR LE DEVELOPPEUR</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                     <thead>
-                        <tr style="background: #e8e4d9;">
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Etat</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Couleur</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Description</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Acteur</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Actions possibles</th>
+                        <tr style="background: #1e293b; color: white;">
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: left;">Etat Actuel</th>
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: left;">Etat Suivant</th>
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: left;">Qui ?</th>
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: left;">Champs a remplir</th>
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: left;">Champs a NE PAS remplir</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ouverture</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #dc2626; color: white; padding: 2px 8px; border-radius: 3px;">Rouge</span></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">La tache vient d'etre creee par le metier. Elle n'est pas encore prise en charge.</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">METIER (demandeur)</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Modifier, Annuler, Assigner</td>
+                        <tr style="background: #fef2f2;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Ouverture</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Creer</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px;">METIER_COFAH (GDR)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Valide Manager</strong>, <strong>Statut de tache</strong></td>
                         </tr>
-                        <tr style="background: #fafafa;">
-                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Cree</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 3px;">Jaune</span></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">La tache est validee et en attente de prise en charge par COFAH_COMPTA.</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Systeme (automatique)</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Prendre en charge, Rejeter</td>
+                        <tr style="background: #fff7ed;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Creer</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 3px;">A valider</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px;">METIER_COFAH (GDR)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Type de tache</strong>, <strong>Service correcteur</strong>, <strong>Valideur</strong>, <strong>Lien Sugar</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Valide Manager</strong>, <strong>Statut tache</strong></td>
                         </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">A Traiter</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ea580c; color: white; padding: 2px 8px; border-radius: 3px;">Orange</span></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">La tache est assignee a un utilisateur COFAH_COMPTA. Le delai commence.</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">METIER_COFAH_COMPTA</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Traiter, Reassigner, Mettre en attente</td>
+                        <tr style="background: #fefce8;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">A valider</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fb923c; color: white; padding: 2px 6px; border-radius: 3px;">A traiter</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC_FINANCE (Manager)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Manager = Oui</strong> ou <strong>Manager = Non</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
                         </tr>
-                        <tr style="background: #fafafa;">
-                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Traite</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ea580c; color: white; padding: 2px 8px; border-radius: 3px;">Orange</span></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">La tache a ete traitee par COFAH_COMPTA. En attente de validation metier.</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">METIER_COFAH_COMPTA</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Valider (cloturer), Rejeter (reouvrir)</td>
+                        <tr style="background: #fff7ed;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fb923c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">A traiter</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Traite</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC / Compta</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Statut tache = Traite</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
                         </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Cloture</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">Vert</span></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">La tache est terminee et validee. Archivage automatique apres 30 jours.</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">METIER (validation)</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Consulter, Exporter</td>
+                        <tr style="background: #fef2f2;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fb923c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">A traiter</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Creer (Apres correction)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC / Compta</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Statut tache = Traitement non valide</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #fff7ed;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Traite</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">Cloture</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC / Compta</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Statut tache = Cloture</strong><br/><em style="font-size: 10px; color: #666;">+ Cloture auto si >90 jours</em></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #fef2f2;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Traite</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Creer (Apres correction)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC / Compta</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Statut tache = Traitement non valide</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #f0fdf4;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Creer (Apres correction)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 3px;">A valider</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px;">METIER_COFAH (GDR)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Statut tache = Transmis</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Valide Manager</strong></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Section 4: Regles de gestion -->
+            <!-- Section 4: Roles et Permissions -->
             <div class="modal-section">
-                <div class="modal-section-title">4. REGLES DE GESTION</div>
-                <div style="padding: 15px; background: #f8f9fa; border-radius: 4px;">
-                    <p style="margin-bottom: 10px;"><strong>RG01 - Creation de tache :</strong> Seul un utilisateur du groupe METIER peut creer une tache en statut "Ouverture".</p>
-                    <p style="margin-bottom: 10px;"><strong>RG02 - Prise en charge :</strong> Seul un utilisateur du groupe METIER_COFAH_COMPTA peut prendre en charge une tache en statut "Cree" ou "A Traiter".</p>
-                    <p style="margin-bottom: 10px;"><strong>RG03 - Calcul du delai :</strong> Le delai de traitement = Date de passage en "Traite" - Date de passage en "A Traiter" (en jours ouvres).</p>
-                    <p style="margin-bottom: 10px;"><strong>RG04 - Indicateur delai :</strong></p>
-                    <ul style="margin-left: 20px;">
-                        <li><span style="color: #22c55e; font-weight: bold;">Vert</span> : Delai <= 3 jours (conforme SLA)</li>
-                        <li><span style="color: #f59e0b; font-weight: bold;">Orange</span> : Delai 4-5 jours (attention)</li>
-                        <li><span style="color: #dc2626; font-weight: bold;">Rouge</span> : Delai > 5 jours (SLA depasse)</li>
-                    </ul>
-                    <p style="margin-bottom: 10px; margin-top: 10px;"><strong>RG05 - Verrouillage :</strong> Une tache en cours de traitement est verrouillee pour l'utilisateur qui la traite.</p>
-                    <p style="margin-bottom: 0;"><strong>RG06 - Cloture :</strong> Seul le demandeur initial (METIER) peut valider et cloturer une tache traitee.</p>
+                <div class="modal-section-title">4. ROLES ET PERMISSIONS</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- METIER_COFAH (GDR) -->
+                    <div style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 8px; padding: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #dc2626;"><span style="background: #ef4444; color: white; padding: 3px 10px; border-radius: 4px;">METIER_COFAH (GDR)</span></h4>
+                        <p style="font-size: 11px; margin-bottom: 10px;"><strong>Role :</strong> Demandeur / Createur de taches</p>
+                        <p style="font-size: 11px; margin-bottom: 5px;"><strong>Actions autorisees :</strong></p>
+                        <ul style="font-size: 11px; margin-left: 15px;">
+                            <li>Creer une tache (Ouverture → Creer)</li>
+                            <li>Remplir les champs obligatoires</li>
+                            <li>Corriger une tache rejetee (Creer Apres correction)</li>
+                            <li>Transmettre la tache corrigee (Statut = Transmis)</li>
+                        </ul>
+                        <p style="font-size: 11px; margin-top: 10px; color: #dc2626;"><strong>Interdit :</strong> Remplir "Valide Manager", "Statut tache"</p>
+                    </div>
+                    <!-- ADC = ADC_FINANCE / COMPTA -->
+                    <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 8px; padding: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #16a34a;"><span style="background: #22c55e; color: white; padding: 3px 10px; border-radius: 4px;">ADC</span> = <span style="background: #f97316; color: white; padding: 3px 10px; border-radius: 4px;">ADC_FINANCE / COMPTA</span></h4>
+                        <p style="font-size: 11px; margin-bottom: 10px;"><strong>Sous-roles :</strong></p>
+                        <div style="background: white; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+                            <strong style="color: #16a34a;">ADC Manager</strong>
+                            <ul style="font-size: 10px; margin: 5px 0 0 15px;">
+                                <li>Valider les taches (A valider → A traiter)</li>
+                                <li>Remplir "Manager = Oui" ou "Manager = Non"</li>
+                            </ul>
+                        </div>
+                        <div style="background: white; padding: 8px; border-radius: 4px;">
+                            <strong style="color: #16a34a;">ADC Compta</strong>
+                            <ul style="font-size: 10px; margin: 5px 0 0 15px;">
+                                <li>Traiter les taches (A traiter → Traite)</li>
+                                <li>Cloturer (Traite → Cloture)</li>
+                                <li>Rejeter vers METIER_COFAH (Statut = Traitement non valide)</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Section 5: Champs obligatoires -->
+            <!-- Section 5: Champs par Etat -->
             <div class="modal-section">
-                <div class="modal-section-title">5. DONNEES DE LA TACHE</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <div class="modal-section-title">5. CHAMPS A REMPLIR PAR ETAT</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                     <thead>
                         <tr style="background: #e8e4d9;">
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Champ</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Type</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Obligatoire</th>
-                            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Description</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">Champ</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">Ouverture</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">Creer</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">A valider</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">A traiter</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">Traite</th>
+                            <th style="padding: 8px; border: 1px solid #ccc;">Cloture</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Reference</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui (auto)</td><td style="padding: 6px; border: 1px solid #ddd;">Identifiant unique genere (format: HH:MM)</td></tr>
-                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Date Ouverture</td><td style="padding: 6px; border: 1px solid #ddd;">Date</td><td style="padding: 6px; border: 1px solid #ddd;">Oui (auto)</td><td style="padding: 6px; border: 1px solid #ddd;">Date de creation de la tache</td></tr>
-                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Date Traitement</td><td style="padding: 6px; border: 1px solid #ddd;">Date</td><td style="padding: 6px; border: 1px solid #ddd;">Non</td><td style="padding: 6px; border: 1px solid #ddd;">Date de passage en statut "Traite"</td></tr>
-                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">UID</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Identifiant de l'utilisateur traitant</td></tr>
-                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Service Correcteur</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Service COFAH responsable (ex: CPTA DFAR FIAB)</td></tr>
-                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Type Tache</td><td style="padding: 6px; border: 1px solid #ddd;">Enum</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Encaissement CHEQUE, Virement, Prelevement...</td></tr>
-                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Societe</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Societe concernee (ex: COFAH SA)</td></tr>
-                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Montant</td><td style="padding: 6px; border: 1px solid #ddd;">Decimal</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Montant de l'operation en EUR</td></tr>
-                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Compte Bancaire</td><td style="padding: 6px; border: 1px solid #ddd;">IBAN</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">IBAN du compte concerne</td></tr>
-                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd;">Libelle</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Oui</td><td style="padding: 6px; border: 1px solid #ddd;">Description de l'operation</td></tr>
-                        <tr><td style="padding: 6px; border: 1px solid #ddd;">Interlocuteur</td><td style="padding: 6px; border: 1px solid #ddd;">String</td><td style="padding: 6px; border: 1px solid #ddd;">Non</td><td style="padding: 6px; border: 1px solid #ddd;">Contact metier pour cette tache</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">Type de tache</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">OUI</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">Service correcteur</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">OUI</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">Valideur</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">OUI</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">Lien Sugar</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">OUI</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td></tr>
+                        <tr><td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">Valide Manager</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #fee2e2;">NON</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #fee2e2;">NON</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">OUI/NON</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td></tr>
+                        <tr style="background: #fafafa;"><td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">Statut tache</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #fee2e2;">NON</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #fee2e2;">NON</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">Traite</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center; background: #dcfce7;">Cloture</td><td style="padding: 6px; border: 1px solid #ddd; text-align: center;">-</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Section 6: Rapport -->
+            <!-- Section 6: Regles de gestion -->
             <div class="modal-section">
-                <div class="modal-section-title">6. RAPPORT 2 - DELAIS DE TRAITEMENT</div>
+                <div class="modal-section-title">6. REGLES DE GESTION METIER</div>
                 <div style="padding: 15px; background: #f8f9fa; border-radius: 4px;">
-                    <p style="margin-bottom: 10px;"><strong>Objectif :</strong> Afficher la moyenne des delais de traitement par mois pour les taches en statut "Traite".</p>
-                    <p style="margin-bottom: 10px;"><strong>Graphique :</strong> Histogramme avec barres cliquables. Clic sur une barre affiche le detail des taches du mois.</p>
-                    <p style="margin-bottom: 10px;"><strong>Filtres disponibles :</strong></p>
-                    <ul style="margin-left: 20px; margin-bottom: 10px;">
-                        <li>Annee (liste deroulante)</li>
-                        <li>Mois (liste deroulante ou "Tous")</li>
-                    </ul>
-                    <p style="margin-bottom: 10px;"><strong>Tableau de detail :</strong></p>
-                    <ul style="margin-left: 20px;">
-                        <li>Regroupement par utilisateur (UID) avec accordeon</li>
-                        <li>Affichage: Nb taches, Delai moyen, Delai min, Delai max, Service</li>
-                        <li>Clic sur une tache ouvre la modale de detail complet</li>
-                    </ul>
+                    <p style="margin-bottom: 10px;"><strong>RG01 - Creation :</strong> Seul un utilisateur <span style="background: #ef4444; color: white; padding: 1px 6px; border-radius: 3px;">METIER_COFAH (GDR)</span> peut creer une tache en statut "Ouverture".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG02 - Validation Manager :</strong> Seul un utilisateur <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC_FINANCE</span> avec le role <strong>Manager</strong> peut valider une tache (A valider → A traiter).</p>
+                    <p style="margin-bottom: 10px;"><strong>RG03 - Traitement :</strong> Seul un utilisateur <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">COMPTA</span> peut traiter une tache.</p>
+                    <p style="margin-bottom: 10px;"><strong>RG04 - Rejet :</strong> Si COMPTA rejette une tache (Traitement non valide), elle retourne vers <span style="background: #ef4444; color: white; padding: 1px 6px; border-radius: 3px;">METIER_COFAH</span> en statut "Creer (Apres correction)".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG05 - Correction :</strong> <span style="background: #ef4444; color: white; padding: 1px 6px; border-radius: 3px;">METIER_COFAH</span> doit corriger la tache et la transmettre avec "Statut tache = Transmis".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG06 - Cloture auto :</strong> Une tache en statut "Traite" depuis plus de <strong>90 jours</strong> est automatiquement cloturee par le systeme.</p>
+                    <p style="margin-bottom: 0;"><strong>RG07 - Champs proteges :</strong> <span style="background: #ef4444; color: white; padding: 1px 6px; border-radius: 3px;">METIER_COFAH</span> ne peut jamais modifier "Valide Manager" et "Statut tache" lors de la creation initiale.</p>
+                </div>
+            </div>
+
+            <!-- Section 7: Diagramme technique -->
+            <div class="modal-section">
+                <div class="modal-section-title">7. IMPLEMENTATION TECHNIQUE - PSEUDO-CODE</div>
+                <div style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 11px; overflow-x: auto;">
+<pre style="margin: 0; white-space: pre-wrap;">
+// TRANSITION : Creer → A valider (METIER_COFAH)
+function transitionToAValider(tache, user) {
+    if (user.groupe !== 'METIER_COFAH') throw Error('Acces refuse');
+    if (!tache.typeTache || !tache.serviceCorrecteur || !tache.valideur || !tache.lienSugar) {
+        throw Error('Champs obligatoires manquants');
+    }
+    // METIER_COFAH ne peut pas remplir ces champs
+    tache.valideManager = null;  // PROTECTED
+    tache.statutTache = null;    // PROTECTED
+    tache.statut = 'A_VALIDER';
+    return save(tache);
+}
+
+// TRANSITION : A valider → A traiter (ADC Manager)
+function transitionToATraiter(tache, user) {
+    if (user.groupe !== 'ADC' || user.role !== 'MANAGER') throw Error('Acces refuse');
+    tache.valideManager = user.decision; // 'Oui' ou 'Non'
+    tache.statut = 'A_TRAITER';
+    return save(tache);
+}
+
+// TRANSITION : A traiter → Traite OU Creer(correction) (ADC Compta)
+function transitionFromATraiter(tache, user, action) {
+    if (user.groupe !== 'ADC') throw Error('Acces refuse');
+    if (action === 'TRAITER') {
+        tache.statutTache = 'Traite';
+        tache.statut = 'TRAITE';
+    } else if (action === 'REJETER') {
+        tache.statutTache = 'Traitement non valide';
+        tache.statut = 'CREER_CORRECTION';  // Retour vers METIER_COFAH
+    }
+    return save(tache);
+}
+
+// CLOTURE AUTOMATIQUE (Batch job)
+function autoClotureJob() {
+    const taches = findByStatut('TRAITE').filter(t => daysSince(t.dateTraite) > 90);
+    taches.forEach(t => { t.statut = 'CLOTURE'; save(t); });
+}
+</pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal WORKFLOW ADC - Specification Fonctionnelle Detaillee -->
+<div id="adc-workflow-modal" class="modal-overlay" onclick="closeADCWorkflowModalOnOverlay(event)">
+    <div class="modal" style="max-width: 1200px;">
+        <div class="modal-header" style="background: linear-gradient(to bottom, #22c55e, #16a34a);">
+            <h3>WORKFLOW ADC - Taches traitees par ADC uniquement</h3>
+            <button class="modal-close" onclick="closeADCWorkflowModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+
+            <!-- Section 1: Contexte -->
+            <div class="modal-section">
+                <div class="modal-section-title">1. CONTEXTE ET OBJECTIF</div>
+                <div style="padding: 15px; background: #f0fdf4; border-radius: 4px; border-left: 4px solid #22c55e;">
+                    <p><strong>Application :</strong> ACCURATE</p>
+                    <p><strong>Module :</strong> Workflow ADC - Gestion des taches internes ADC</p>
+                    <p><strong>Objectif :</strong> Permettre a l'equipe <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">ADC</span> de creer ET traiter les taches en interne, sans intervention du METIER.</p>
+                    <p style="margin-top: 10px; padding: 10px; background: #fef3c7; border-radius: 4px; border-left: 4px solid #f59e0b;">
+                        <strong>DIFFERENCE avec Workflow Metier :</strong><br/>
+                        Dans le <strong>Workflow ADC</strong>, la tache est creee par ADC et traitee par ADC.<br/>
+                        Dans le <strong>Workflow Metier</strong>, la tache est creee par METIER_COFAH et traitee par ADC.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 2: Workflow Visuel -->
+            <div class="modal-section">
+                <div class="modal-section-title">2. WORKFLOW ADC - FLUX COMPLET</div>
+                <div style="padding: 20px; background: #1e293b; border-radius: 8px; color: white;">
+                    <!-- Ligne principale -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #ef4444, #dc2626); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Ouverture</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">ADC</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #f97316, #ea580c); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Creer</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">ADC</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #fbbf24, #f59e0b); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">A valider</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">ADC (Manager)</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #fb923c, #f97316); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">A traiter</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">Compta</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #f97316, #ea580c); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Traite</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #86efac;">ADC</div>
+                        </div>
+                        <div style="font-size: 24px; color: #94a3b8;">→</div>
+                        <div style="text-align: center;">
+                            <div style="width: 90px; height: 45px; background: linear-gradient(to bottom, #22c55e, #16a34a); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 11px;">Cloture</div>
+                            <div style="font-size: 9px; margin-top: 5px; color: #fcd34d;">Auto >90j</div>
+                        </div>
+                    </div>
+                    <!-- Boucle de retour -->
+                    <div style="border: 2px dashed #f87171; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <div style="text-align: center; margin-bottom: 10px;">
+                            <span style="background: #dc2626; padding: 4px 12px; border-radius: 4px; font-size: 11px;">BOUCLE DE RETOUR - Traitement non valide</span>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                            <span style="font-size: 11px;">A traiter / Traite</span>
+                            <span style="font-size: 20px; color: #f87171;">↺</span>
+                            <div style="text-align: center;">
+                                <div style="width: 100px; height: 40px; background: linear-gradient(to bottom, #f97316, #ea580c); color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 10px;">Creer<br/>(Apres correction)</div>
+                                <div style="font-size: 9px; margin-top: 3px; color: #86efac;">ADC corrige</div>
+                            </div>
+                            <span style="font-size: 20px; color: #22c55e;">→</span>
+                            <span style="font-size: 11px;">Retour vers A valider</span>
+                        </div>
+                    </div>
+                    <!-- Note importante -->
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(34, 197, 94, 0.2); border-radius: 4px; text-align: center;">
+                        <span style="color: #86efac; font-weight: bold;">TOUT LE WORKFLOW EST GERE PAR L'EQUIPE ADC</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Transitions detaillees -->
+            <div class="modal-section">
+                <div class="modal-section-title">3. TRANSITIONS ENTRE ETATS - DETAIL POUR LE DEVELOPPEUR</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <thead>
+                        <tr style="background: #166534; color: white;">
+                            <th style="padding: 10px; border: 1px solid #15803d; text-align: left;">Etat Actuel</th>
+                            <th style="padding: 10px; border: 1px solid #15803d; text-align: left;">Etat Suivant</th>
+                            <th style="padding: 10px; border: 1px solid #15803d; text-align: left;">Qui ?</th>
+                            <th style="padding: 10px; border: 1px solid #15803d; text-align: left;">Champs a remplir</th>
+                            <th style="padding: 10px; border: 1px solid #15803d; text-align: left;">Champs a NE PAS remplir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: #f0fdf4;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Ouverture</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Creer</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Valide Manager</strong>, <strong>Statut de tache</strong></td>
+                        </tr>
+                        <tr style="background: #dcfce7;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Creer</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 3px;">A valider</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Type de tache</strong>, <strong>Service correcteur</strong>, <strong>Valideur</strong>, <strong>Lien Sugar</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Valide Manager</strong>, <strong>Statut tache</strong></td>
+                        </tr>
+                        <tr style="background: #f0fdf4;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">A valider</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fb923c; color: white; padding: 2px 6px; border-radius: 3px;">A traiter</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC (Manager)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Manager = Oui</strong> ou <strong>Manager = Non</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #dcfce7;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fb923c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">A traiter</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Traite</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">Compta</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Statut tache = Traite</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #fef2f2;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fb923c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">A traiter</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Creer (Apres correction)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">Compta</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Statut tache = Traitement non valide</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #dcfce7;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Traite</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">Cloture</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Statut tache = Cloture</strong><br/><em style="font-size: 10px; color: #666;">+ Cloture auto si >90 jours</em></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #fef2f2;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Traite</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px;">Creer (Apres correction)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Statut tache = Traitement non valide</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">-</td>
+                        </tr>
+                        <tr style="background: #dcfce7;">
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #f97316; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">Creer (Apres correction)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 3px;">A valider</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><span style="background: #22c55e; color: white; padding: 2px 6px; border-radius: 3px;">ADC</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #16a34a;"><strong>Statut tache = Transmis</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #dc2626;"><strong>Valide Manager</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Section 4: Comparaison Workflow Metier vs ADC -->
+            <div class="modal-section">
+                <div class="modal-section-title">4. COMPARAISON : WORKFLOW METIER vs WORKFLOW ADC</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <thead>
+                        <tr style="background: #1e293b; color: white;">
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: left;">Critere</th>
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: center; background: #ef4444;">Workflow METIER</th>
+                            <th style="padding: 10px; border: 1px solid #475569; text-align: center; background: #22c55e;">Workflow ADC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Qui cree la tache ?</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; background: #fef2f2;"><span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 3px;">METIER_COFAH (GDR)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; background: #f0fdf4;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">ADC</span></td>
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Qui valide (Manager) ?</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">ADC_FINANCE (Manager)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">ADC (Manager)</span></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Qui traite ?</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">COMPTA</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">Compta</span></td>
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Qui corrige apres rejet ?</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; background: #fef2f2;"><span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 3px;">METIER_COFAH (GDR)</span></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; background: #f0fdf4;"><span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 3px;">ADC</span></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Cloture automatique</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">>90 jours</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">>90 jours</td>
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Interactions inter-equipes</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; background: #fef2f2;"><strong style="color: #dc2626;">OUI</strong> (METIER ↔ ADC)</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; background: #f0fdf4;"><strong style="color: #22c55e;">NON</strong> (ADC uniquement)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Section 5: Regles de gestion -->
+            <div class="modal-section">
+                <div class="modal-section-title">5. REGLES DE GESTION - WORKFLOW ADC</div>
+                <div style="padding: 15px; background: #f0fdf4; border-radius: 4px; border-left: 4px solid #22c55e;">
+                    <p style="margin-bottom: 10px;"><strong>RG01 - Creation :</strong> Seul un utilisateur <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC</span> peut creer une tache en statut "Ouverture".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG02 - Validation Manager :</strong> Seul un utilisateur <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC</span> avec le role <strong>Manager</strong> peut valider une tache (A valider → A traiter).</p>
+                    <p style="margin-bottom: 10px;"><strong>RG03 - Traitement :</strong> Seul un utilisateur <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">Compta</span> peut traiter une tache.</p>
+                    <p style="margin-bottom: 10px;"><strong>RG04 - Rejet :</strong> Si Compta ou ADC rejette une tache (Traitement non valide), elle retourne vers <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC</span> en statut "Creer (Apres correction)".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG05 - Correction :</strong> <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">ADC</span> corrige la tache et la transmet avec "Statut tache = Transmis".</p>
+                    <p style="margin-bottom: 10px;"><strong>RG06 - Cloture auto :</strong> Une tache en statut "Traite" depuis plus de <strong>90 jours</strong> est automatiquement cloturee par le systeme.</p>
+                    <p style="margin-bottom: 0;"><strong>RG07 - Circuit interne :</strong> <span style="background: #22c55e; color: white; padding: 1px 6px; border-radius: 3px;">TOUTES LES ETAPES</span> sont gerees par l'equipe ADC (pas d'intervention METIER).</p>
+                </div>
+            </div>
+
+            <!-- Section 6: Implementation technique -->
+            <div class="modal-section">
+                <div class="modal-section-title">6. IMPLEMENTATION TECHNIQUE - PSEUDO-CODE</div>
+                <div style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 11px; overflow-x: auto;">
+<pre style="margin: 0; white-space: pre-wrap;">
+// WORKFLOW ADC : Toutes les etapes sont gerees par ADC
+
+// TRANSITION : Creer → A valider (ADC)
+function transitionToAValider_ADC(tache, user) {
+    if (user.groupe !== 'ADC') throw Error('Acces refuse - ADC uniquement');
+    if (!tache.typeTache || !tache.serviceCorrecteur || !tache.valideur || !tache.lienSugar) {
+        throw Error('Champs obligatoires manquants');
+    }
+    tache.valideManager = null;  // PROTECTED
+    tache.statutTache = null;    // PROTECTED
+    tache.statut = 'A_VALIDER';
+    tache.workflow = 'ADC';      // Marqueur workflow ADC
+    return save(tache);
+}
+
+// TRANSITION : A valider → A traiter (ADC Manager)
+function transitionToATraiter_ADC(tache, user) {
+    if (user.groupe !== 'ADC' || user.role !== 'MANAGER') throw Error('Acces refuse');
+    tache.valideManager = user.decision; // 'Oui' ou 'Non'
+    tache.statut = 'A_TRAITER';
+    return save(tache);
+}
+
+// TRANSITION : A traiter → Traite OU Creer(correction) (Compta)
+function transitionFromATraiter_ADC(tache, user, action) {
+    if (user.groupe !== 'ADC' && user.role !== 'COMPTA') throw Error('Acces refuse');
+    if (action === 'TRAITER') {
+        tache.statutTache = 'Traite';
+        tache.statut = 'TRAITE';
+    } else if (action === 'REJETER') {
+        tache.statutTache = 'Traitement non valide';
+        tache.statut = 'CREER_CORRECTION';  // Retour vers ADC (pas METIER)
+    }
+    return save(tache);
+}
+
+// DISTINCTION WORKFLOW : Verification du type
+function getWorkflowType(tache) {
+    return tache.creePar.groupe === 'ADC' ? 'WORKFLOW_ADC' : 'WORKFLOW_METIER';
+}
+</pre>
                 </div>
             </div>
 
@@ -1108,7 +1491,7 @@
 
 <script>
 // ============================================================================
-// SFD MODAL FUNCTIONS
+// SFD MODAL FUNCTIONS (Workflow Metier)
 // ============================================================================
 function openSFDModal() {
     document.getElementById('sfd-modal').classList.add('visible');
@@ -1121,6 +1504,23 @@ function closeSFDModal() {
 function closeSFDModalOnOverlay(event) {
     if (event.target === document.getElementById('sfd-modal')) {
         closeSFDModal();
+    }
+}
+
+// ============================================================================
+// ADC WORKFLOW MODAL FUNCTIONS
+// ============================================================================
+function openADCWorkflowModal() {
+    document.getElementById('adc-workflow-modal').classList.add('visible');
+}
+
+function closeADCWorkflowModal() {
+    document.getElementById('adc-workflow-modal').classList.remove('visible');
+}
+
+function closeADCWorkflowModalOnOverlay(event) {
+    if (event.target === document.getElementById('adc-workflow-modal')) {
+        closeADCWorkflowModal();
     }
 }
 
