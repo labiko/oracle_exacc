@@ -133,6 +133,22 @@
             margin-top: 8px;
         }
 
+        /* Image preview in file list */
+        .file-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #3c3c3c;
+        }
+
+        /* Paste indicator */
+        .paste-hint {
+            font-size: 10px;
+            color: #6366f1;
+            margin-top: 5px;
+        }
+
         /* File list */
         .file-list {
             flex: 1;
@@ -579,10 +595,12 @@
                 ou cliquez pour selectionner
             </div>
             <div class="drop-zone-formats">
-                .sql, .xml, .txt, .js, .json, .csv, .md, .html, .css, .py, .sh
+                Fichiers: .sql, .xml, .txt, .js, .json, .csv, .md, .html, .css, .py, .sh<br>
+                Images: .png, .jpg, .gif, .webp (compression auto)
             </div>
+            <div class="paste-hint">📋 Ctrl+V pour coller une image du presse-papiers</div>
         </div>
-        <input type="file" id="file-input" multiple accept=".sql,.xml,.txt,.js,.json,.csv,.md,.html,.css,.py,.sh,.log,.cfg,.ini,.yaml,.yml">
+        <input type="file" id="file-input" multiple accept=".sql,.xml,.txt,.js,.json,.csv,.md,.html,.css,.py,.sh,.log,.cfg,.ini,.yaml,.yml,.png,.jpg,.jpeg,.gif,.webp,image/*">
 
         <!-- File List -->
         <div class="file-list" id="file-list">
@@ -605,12 +623,17 @@
                     <div class="welcome-feature">
                         <div class="welcome-feature-icon">📄</div>
                         <div class="welcome-feature-title">Analyse de fichiers</div>
-                        <div class="welcome-feature-desc">SQL, XML, scripts, configs...</div>
+                        <div class="welcome-feature-desc">SQL, XML, scripts, images...</div>
                     </div>
                     <div class="welcome-feature">
                         <div class="welcome-feature-icon">🔍</div>
                         <div class="welcome-feature-title">Detection d'erreurs</div>
                         <div class="welcome-feature-desc">Bugs, problemes de syntaxe</div>
+                    </div>
+                    <div class="welcome-feature">
+                        <div class="welcome-feature-icon">🖼️</div>
+                        <div class="welcome-feature-title">Analyse d'images</div>
+                        <div class="welcome-feature-desc">Ctrl+V, compression auto</div>
                     </div>
                     <div class="welcome-feature">
                         <div class="welcome-feature-icon">💡</div>
@@ -711,9 +734,115 @@ fileInput.addEventListener('change', (e) => {
     handleFiles(e.target.files);
 });
 
+// Paste event for images (Ctrl+V)
+document.addEventListener('paste', (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+                handleImageFile(file);
+            }
+        }
+    }
+});
+
+// Handle image file (convert to base64 with auto-compression)
+function handleImageFile(file) {
+    const MAX_SIZE = 4.5 * 1024 * 1024; // 4.5MB pour avoir de la marge (API limite = 5MB)
+    const fileName = file.name || `image_${Date.now()}.png`;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const base64Data = e.target.result;
+
+        // Check if compression is needed
+        if (file.size > MAX_SIZE) {
+            addSystemMessage(`Compression de "${fileName}" en cours...`);
+            compressImage(base64Data, file.type, fileName, MAX_SIZE);
+        } else {
+            addImageToList(base64Data, file.size, file.type, fileName, false);
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// Compress image using canvas
+function compressImage(base64Data, mimeType, fileName, maxSize) {
+    const img = new Image();
+    img.onload = () => {
+        let quality = 0.9;
+        let width = img.width;
+        let height = img.height;
+
+        // Reduce dimensions if very large
+        const maxDimension = 2000;
+        if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+                height = Math.round(height * maxDimension / width);
+                width = maxDimension;
+            } else {
+                width = Math.round(width * maxDimension / height);
+                height = maxDimension;
+            }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Try different quality levels
+        let compressedData;
+        let attempts = 0;
+        const outputType = 'image/jpeg'; // JPEG compresses better
+
+        do {
+            compressedData = canvas.toDataURL(outputType, quality);
+            quality -= 0.1;
+            attempts++;
+        } while (compressedData.length > maxSize * 1.37 && quality > 0.3 && attempts < 7);
+        // 1.37 factor because base64 is ~37% larger than binary
+
+        const compressedSize = Math.round(compressedData.length * 0.73); // Approximate binary size
+        addImageToList(compressedData, compressedSize, outputType, fileName, true);
+    };
+    img.src = base64Data;
+}
+
+// Add image to the file list
+function addImageToList(base64Data, size, mimeType, fileName, wasCompressed) {
+    const fileData = {
+        name: fileName,
+        size: size,
+        content: base64Data,
+        type: mimeType,
+        isImage: true,
+        base64: base64Data.split(',')[1]
+    };
+    uploadedFiles.push(fileData);
+    renderFileList();
+
+    const sizeInfo = formatFileSize(size);
+    const msg = wasCompressed
+        ? `Image "${fileName}" compressée et chargée (${sizeInfo})`
+        : `Image "${fileName}" chargée (${sizeInfo})`;
+    addSystemMessage(msg);
+}
+
 function handleFiles(files) {
     for (const file of files) {
-        if (file.size > 500000) { // 500KB limit
+        // Check if it's an image
+        if (file.type.startsWith('image/')) {
+            handleImageFile(file);
+            continue;
+        }
+
+        if (file.size > 500000) { // 500KB limit for text files
             addSystemMessage(`Fichier "${file.name}" trop volumineux (max 500KB)`);
             continue;
         }
@@ -724,7 +853,8 @@ function handleFiles(files) {
                 name: file.name,
                 size: file.size,
                 content: e.target.result,
-                type: file.type || getFileType(file.name)
+                type: file.type || getFileType(file.name),
+                isImage: false
             };
             uploadedFiles.push(fileData);
             renderFileList();
@@ -757,10 +887,13 @@ function formatFileSize(bytes) {
 function renderFileList() {
     fileList.innerHTML = uploadedFiles.map((file, index) => `
         <div class="file-item">
-            <span class="file-icon">${getFileIcon(file.name)}</span>
+            ${file.isImage
+                ? `<img src="${file.content}" class="file-preview" alt="${file.name}">`
+                : `<span class="file-icon">${getFileIcon(file.name)}</span>`
+            }
             <div class="file-info">
                 <div class="file-name">${file.name}</div>
-                <div class="file-size">${formatFileSize(file.size)}</div>
+                <div class="file-size">${formatFileSize(file.size)}${file.isImage ? ' - Image' : ''}</div>
             </div>
             <button class="file-remove" onclick="removeFile(${index})">✕</button>
         </div>
@@ -784,7 +917,12 @@ function getFileIcon(filename) {
         'css': '🎨',
         'txt': '📄',
         'log': '📋',
-        'csv': '📊'
+        'csv': '📊',
+        'png': '🖼️',
+        'jpg': '🖼️',
+        'jpeg': '🖼️',
+        'gif': '🖼️',
+        'webp': '🖼️'
     };
     return icons[ext] || '📄';
 }
@@ -841,20 +979,47 @@ async function sendMessage() {
     inputField.value = '';
     inputField.style.height = 'auto';
 
-    // Build context with files
-    let contextMessage = message;
-    if (uploadedFiles.length > 0) {
-        contextMessage = `Voici les fichiers a analyser:\n\n`;
-        uploadedFiles.forEach(file => {
-            contextMessage += `--- FICHIER: ${file.name} ---\n${file.content}\n--- FIN FICHIER ---\n\n`;
+    // Build context with files (text and images)
+    let contentParts = [];
+    let hasImages = false;
+
+    // Add text files as text content
+    const textFiles = uploadedFiles.filter(f => !f.isImage);
+    if (textFiles.length > 0) {
+        let textContext = `Voici les fichiers a analyser:\n\n`;
+        textFiles.forEach(file => {
+            textContext += `--- FICHIER: ${file.name} ---\n${file.content}\n--- FIN FICHIER ---\n\n`;
         });
-        contextMessage += `\nQuestion de l'utilisateur: ${message}`;
+        contentParts.push({ type: 'text', text: textContext });
     }
+
+    // Add images as image content
+    const imageFiles = uploadedFiles.filter(f => f.isImage);
+    imageFiles.forEach(file => {
+        hasImages = true;
+        contentParts.push({
+            type: 'image',
+            source: {
+                type: 'base64',
+                media_type: file.type,
+                data: file.base64
+            }
+        });
+        contentParts.push({ type: 'text', text: `[Image: ${file.name}]` });
+    });
+
+    // Add user question
+    contentParts.push({ type: 'text', text: `\nQuestion de l'utilisateur: ${message}` });
+
+    // Build the message content
+    const userContent = (uploadedFiles.length > 0 || hasImages)
+        ? contentParts
+        : message;
 
     // Add to conversation history
     conversationHistory.push({
         role: 'user',
-        content: contextMessage
+        content: userContent
     });
 
     // Show loading
