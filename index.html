@@ -6933,8 +6933,8 @@ ORDER BY owner;
 
 
 -- ÉTAPE 2 : Créer le SYNONYME PUBLIC
--- ⚠️ Remplacer [SCHEMA_WRAPPER] par le schéma où le wrapper est déployé
-CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR [SCHEMA_WRAPPER].UTL_FILE_WRAPPER;
+-- ⚠️ Remplacer EXP_RNAPA par le schéma où le wrapper est déployé
+CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR EXP_RNAPA.UTL_FILE_WRAPPER;
 
 
 -- ÉTAPE 3 : Vérifier que le synonyme est créé
@@ -6942,7 +6942,7 @@ SELECT owner, synonym_name, table_owner, table_name
 FROM dba_synonyms
 WHERE synonym_name = 'UTL_FILE'
   AND owner = 'PUBLIC';
--- Doit afficher : PUBLIC | UTL_FILE | [SCHEMA_WRAPPER] | UTL_FILE_WRAPPER
+-- Doit afficher : PUBLIC | UTL_FILE | EXP_RNAPA | UTL_FILE_WRAPPER
 
 
 -- ÉTAPE 4 : Recompiler tous les schémas impactés
@@ -7084,7 +7084,7 @@ SET SERVEROUTPUT ON
 
 DECLARE
     v_count NUMBER;
-    v_schema VARCHAR2(128) := '[SCHEMA_WRAPPER]';  -- ⚠️ ADAPTER
+    v_schema VARCHAR2(128) := 'EXP_RNAPA';  -- ⚠️ ADAPTER
 BEGIN
     DBMS_OUTPUT.PUT_LINE('======================================');
     DBMS_OUTPUT.PUT_LINE('ROLLBACK MIGRATION PARNA - DÉBUT');
@@ -7224,12 +7224,15 @@ Taux de réussite : 100% ✅</code></pre>
 -- Application: PARNA (08449-parna-p1)
 -- Date: 13/02/2026
 --
+-- ARCHITECTURE:
+--   Schéma principal : EXP_RNAPA (contient table + wrapper)
+--   Schéma secondaire: BANKREC  (accès via GRANT)
+--
 -- CE SCRIPT CRÉE TOUT MAIS N'ACTIVE PAS LE SYNONYME
 -- Le synonyme sera activé le jour de la migration
 -- =============================================================================
 
 -- REMPLACER AVANT EXÉCUTION :
--- [SCHEMA_WRAPPER] : Schéma où déployer le wrapper (ex: EXP_RNAPA)
 -- [REGION]         : Région OCI (ex: eu-paris-1)
 -- [NAMESPACE]      : Namespace Object Storage
 
@@ -7237,11 +7240,11 @@ SET SERVEROUTPUT ON
 SET DEFINE OFF
 
 PROMPT ============================================
-PROMPT ÉTAPE 1/4 : Création table de mapping
+PROMPT ÉTAPE 1/5 : Création table de mapping dans EXP_RNAPA
 PROMPT ============================================
 
--- Table de mapping directories → Object Storage
-CREATE TABLE [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING (
+-- Table UNIQUE de mapping (dans EXP_RNAPA, partagée avec BANKREC)
+CREATE TABLE EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING (
     directory_name   VARCHAR2(128) PRIMARY KEY,
     object_uri       VARCHAR2(1000) NOT NULL,
     credential_name  VARCHAR2(128) DEFAULT 'OCI_CREDENTIAL',
@@ -7253,11 +7256,11 @@ CREATE TABLE [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING (
 PROMPT ✅ Table UTL_FILE_DIRECTORY_MAPPING créée
 
 PROMPT ============================================
-PROMPT ÉTAPE 2/4 : Insertion des 6 mappings PARNA
+PROMPT ÉTAPE 2/5 : Insertion des 6 mappings PARNA
 PROMPT ============================================
 
 -- 1/6 : DIR_ARCH_RNA
-INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
     (directory_name, object_uri, credential_name, is_active, comments)
 VALUES (
     'DIR_ARCH_RNA',
@@ -7267,7 +7270,7 @@ VALUES (
 );
 
 -- 2/6 : DIR_IN_RNA
-INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
     (directory_name, object_uri, credential_name, is_active, comments)
 VALUES (
     'DIR_IN_RNA',
@@ -7277,7 +7280,7 @@ VALUES (
 );
 
 -- 3/6 : DIR_LOG_RNA
-INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
     (directory_name, object_uri, credential_name, is_active, comments)
 VALUES (
     'DIR_LOG_RNA',
@@ -7287,7 +7290,7 @@ VALUES (
 );
 
 -- 4/6 : DIR_OUT_RNA
-INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
     (directory_name, object_uri, credential_name, is_active, comments)
 VALUES (
     'DIR_OUT_RNA',
@@ -7297,7 +7300,7 @@ VALUES (
 );
 
 -- 5/6 : DIR_TEMP_RNA
-INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
     (directory_name, object_uri, credential_name, is_active, comments)
 VALUES (
     'DIR_TEMP_RNA',
@@ -7307,7 +7310,7 @@ VALUES (
 );
 
 -- 6/6 : IN_APPLI_DIR
-INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
     (directory_name, object_uri, credential_name, is_active, comments)
 VALUES (
     'IN_APPLI_DIR',
@@ -7320,7 +7323,7 @@ COMMIT;
 PROMPT ✅ 6 mappings insérés
 
 PROMPT ============================================
-PROMPT ÉTAPE 3/4 : Création credential PLACEHOLDER
+PROMPT ÉTAPE 3/5 : Création credential PLACEHOLDER
 PROMPT ============================================
 
 -- Credential PLACEHOLDER (à mettre à jour avec les vraies valeurs OCI)
@@ -7342,11 +7345,11 @@ END;
 /
 
 PROMPT ============================================
-PROMPT ÉTAPE 4/4 : Création package UTL_FILE_WRAPPER
+PROMPT ÉTAPE 4/5 : Création package UTL_FILE_WRAPPER
 PROMPT ============================================
 
 -- SPEC du package wrapper
-CREATE OR REPLACE PACKAGE [SCHEMA_WRAPPER].UTL_FILE_WRAPPER AS
+CREATE OR REPLACE PACKAGE EXP_RNAPA.UTL_FILE_WRAPPER AS
     -- Types compatibles avec UTL_FILE
     TYPE file_type IS RECORD (
         id          RAW(16),
@@ -7393,7 +7396,7 @@ END UTL_FILE_WRAPPER;
 /
 
 -- BODY du package wrapper (simplifié - version complète dans migration-utl-file-exacc.html)
-CREATE OR REPLACE PACKAGE BODY [SCHEMA_WRAPPER].UTL_FILE_WRAPPER AS
+CREATE OR REPLACE PACKAGE BODY EXP_RNAPA.UTL_FILE_WRAPPER AS
 
     -- Variables privées
     TYPE t_file_content IS TABLE OF VARCHAR2(32767) INDEX BY BINARY_INTEGER;
@@ -7413,7 +7416,7 @@ CREATE OR REPLACE PACKAGE BODY [SCHEMA_WRAPPER].UTL_FILE_WRAPPER AS
         v_uri VARCHAR2(1000);
     BEGIN
         SELECT object_uri || p_filename INTO v_uri
-        FROM [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+        FROM EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
         WHERE directory_name = UPPER(p_directory)
           AND is_active = 1;
         RETURN v_uri;
@@ -7678,11 +7681,27 @@ WHERE object_name = 'UTL_FILE_WRAPPER'
 ORDER BY object_type;
 
 PROMPT ============================================
+PROMPT ÉTAPE 5/5 : Attribution des droits à BANKREC
+PROMPT ============================================
+
+-- BANKREC pourra utiliser le wrapper via le synonyme PUBLIC
+GRANT SELECT ON EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING TO BANKREC;
+GRANT EXECUTE ON EXP_RNAPA.UTL_FILE_WRAPPER TO BANKREC;
+
+PROMPT ✅ Droits accordés à BANKREC
+
+-- Vérification des grants
+SELECT grantee, table_name, privilege
+FROM user_tab_privs_made
+WHERE grantee = 'BANKREC'
+ORDER BY table_name;
+
+PROMPT ============================================
 PROMPT ⚠️ SYNONYME NON CRÉÉ (sera activé lors de la migration)
 PROMPT ============================================
 PROMPT
 PROMPT Pour activer le synonyme lors de la migration, exécuter :
-PROMPT   CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR [SCHEMA_WRAPPER].UTL_FILE_WRAPPER;
+PROMPT   CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR EXP_RNAPA.UTL_FILE_WRAPPER;
 PROMPT
 PROMPT ============================================</code></pre>
         </div>
@@ -7731,7 +7750,7 @@ PROMPT ÉTAPE 2 : Activation du synonyme PUBLIC
 PROMPT ============================================
 
 -- Créer le synonyme PUBLIC (UNE SEULE LIGNE)
-CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR [SCHEMA_WRAPPER].UTL_FILE_WRAPPER;
+CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR EXP_RNAPA.UTL_FILE_WRAPPER;
 
 PROMPT ✅ Synonyme UTL_FILE → UTL_FILE_WRAPPER ACTIVÉ
 
@@ -7801,16 +7820,20 @@ PROMPT ✅ Synonyme supprimé - UTL_FILE standard restauré</code></pre>
             <span class="alert-icon">📋</span>
             <div>
                 <strong>Résumé de la stratégie :</strong><br><br>
-                <strong>MAINTENANT :</strong><br>
-                ✅ Créer table UTL_FILE_DIRECTORY_MAPPING<br>
-                ✅ Insérer les 6 mappings<br>
-                ✅ Créer credential PLACEHOLDER<br>
-                ✅ Déployer package UTL_FILE_WRAPPER<br>
+                <strong>ARCHITECTURE :</strong><br>
+                📦 Schéma principal : <code>EXP_RNAPA</code> (table + wrapper)<br>
+                🔗 Schéma secondaire : <code>BANKREC</code> (accès via GRANT)<br><br>
+                <strong>MAINTENANT (5 étapes) :</strong><br>
+                ✅ 1. Créer table EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING<br>
+                ✅ 2. Insérer les 6 mappings<br>
+                ✅ 3. Créer credential PLACEHOLDER<br>
+                ✅ 4. Déployer package EXP_RNAPA.UTL_FILE_WRAPPER<br>
+                ✅ 5. Accorder GRANT à BANKREC<br>
                 ❌ NE PAS créer le synonyme<br><br>
                 <strong>JOUR J (Migration) :</strong><br>
                 1️⃣ Mettre à jour le credential avec les vraies valeurs OCI<br>
                 2️⃣ Créer le synonyme PUBLIC<br>
-                3️⃣ Recompiler les schémas<br>
+                3️⃣ Recompiler EXP_RNAPA et BANKREC<br>
                 4️⃣ Tester
             </div>
         </div>
