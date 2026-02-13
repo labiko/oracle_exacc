@@ -6755,12 +6755,24 @@ Le user OCI doit avoir les droits suivants :
 
 Ces directories seront mappés vers Object Storage via notre wrapper UTL_FILE_WRAPPER.
 
-Packages PL/SQL concernés :
-- PKG_TEC_FICHIERS (61 occurrences UTL_FILE)
-- PKG_DTC (21 occurrences)
-- PKG_LOG (14 occurrences)
-- + 8 autres packages
-Total : 111 lignes de code utilisant UTL_FILE
+Packages PL/SQL concernés (8 packages, 170 occurrences UTL_FILE) :
+
+Schéma EXP_RNAPA (103 occurrences) :
+- PKG_TEC_FICHIERS     : 61 occurrences  [CRITIQUE]
+- PKG_DTC              : 21 occurrences  [IMPORTANT]
+- PKG_LOG              : 14 occurrences  [IMPORTANT]
+- PKG_RNADEXTBAATCP01  : 3 occurrences
+- PKG_RNADEXTAUTO01    : 2 occurrences
+- PKG_RNADEXTBAATGS01  : 2 occurrences
+
+Schéma BANKREC (67 occurrences) :
+- PKG_BR_PURGE                    : 62 occurrences  [CRITIQUE]
+- PKG_BR_RECONCILIATION_SIGNOFF   : 5 occurrences
+
+Scripts serveur appli impactés (9 scripts SQL) :
+- /applis/04688-parna-r1/soft/oracle/sql/RNADGENEXP*.sql (3 scripts)
+- /applis/04688-parna-r1/soft/oracle/sql/RNADGENJUC*.sql (2 scripts)
+- /applis/04688-parna-r1/soft/oracle/sql/DTCEXETRT*.sql (4 scripts)
 
 =============================================================================
 📅 DÉLAI
