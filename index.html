@@ -2699,6 +2699,78 @@ mon-bucket/
             </div>
         </div>
 
+        <!-- AUDIT COMPLET TOUS TYPES -->
+        <div class="alert alert-warning" style="margin-top: 20px;">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Important :</strong> UTL_FILE peut être utilisé dans plusieurs types d'objets PL/SQL.<br>
+                Les scripts ci-dessous couvrent : <code>PACKAGE BODY</code>, <code>PROCEDURE</code>, <code>FUNCTION</code>, <code>TRIGGER</code>, <code>TYPE BODY</code>
+            </div>
+        </div>
+
+        <h3>1.0 Audit COMPLET - Tous types d'objets (RECOMMANDÉ)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Audit complet tous types d'objets PL/SQL</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- AUDIT COMPLET UTL_FILE - TOUS TYPES D'OBJETS
+-- ============================================
+-- Couvre : PACKAGE BODY, PROCEDURE, FUNCTION, TRIGGER, TYPE BODY
+-- Exécuter ce script connecté au schéma à auditer
+
+SELECT
+    type AS object_type,
+    name AS object_name,
+    COUNT(*) AS nb_lignes_utl_file,
+    CASE
+        WHEN COUNT(*) > 50 THEN 'CRITIQUE'
+        WHEN COUNT(*) > 10 THEN 'IMPORTANT'
+        WHEN COUNT(*) > 2 THEN 'MOYEN'
+        ELSE 'FAIBLE'
+    END AS priorite
+FROM user_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND type IN ('PACKAGE BODY', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE BODY')
+GROUP BY type, name
+ORDER BY
+    CASE type
+        WHEN 'PACKAGE BODY' THEN 1
+        WHEN 'PROCEDURE' THEN 2
+        WHEN 'FUNCTION' THEN 3
+        WHEN 'TRIGGER' THEN 4
+        WHEN 'TYPE BODY' THEN 5
+    END,
+    nb_lignes_utl_file DESC;</code></pre>
+        </div>
+
+        <h3>1.0.1 Résumé par type d'objet</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Synthèse par type d'objet</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- RÉSUMÉ PAR TYPE D'OBJET
+-- ============================================
+-- Donne une vue d'ensemble rapide
+
+SELECT
+    type AS object_type,
+    COUNT(DISTINCT name) AS nb_objets,
+    SUM(cnt) AS total_occurrences
+FROM (
+    SELECT type, name, COUNT(*) AS cnt
+    FROM user_source
+    WHERE UPPER(text) LIKE '%UTL_FILE%'
+      AND type IN ('PACKAGE BODY', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE BODY')
+    GROUP BY type, name
+)
+GROUP BY type
+ORDER BY total_occurrences DESC;</code></pre>
+        </div>
+
         <h3>1.1 Compter les utilisations</h3>
         <div class="code-container">
             <div class="code-header">
@@ -2740,6 +2812,34 @@ FROM user_source
 WHERE UPPER(text) LIKE '%UTL_FILE%'
 GROUP BY name, type
 ORDER BY nb_references DESC;</code></pre>
+        </div>
+
+        <h3>1.2.1 Packages prioritaires avec niveau de criticité</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Packages triés par priorité (pour onglet Remédiation)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- ============================================
+-- PACKAGES UTL_FILE AVEC NIVEAU DE PRIORITÉ
+-- ============================================
+-- Résultat utilisé pour le tableau "Top Packages prioritaires"
+-- dans l'onglet Remédiation PARNA
+
+SELECT
+    name AS package_name,
+    COUNT(*) AS nb_lignes_utl_file,
+    CASE
+        WHEN COUNT(*) > 50 THEN 'CRITIQUE'
+        WHEN COUNT(*) > 10 THEN 'IMPORTANT'
+        WHEN COUNT(*) > 2 THEN 'MOYEN'
+        ELSE 'FAIBLE'
+    END AS priorite
+FROM user_source
+WHERE UPPER(text) LIKE '%UTL_FILE%'
+  AND type = 'PACKAGE BODY'
+GROUP BY name
+ORDER BY nb_lignes_utl_file DESC;</code></pre>
         </div>
 
         <h3>1.3 Fonctions UTL_FILE utilisées et compatibilité wrapper</h3>
@@ -5951,7 +6051,10 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
             </tbody>
         </table>
 
-        <h3>Top 5 Packages prioritaires</h3>
+        <h3>Packages UTL_FILE par schéma</h3>
+
+        <!-- Schema EXP_RNAPA -->
+        <h4 style="margin-top: 20px; color: #1565c0;">📦 Schéma EXP_RNAPA (6 packages - 103 occurrences)</h4>
         <table>
             <thead>
                 <tr>
@@ -5982,12 +6085,53 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
                     <td><span style="background: #1976d2; color: white; padding: 3px 10px; border-radius: 10px;">MOYEN</span></td>
                 </tr>
                 <tr>
-                    <td>+7 autres packages</td>
-                    <td>12</td>
+                    <td><strong>PKG_RNADEXTAUTO01</strong></td>
+                    <td>2</td>
+                    <td><span style="background: #388e3c; color: white; padding: 3px 10px; border-radius: 10px;">FAIBLE</span></td>
+                </tr>
+                <tr>
+                    <td><strong>PKG_RNADEXTBAATGS01</strong></td>
+                    <td>2</td>
                     <td><span style="background: #388e3c; color: white; padding: 3px 10px; border-radius: 10px;">FAIBLE</span></td>
                 </tr>
             </tbody>
         </table>
+
+        <!-- Schema BANKREC -->
+        <h4 style="margin-top: 20px; color: #6a1b9a;">📦 Schéma BANKREC (2 packages - 67 occurrences)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Package</th>
+                    <th>Lignes UTL_FILE</th>
+                    <th>Priorité</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>PKG_BR_PURGE</strong></td>
+                    <td>62</td>
+                    <td><span style="background: #d32f2f; color: white; padding: 3px 10px; border-radius: 10px;">CRITIQUE</span></td>
+                </tr>
+                <tr>
+                    <td><strong>PKG_BR_RECONCILIATION_SIGNOFF</strong></td>
+                    <td>5</td>
+                    <td><span style="background: #1976d2; color: white; padding: 3px 10px; border-radius: 10px;">MOYEN</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Résumé -->
+        <div class="alert alert-info" style="margin-top: 20px;">
+            <span class="alert-icon">📊</span>
+            <div>
+                <strong>Résumé total :</strong> 8 packages impactés | 170 occurrences UTL_FILE<br>
+                <span style="color: #d32f2f;">● 2 CRITIQUE</span> |
+                <span style="color: #f57c00;">● 2 IMPORTANT</span> |
+                <span style="color: #1976d2;">● 2 MOYEN</span> |
+                <span style="color: #388e3c;">● 2 FAIBLE</span>
+            </div>
+        </div>
     </section>
 
     <!-- AUDIT DB LINKS -->
