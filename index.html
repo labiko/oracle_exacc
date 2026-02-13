@@ -6353,24 +6353,90 @@ log "Rapport CSV: $OUTPUT_CSV"</code></pre>
             </div>
         </div>
 
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Audit serveur appli terminé</strong> - Environnement: <code>/applis/04688-parna-r1</code> (RECETTE)<br>
+                Date: 13/02/2026 - <strong>9 scripts SQL identifiés</strong>
+            </div>
+        </div>
+
         <table id="scripts-impactes">
             <thead>
                 <tr>
-                    <th>Script / Job</th>
+                    <th>Script SQL</th>
                     <th>Package appelé</th>
-                    <th>Type</th>
+                    <th>Chemin</th>
                     <th>Statut test</th>
                 </tr>
             </thead>
             <tbody>
+                <!-- PKG_TEC_FICHIERS - 5 scripts -->
                 <tr>
-                    <td colspan="4" style="text-align: center; color: #888; padding: 20px;">
-                        <em>Exécutez les scripts ci-dessus pour identifier les jobs impactés.<br>
-                        Les résultats seront ajoutés ici après analyse.</em>
-                    </td>
+                    <td><strong>RNADGENEXPGES01.sql</strong></td>
+                    <td><span style="background: #1565c0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_TEC_FICHIERS</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <tr>
+                    <td><strong>RNADGENEXPBAN01.sql</strong></td>
+                    <td><span style="background: #1565c0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_TEC_FICHIERS</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <tr>
+                    <td><strong>RNADGENEXPCPT01.sql</strong></td>
+                    <td><span style="background: #1565c0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_TEC_FICHIERS</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <tr>
+                    <td><strong>RNADGENJUCGES01v3.sql</strong></td>
+                    <td><span style="background: #1565c0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_TEC_FICHIERS</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <tr>
+                    <td><strong>RNADGENJUCCPT01.sql</strong></td>
+                    <td><span style="background: #1565c0; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_TEC_FICHIERS</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <!-- PKG_DTC - 3 scripts -->
+                <tr>
+                    <td><strong>DTCEXETRTSQL01.sql</strong></td>
+                    <td><span style="background: #7b1fa2; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_DTC</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <tr>
+                    <td><strong>DTCEXETRTDEB01.sql</strong></td>
+                    <td><span style="background: #7b1fa2; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_DTC</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <tr>
+                    <td><strong>DTCEXETRTFIN01.sql</strong></td>
+                    <td><span style="background: #7b1fa2; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_DTC</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
+                </tr>
+                <!-- PKG_LOG - 1 script -->
+                <tr>
+                    <td><strong>DTCEXETRTLOG01.sql</strong></td>
+                    <td><span style="background: #00897b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">PKG_LOG</span></td>
+                    <td><code>./soft/oracle/sql/</code></td>
+                    <td><span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">À tester</span></td>
                 </tr>
             </tbody>
         </table>
+
+        <div class="alert alert-info" style="margin-top: 15px;">
+            <span class="alert-icon">📋</span>
+            <div>
+                <strong>Note :</strong> Les packages PKG_RNADEXTBAATCP01, PKG_RNADEXTAUTO01, PKG_RNADEXTBAATGS01, PKG_BR_PURGE et PKG_BR_RECONCILIATION_SIGNOFF ne sont appelés par aucun script sur le serveur applicatif.
+            </div>
+        </div>
     </section>
 
     <!-- AUDIT DB LINKS -->
