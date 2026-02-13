@@ -6168,14 +6168,14 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
 # ============================================
 # RECHERCHE DES SCRIPTS APPELANT LES PACKAGES UTL_FILE
 # ============================================
-# Exécuter sur le serveur applicatif PARNA
-# Usage: ./search_pkg_calls.ksh /chemin/scripts
+# Exécuter depuis le répertoire applicatif PARNA
+# Usage: ./search_pkg_calls.ksh [chemin]  (défaut: répertoire courant)
 
-SEARCH_PATH="${1:-/applis/08449-parna-p1}"
+SEARCH_PATH="${1:-.}"
 
 echo "============================================"
 echo "Recherche des appels aux packages UTL_FILE"
-echo "Chemin: $SEARCH_PATH"
+echo "Chemin: $(cd "$SEARCH_PATH" && pwd)"
 echo "Date: $(date)"
 echo "============================================"
 
@@ -6185,7 +6185,7 @@ PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01
 for PKG in $PACKAGES; do
     echo ""
     echo "--- Recherche: $PKG ---"
-    grep -r -l -i "$PKG" "$SEARCH_PATH" --include="*.ksh" --include="*.sh" --include="*.sql" 2>/dev/null | while read file; do
+    grep -r -l -i "$PKG" "$SEARCH_PATH" 2>/dev/null | grep -v "\.git" | while read file; do
         echo "  [TROUVÉ] $file"
     done
 done
@@ -6207,16 +6207,18 @@ echo "============================================"</code></pre>
 # RECHERCHE DÉTAILLÉE DES APPELS AUX PACKAGES
 # ============================================
 # Génère un rapport CSV avec fichier, ligne, contexte
+# Usage: ./search_pkg_detail.ksh [chemin]  (défaut: répertoire courant)
 
-SEARCH_PATH="${1:-/applis/08449-parna-p1}"
+SEARCH_PATH="${1:-.}"
 OUTPUT_FILE="rapport_packages_utlfile_$(date +%Y%m%d_%H%M%S).csv"
 
+echo "Recherche dans: $(cd "$SEARCH_PATH" && pwd)"
 echo "Fichier;Package;Ligne;Contenu" > "$OUTPUT_FILE"
 
 PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
 
 for PKG in $PACKAGES; do
-    grep -r -n -i "$PKG" "$SEARCH_PATH" --include="*.ksh" --include="*.sh" --include="*.sql" 2>/dev/null | while IFS=: read file line content; do
+    grep -r -n -i "$PKG" "$SEARCH_PATH" 2>/dev/null | grep -v "\.git" | while IFS=: read file line content; do
         # Nettoyer le contenu pour CSV
         clean_content=$(echo "$content" | sed 's/;/,/g' | sed 's/"//g' | tr -d '\r')
         echo "$file;$PKG;$line;$clean_content" >> "$OUTPUT_FILE"
@@ -6237,34 +6239,32 @@ echo "Nombre de lignes: $(wc -l < "$OUTPUT_FILE")"</code></pre>
 # ============================================
 # IDENTIFICATION DES JOBS CONTROL-M IMPACTÉS
 # ============================================
-# Recherche dans les répertoires Control-M standards
+# Recherche dans tous les fichiers à partir du répertoire courant
+# Usage: ./search_controlm.ksh [chemin]  (défaut: répertoire courant)
 
-CONTROLM_PATHS="/applis/08449-parna-p1/scripts /applis/08449-parna-p1/batch /applis/08449-parna-p1/ctm"
+SEARCH_PATH="${1:-.}"
 OUTPUT_FILE="jobs_controlm_impactes_$(date +%Y%m%d).txt"
 
 echo "============================================" > "$OUTPUT_FILE"
 echo "JOBS CONTROL-M IMPACTÉS PAR MIGRATION UTL_FILE" >> "$OUTPUT_FILE"
+echo "Répertoire: $(cd "$SEARCH_PATH" && pwd)" >> "$OUTPUT_FILE"
 echo "Date: $(date)" >> "$OUTPUT_FILE"
 echo "============================================" >> "$OUTPUT_FILE"
 
 PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
 
-for PATH_CTM in $CONTROLM_PATHS; do
-    if [ -d "$PATH_CTM" ]; then
-        echo "" >> "$OUTPUT_FILE"
-        echo "=== Répertoire: $PATH_CTM ===" >> "$OUTPUT_FILE"
+echo "" >> "$OUTPUT_FILE"
+echo "=== Fichiers trouvés ===" >> "$OUTPUT_FILE"
 
-        for PKG in $PACKAGES; do
-            FOUND=$(grep -r -l -i "$PKG" "$PATH_CTM" --include="*.ksh" --include="*.sh" --include="*.sql" 2>/dev/null)
-            if [ -n "$FOUND" ]; then
-                echo "" >> "$OUTPUT_FILE"
-                echo "Package: $PKG" >> "$OUTPUT_FILE"
-                echo "$FOUND" | while read f; do
-                    # Extraire le nom du job (généralement le nom du fichier)
-                    JOB_NAME=$(basename "$f" | sed 's/\.[^.]*$//')
-                    echo "  - Job: $JOB_NAME ($f)" >> "$OUTPUT_FILE"
-                done
-            fi
+for PKG in $PACKAGES; do
+    FOUND=$(grep -r -l -i "$PKG" "$SEARCH_PATH" 2>/dev/null | grep -v "\.git")
+    if [ -n "$FOUND" ]; then
+        echo "" >> "$OUTPUT_FILE"
+        echo "Package: $PKG" >> "$OUTPUT_FILE"
+        echo "$FOUND" | while read f; do
+            # Extraire le nom du job (généralement le nom du fichier)
+            JOB_NAME=$(basename "$f" | sed 's/\.[^.]*$//')
+            echo "  - Job: $JOB_NAME ($f)" >> "$OUTPUT_FILE"
         done
     fi
 done
