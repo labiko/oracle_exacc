@@ -7199,6 +7199,623 @@ Taux de réussite : 100% ✅</code></pre>
         </div>
     </section>
 
+    <!-- SCRIPT PRÉ-MIGRATION COMPLET -->
+    <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800;">
+        <h2>🚀 Script Pré-Migration COMPLET (Tout-en-un)</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Stratégie recommandée :</strong><br>
+                1. Déployer TOUT maintenant (wrapper, tables, mappings) <strong>SANS activer le synonyme</strong><br>
+                2. Le jour de la migration : <strong>une seule commande</strong> pour activer le synonyme + mettre à jour les credentials
+            </div>
+        </div>
+
+        <h3>PARTIE 1 : Déploiement Initial (à faire MAINTENANT)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Script complet pré-migration (synonyme DÉSACTIVÉ)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- =============================================================================
+-- SCRIPT PRÉ-MIGRATION UTL_FILE → OCI OBJECT STORAGE
+-- =============================================================================
+-- Application: PARNA (08449-parna-p1)
+-- Date: 13/02/2026
+--
+-- CE SCRIPT CRÉE TOUT MAIS N'ACTIVE PAS LE SYNONYME
+-- Le synonyme sera activé le jour de la migration
+-- =============================================================================
+
+-- REMPLACER AVANT EXÉCUTION :
+-- [SCHEMA_WRAPPER] : Schéma où déployer le wrapper (ex: EXP_RNAPA)
+-- [REGION]         : Région OCI (ex: eu-paris-1)
+-- [NAMESPACE]      : Namespace Object Storage
+
+SET SERVEROUTPUT ON
+SET DEFINE OFF
+
+PROMPT ============================================
+PROMPT ÉTAPE 1/4 : Création table de mapping
+PROMPT ============================================
+
+-- Table de mapping directories → Object Storage
+CREATE TABLE [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING (
+    directory_name   VARCHAR2(128) PRIMARY KEY,
+    object_uri       VARCHAR2(1000) NOT NULL,
+    credential_name  VARCHAR2(128) DEFAULT 'OCI_CREDENTIAL',
+    is_active        NUMBER(1) DEFAULT 1,  -- 1=actif, 0=inactif
+    created_date     DATE DEFAULT SYSDATE,
+    comments         VARCHAR2(500)
+);
+
+PROMPT ✅ Table UTL_FILE_DIRECTORY_MAPPING créée
+
+PROMPT ============================================
+PROMPT ÉTAPE 2/4 : Insertion des 6 mappings PARNA
+PROMPT ============================================
+
+-- 1/6 : DIR_ARCH_RNA
+INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, is_active, comments)
+VALUES (
+    'DIR_ARCH_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/archive/',
+    'OCI_CREDENTIAL', 1,
+    '/applis/08449-parna-p1/archive'
+);
+
+-- 2/6 : DIR_IN_RNA
+INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, is_active, comments)
+VALUES (
+    'DIR_IN_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
+    'OCI_CREDENTIAL', 1,
+    '/applis/08449-parna-p1/in'
+);
+
+-- 3/6 : DIR_LOG_RNA
+INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, is_active, comments)
+VALUES (
+    'DIR_LOG_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/logs/',
+    'OCI_CREDENTIAL', 1,
+    '/applis/logs/08449-parna-p1'
+);
+
+-- 4/6 : DIR_OUT_RNA
+INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, is_active, comments)
+VALUES (
+    'DIR_OUT_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/out/',
+    'OCI_CREDENTIAL', 1,
+    '/applis/08449-parna-p1/out'
+);
+
+-- 5/6 : DIR_TEMP_RNA
+INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, is_active, comments)
+VALUES (
+    'DIR_TEMP_RNA',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/temp/',
+    'OCI_CREDENTIAL', 1,
+    '/applis/08449-parna-p1/temp'
+);
+
+-- 6/6 : IN_APPLI_DIR
+INSERT INTO [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+    (directory_name, object_uri, credential_name, is_active, comments)
+VALUES (
+    'IN_APPLI_DIR',
+    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
+    'OCI_CREDENTIAL', 1,
+    '/applis/08449-parna-p1/in/'
+);
+
+COMMIT;
+PROMPT ✅ 6 mappings insérés
+
+PROMPT ============================================
+PROMPT ÉTAPE 3/4 : Création credential PLACEHOLDER
+PROMPT ============================================
+
+-- Credential PLACEHOLDER (à mettre à jour avec les vraies valeurs OCI)
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'OCI_CREDENTIAL',
+        username        => 'PLACEHOLDER_USER_OCID',
+        password        => 'PLACEHOLDER_PRIVATE_KEY'
+    );
+    DBMS_OUTPUT.PUT_LINE('✅ Credential OCI_CREDENTIAL créé (PLACEHOLDER)');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20802 THEN
+            DBMS_OUTPUT.PUT_LINE('ℹ️ Credential OCI_CREDENTIAL existe déjà');
+        ELSE
+            RAISE;
+        END IF;
+END;
+/
+
+PROMPT ============================================
+PROMPT ÉTAPE 4/4 : Création package UTL_FILE_WRAPPER
+PROMPT ============================================
+
+-- SPEC du package wrapper
+CREATE OR REPLACE PACKAGE [SCHEMA_WRAPPER].UTL_FILE_WRAPPER AS
+    -- Types compatibles avec UTL_FILE
+    TYPE file_type IS RECORD (
+        id          RAW(16),
+        datatype    PLS_INTEGER,
+        byte_mode   BOOLEAN
+    );
+
+    -- Constantes
+    invalid_path        EXCEPTION;
+    invalid_mode        EXCEPTION;
+    invalid_filehandle  EXCEPTION;
+    invalid_operation   EXCEPTION;
+    read_error          EXCEPTION;
+    write_error         EXCEPTION;
+    internal_error      EXCEPTION;
+    invalid_maxlinesize EXCEPTION;
+    invalid_filename    EXCEPTION;
+    access_denied       EXCEPTION;
+    invalid_offset      EXCEPTION;
+    delete_failed       EXCEPTION;
+    rename_failed       EXCEPTION;
+
+    -- Fonctions principales
+    FUNCTION fopen(location IN VARCHAR2, filename IN VARCHAR2, open_mode IN VARCHAR2, max_linesize IN BINARY_INTEGER DEFAULT 1024) RETURN file_type;
+    FUNCTION is_open(file IN file_type) RETURN BOOLEAN;
+    PROCEDURE fclose(file IN OUT file_type);
+    PROCEDURE fclose_all;
+    PROCEDURE put(file IN file_type, buffer IN VARCHAR2);
+    PROCEDURE put_line(file IN file_type, buffer IN VARCHAR2, autoflush IN BOOLEAN DEFAULT FALSE);
+    PROCEDURE putf(file IN file_type, format IN VARCHAR2, arg1 IN VARCHAR2 DEFAULT NULL, arg2 IN VARCHAR2 DEFAULT NULL, arg3 IN VARCHAR2 DEFAULT NULL, arg4 IN VARCHAR2 DEFAULT NULL, arg5 IN VARCHAR2 DEFAULT NULL);
+    PROCEDURE new_line(file IN file_type, lines IN NATURAL DEFAULT 1);
+    PROCEDURE get_line(file IN file_type, buffer OUT VARCHAR2, len IN PLS_INTEGER DEFAULT NULL);
+    PROCEDURE fflush(file IN file_type);
+    PROCEDURE fremove(location IN VARCHAR2, filename IN VARCHAR2);
+    PROCEDURE frename(src_location IN VARCHAR2, src_filename IN VARCHAR2, dest_location IN VARCHAR2, dest_filename IN VARCHAR2, overwrite IN BOOLEAN DEFAULT FALSE);
+    PROCEDURE fcopy(src_location IN VARCHAR2, src_filename IN VARCHAR2, dest_location IN VARCHAR2, dest_filename IN VARCHAR2, start_line IN BINARY_INTEGER DEFAULT 1, end_line IN BINARY_INTEGER DEFAULT NULL);
+    FUNCTION fgetattr(location IN VARCHAR2, filename IN VARCHAR2, fexists OUT BOOLEAN, file_length OUT NUMBER, block_size OUT BINARY_INTEGER) RETURN BOOLEAN;
+    FUNCTION fgetpos(file IN file_type) RETURN PLS_INTEGER;
+    PROCEDURE fseek(file IN file_type, absolute_offset IN PLS_INTEGER DEFAULT NULL, relative_offset IN PLS_INTEGER DEFAULT NULL);
+
+    -- Fonction utilitaire pour obtenir l'URI
+    FUNCTION get_object_uri(p_directory VARCHAR2, p_filename VARCHAR2) RETURN VARCHAR2;
+END UTL_FILE_WRAPPER;
+/
+
+-- BODY du package wrapper (simplifié - version complète dans migration-utl-file-exacc.html)
+CREATE OR REPLACE PACKAGE BODY [SCHEMA_WRAPPER].UTL_FILE_WRAPPER AS
+
+    -- Variables privées
+    TYPE t_file_content IS TABLE OF VARCHAR2(32767) INDEX BY BINARY_INTEGER;
+    TYPE t_file_info IS RECORD (
+        content     t_file_content,
+        line_count  PLS_INTEGER,
+        current_pos PLS_INTEGER,
+        mode_char   VARCHAR2(1),
+        directory   VARCHAR2(128),
+        filename    VARCHAR2(512)
+    );
+    TYPE t_file_handles IS TABLE OF t_file_info INDEX BY RAW(16);
+    g_files t_file_handles;
+
+    -- Obtenir l'URI Object Storage
+    FUNCTION get_object_uri(p_directory VARCHAR2, p_filename VARCHAR2) RETURN VARCHAR2 IS
+        v_uri VARCHAR2(1000);
+    BEGIN
+        SELECT object_uri || p_filename INTO v_uri
+        FROM [SCHEMA_WRAPPER].UTL_FILE_DIRECTORY_MAPPING
+        WHERE directory_name = UPPER(p_directory)
+          AND is_active = 1;
+        RETURN v_uri;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE invalid_path;
+    END;
+
+    -- FOPEN
+    FUNCTION fopen(location IN VARCHAR2, filename IN VARCHAR2, open_mode IN VARCHAR2, max_linesize IN BINARY_INTEGER DEFAULT 1024) RETURN file_type IS
+        v_file file_type;
+        v_uri VARCHAR2(1000);
+        v_content BLOB;
+        v_line VARCHAR2(32767);
+        v_pos PLS_INTEGER := 1;
+    BEGIN
+        v_file.id := SYS_GUID();
+        v_uri := get_object_uri(location, filename);
+
+        g_files(v_file.id).directory := location;
+        g_files(v_file.id).filename := filename;
+        g_files(v_file.id).mode_char := UPPER(SUBSTR(open_mode, 1, 1));
+        g_files(v_file.id).current_pos := 1;
+        g_files(v_file.id).line_count := 0;
+
+        IF g_files(v_file.id).mode_char = 'R' THEN
+            -- Lecture depuis Object Storage
+            v_content := DBMS_CLOUD.GET_OBJECT(
+                credential_name => 'OCI_CREDENTIAL',
+                object_uri => v_uri
+            );
+            -- Parser le contenu ligne par ligne
+            DECLARE
+                v_clob CLOB := UTL_RAW.CAST_TO_VARCHAR2(v_content);
+                v_start PLS_INTEGER := 1;
+                v_end PLS_INTEGER;
+            BEGIN
+                LOOP
+                    v_end := INSTR(v_clob, CHR(10), v_start);
+                    IF v_end = 0 THEN
+                        v_line := SUBSTR(v_clob, v_start);
+                        IF LENGTH(v_line) > 0 THEN
+                            g_files(v_file.id).line_count := g_files(v_file.id).line_count + 1;
+                            g_files(v_file.id).content(g_files(v_file.id).line_count) := RTRIM(v_line, CHR(13));
+                        END IF;
+                        EXIT;
+                    ELSE
+                        g_files(v_file.id).line_count := g_files(v_file.id).line_count + 1;
+                        g_files(v_file.id).content(g_files(v_file.id).line_count) := RTRIM(SUBSTR(v_clob, v_start, v_end - v_start), CHR(13));
+                        v_start := v_end + 1;
+                    END IF;
+                END LOOP;
+            END;
+        END IF;
+
+        RETURN v_file;
+    END;
+
+    -- IS_OPEN
+    FUNCTION is_open(file IN file_type) RETURN BOOLEAN IS
+    BEGIN
+        RETURN g_files.EXISTS(file.id);
+    END;
+
+    -- FCLOSE
+    PROCEDURE fclose(file IN OUT file_type) IS
+        v_uri VARCHAR2(1000);
+        v_content CLOB := '';
+    BEGIN
+        IF g_files.EXISTS(file.id) THEN
+            IF g_files(file.id).mode_char IN ('W', 'A') THEN
+                -- Écrire vers Object Storage
+                v_uri := get_object_uri(g_files(file.id).directory, g_files(file.id).filename);
+                FOR i IN 1..g_files(file.id).line_count LOOP
+                    v_content := v_content || g_files(file.id).content(i) || CHR(10);
+                END LOOP;
+                DBMS_CLOUD.PUT_OBJECT(
+                    credential_name => 'OCI_CREDENTIAL',
+                    object_uri => v_uri,
+                    contents => UTL_RAW.CAST_TO_RAW(v_content)
+                );
+            END IF;
+            g_files.DELETE(file.id);
+        END IF;
+        file.id := NULL;
+    END;
+
+    -- FCLOSE_ALL
+    PROCEDURE fclose_all IS
+        v_key RAW(16);
+    BEGIN
+        v_key := g_files.FIRST;
+        WHILE v_key IS NOT NULL LOOP
+            g_files.DELETE(v_key);
+            v_key := g_files.NEXT(v_key);
+        END LOOP;
+    END;
+
+    -- PUT
+    PROCEDURE put(file IN file_type, buffer IN VARCHAR2) IS
+    BEGIN
+        IF NOT g_files.EXISTS(file.id) THEN
+            RAISE invalid_filehandle;
+        END IF;
+        IF g_files(file.id).line_count = 0 THEN
+            g_files(file.id).line_count := 1;
+            g_files(file.id).content(1) := buffer;
+        ELSE
+            g_files(file.id).content(g_files(file.id).line_count) :=
+                g_files(file.id).content(g_files(file.id).line_count) || buffer;
+        END IF;
+    END;
+
+    -- PUT_LINE
+    PROCEDURE put_line(file IN file_type, buffer IN VARCHAR2, autoflush IN BOOLEAN DEFAULT FALSE) IS
+    BEGIN
+        IF NOT g_files.EXISTS(file.id) THEN
+            RAISE invalid_filehandle;
+        END IF;
+        g_files(file.id).line_count := g_files(file.id).line_count + 1;
+        g_files(file.id).content(g_files(file.id).line_count) := buffer;
+    END;
+
+    -- PUTF
+    PROCEDURE putf(file IN file_type, format IN VARCHAR2, arg1 IN VARCHAR2 DEFAULT NULL, arg2 IN VARCHAR2 DEFAULT NULL, arg3 IN VARCHAR2 DEFAULT NULL, arg4 IN VARCHAR2 DEFAULT NULL, arg5 IN VARCHAR2 DEFAULT NULL) IS
+        v_result VARCHAR2(32767) := format;
+    BEGIN
+        v_result := REPLACE(v_result, '%s', NVL(arg1, ''));
+        IF arg2 IS NOT NULL THEN v_result := REPLACE(v_result, '%s', arg2); END IF;
+        IF arg3 IS NOT NULL THEN v_result := REPLACE(v_result, '%s', arg3); END IF;
+        IF arg4 IS NOT NULL THEN v_result := REPLACE(v_result, '%s', arg4); END IF;
+        IF arg5 IS NOT NULL THEN v_result := REPLACE(v_result, '%s', arg5); END IF;
+        put(file, v_result);
+    END;
+
+    -- NEW_LINE
+    PROCEDURE new_line(file IN file_type, lines IN NATURAL DEFAULT 1) IS
+    BEGIN
+        FOR i IN 1..lines LOOP
+            put_line(file, '');
+        END LOOP;
+    END;
+
+    -- GET_LINE
+    PROCEDURE get_line(file IN file_type, buffer OUT VARCHAR2, len IN PLS_INTEGER DEFAULT NULL) IS
+    BEGIN
+        IF NOT g_files.EXISTS(file.id) THEN
+            RAISE invalid_filehandle;
+        END IF;
+        IF g_files(file.id).current_pos > g_files(file.id).line_count THEN
+            RAISE NO_DATA_FOUND;
+        END IF;
+        buffer := g_files(file.id).content(g_files(file.id).current_pos);
+        IF len IS NOT NULL AND LENGTH(buffer) > len THEN
+            buffer := SUBSTR(buffer, 1, len);
+        END IF;
+        g_files(file.id).current_pos := g_files(file.id).current_pos + 1;
+    END;
+
+    -- FFLUSH
+    PROCEDURE fflush(file IN file_type) IS
+    BEGIN
+        NULL; -- Le flush se fait au FCLOSE
+    END;
+
+    -- FREMOVE
+    PROCEDURE fremove(location IN VARCHAR2, filename IN VARCHAR2) IS
+        v_uri VARCHAR2(1000);
+    BEGIN
+        v_uri := get_object_uri(location, filename);
+        DBMS_CLOUD.DELETE_OBJECT(
+            credential_name => 'OCI_CREDENTIAL',
+            object_uri => v_uri
+        );
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE delete_failed;
+    END;
+
+    -- FRENAME
+    PROCEDURE frename(src_location IN VARCHAR2, src_filename IN VARCHAR2, dest_location IN VARCHAR2, dest_filename IN VARCHAR2, overwrite IN BOOLEAN DEFAULT FALSE) IS
+        v_src_uri VARCHAR2(1000);
+        v_dest_uri VARCHAR2(1000);
+        v_content BLOB;
+    BEGIN
+        v_src_uri := get_object_uri(src_location, src_filename);
+        v_dest_uri := get_object_uri(dest_location, dest_filename);
+
+        v_content := DBMS_CLOUD.GET_OBJECT(credential_name => 'OCI_CREDENTIAL', object_uri => v_src_uri);
+        DBMS_CLOUD.PUT_OBJECT(credential_name => 'OCI_CREDENTIAL', object_uri => v_dest_uri, contents => v_content);
+        DBMS_CLOUD.DELETE_OBJECT(credential_name => 'OCI_CREDENTIAL', object_uri => v_src_uri);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE rename_failed;
+    END;
+
+    -- FCOPY
+    PROCEDURE fcopy(src_location IN VARCHAR2, src_filename IN VARCHAR2, dest_location IN VARCHAR2, dest_filename IN VARCHAR2, start_line IN BINARY_INTEGER DEFAULT 1, end_line IN BINARY_INTEGER DEFAULT NULL) IS
+        v_src_uri VARCHAR2(1000);
+        v_dest_uri VARCHAR2(1000);
+        v_content BLOB;
+    BEGIN
+        v_src_uri := get_object_uri(src_location, src_filename);
+        v_dest_uri := get_object_uri(dest_location, dest_filename);
+
+        v_content := DBMS_CLOUD.GET_OBJECT(credential_name => 'OCI_CREDENTIAL', object_uri => v_src_uri);
+        DBMS_CLOUD.PUT_OBJECT(credential_name => 'OCI_CREDENTIAL', object_uri => v_dest_uri, contents => v_content);
+    END;
+
+    -- FGETATTR
+    FUNCTION fgetattr(location IN VARCHAR2, filename IN VARCHAR2, fexists OUT BOOLEAN, file_length OUT NUMBER, block_size OUT BINARY_INTEGER) RETURN BOOLEAN IS
+        v_uri VARCHAR2(1000);
+        v_content BLOB;
+    BEGIN
+        v_uri := get_object_uri(location, filename);
+        BEGIN
+            v_content := DBMS_CLOUD.GET_OBJECT(credential_name => 'OCI_CREDENTIAL', object_uri => v_uri);
+            fexists := TRUE;
+            file_length := DBMS_LOB.GETLENGTH(v_content);
+            block_size := 4096;
+            RETURN TRUE;
+        EXCEPTION
+            WHEN OTHERS THEN
+                fexists := FALSE;
+                file_length := 0;
+                block_size := 0;
+                RETURN FALSE;
+        END;
+    END;
+
+    -- FGETPOS
+    FUNCTION fgetpos(file IN file_type) RETURN PLS_INTEGER IS
+    BEGIN
+        IF NOT g_files.EXISTS(file.id) THEN
+            RAISE invalid_filehandle;
+        END IF;
+        RETURN g_files(file.id).current_pos;
+    END;
+
+    -- FSEEK
+    PROCEDURE fseek(file IN file_type, absolute_offset IN PLS_INTEGER DEFAULT NULL, relative_offset IN PLS_INTEGER DEFAULT NULL) IS
+    BEGIN
+        IF NOT g_files.EXISTS(file.id) THEN
+            RAISE invalid_filehandle;
+        END IF;
+        IF absolute_offset IS NOT NULL THEN
+            g_files(file.id).current_pos := absolute_offset;
+        ELSIF relative_offset IS NOT NULL THEN
+            g_files(file.id).current_pos := g_files(file.id).current_pos + relative_offset;
+        END IF;
+    END;
+
+END UTL_FILE_WRAPPER;
+/
+
+PROMPT ✅ Package UTL_FILE_WRAPPER créé
+
+-- Vérification
+SELECT object_name, object_type, status
+FROM user_objects
+WHERE object_name = 'UTL_FILE_WRAPPER'
+ORDER BY object_type;
+
+PROMPT ============================================
+PROMPT ⚠️ SYNONYME NON CRÉÉ (sera activé lors de la migration)
+PROMPT ============================================
+PROMPT
+PROMPT Pour activer le synonyme lors de la migration, exécuter :
+PROMPT   CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR [SCHEMA_WRAPPER].UTL_FILE_WRAPPER;
+PROMPT
+PROMPT ============================================</code></pre>
+        </div>
+
+        <h3>PARTIE 2 : Activation le jour de la migration (UNE SEULE commande)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Script d'activation (jour J)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- =============================================================================
+-- SCRIPT D'ACTIVATION - JOUR DE LA MIGRATION
+-- =============================================================================
+-- À exécuter le jour de la migration vers ExaCC
+-- =============================================================================
+
+SET SERVEROUTPUT ON
+
+PROMPT ============================================
+PROMPT ÉTAPE 1 : Mise à jour des credentials OCI
+PROMPT ============================================
+
+-- Supprimer l'ancien credential placeholder
+BEGIN
+    DBMS_CLOUD.DROP_CREDENTIAL(credential_name => 'OCI_CREDENTIAL');
+    DBMS_OUTPUT.PUT_LINE('✅ Ancien credential supprimé');
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+-- Créer le vrai credential avec les infos OCI
+-- ⚠️ REMPLACER PAR LES VRAIES VALEURS FOURNIES PAR L'ÉQUIPE OCI
+BEGIN
+    DBMS_CLOUD.CREATE_CREDENTIAL(
+        credential_name => 'OCI_CREDENTIAL',
+        username        => 'ocid1.user.oc1..aaaa[VOTRE_USER_OCID]',
+        password        => '[VOTRE_CLÉ_PRIVÉE_API_PEM]'
+    );
+    DBMS_OUTPUT.PUT_LINE('✅ Credential OCI créé avec succès');
+END;
+/
+
+PROMPT ============================================
+PROMPT ÉTAPE 2 : Activation du synonyme PUBLIC
+PROMPT ============================================
+
+-- Créer le synonyme PUBLIC (UNE SEULE LIGNE)
+CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR [SCHEMA_WRAPPER].UTL_FILE_WRAPPER;
+
+PROMPT ✅ Synonyme UTL_FILE → UTL_FILE_WRAPPER ACTIVÉ
+
+PROMPT ============================================
+PROMPT ÉTAPE 3 : Recompilation des schémas impactés
+PROMPT ============================================
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Recompilation EXP_RNAPA...');
+    DBMS_UTILITY.COMPILE_SCHEMA(schema => 'EXP_RNAPA', compile_all => FALSE);
+
+    DBMS_OUTPUT.PUT_LINE('Recompilation BANKREC...');
+    DBMS_UTILITY.COMPILE_SCHEMA(schema => 'BANKREC', compile_all => FALSE);
+
+    DBMS_OUTPUT.PUT_LINE('✅ Recompilation terminée');
+END;
+/
+
+PROMPT ============================================
+PROMPT ÉTAPE 4 : Test rapide
+PROMPT ============================================
+
+DECLARE
+    v_file UTL_FILE.FILE_TYPE;
+    v_test VARCHAR2(100) := 'Test migration ExaCC - ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS');
+BEGIN
+    v_file := UTL_FILE.FOPEN('DIR_TEMP_RNA', 'test_migration.txt', 'W');
+    UTL_FILE.PUT_LINE(v_file, v_test);
+    UTL_FILE.FCLOSE(v_file);
+    UTL_FILE.FREMOVE('DIR_TEMP_RNA', 'test_migration.txt');
+    DBMS_OUTPUT.PUT_LINE('🎉 MIGRATION RÉUSSIE ! UTL_FILE utilise maintenant Object Storage OCI');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ ERREUR: ' || SQLERRM);
+END;
+/
+
+PROMPT ============================================
+PROMPT ✅ MIGRATION TERMINÉE
+PROMPT ============================================</code></pre>
+        </div>
+
+        <h3>PARTIE 3 : Rollback (si besoin de désactiver)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Désactiver le synonyme (rollback)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>-- =============================================================================
+-- ROLLBACK - Désactiver le synonyme (revenir à UTL_FILE standard)
+-- =============================================================================
+
+-- Supprimer le synonyme public
+DROP PUBLIC SYNONYM UTL_FILE;
+
+-- Recompiler les schémas
+BEGIN
+    DBMS_UTILITY.COMPILE_SCHEMA(schema => 'EXP_RNAPA', compile_all => FALSE);
+    DBMS_UTILITY.COMPILE_SCHEMA(schema => 'BANKREC', compile_all => FALSE);
+END;
+/
+
+PROMPT ✅ Synonyme supprimé - UTL_FILE standard restauré</code></pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">📋</span>
+            <div>
+                <strong>Résumé de la stratégie :</strong><br><br>
+                <strong>MAINTENANT :</strong><br>
+                ✅ Créer table UTL_FILE_DIRECTORY_MAPPING<br>
+                ✅ Insérer les 6 mappings<br>
+                ✅ Créer credential PLACEHOLDER<br>
+                ✅ Déployer package UTL_FILE_WRAPPER<br>
+                ❌ NE PAS créer le synonyme<br><br>
+                <strong>JOUR J (Migration) :</strong><br>
+                1️⃣ Mettre à jour le credential avec les vraies valeurs OCI<br>
+                2️⃣ Créer le synonyme PUBLIC<br>
+                3️⃣ Recompiler les schémas<br>
+                4️⃣ Tester
+            </div>
+        </div>
+    </section>
+
     <!-- LIEN VERS LE GUIDE -->
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3;">
         <h2>📚 Ressources Complémentaires</h2>
