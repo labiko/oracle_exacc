@@ -7230,123 +7230,175 @@ Taux de réussite : 100% ✅</code></pre>
 --
 -- CE SCRIPT CRÉE TOUT MAIS N'ACTIVE PAS LE SYNONYME
 -- Le synonyme sera activé le jour de la migration
+--
+-- ⚠️ GESTION DES TRANSACTIONS : ROLLBACK automatique en cas d'erreur
 -- =============================================================================
 
 -- REMPLACER AVANT EXÉCUTION :
 -- [REGION]         : Région OCI (ex: eu-paris-1)
 -- [NAMESPACE]      : Namespace Object Storage
 
-SET SERVEROUTPUT ON
+SET SERVEROUTPUT ON SIZE UNLIMITED
 SET DEFINE OFF
 
 PROMPT ============================================
-PROMPT ÉTAPE 1/5 : Création table de mapping dans EXP_RNAPA
+PROMPT 🚀 DÉBUT DÉPLOIEMENT PRÉ-MIGRATION
 PROMPT ============================================
 
--- Table UNIQUE de mapping (dans EXP_RNAPA, partagée avec BANKREC)
-CREATE TABLE EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING (
-    directory_name   VARCHAR2(128) PRIMARY KEY,
-    object_uri       VARCHAR2(1000) NOT NULL,
-    credential_name  VARCHAR2(128) DEFAULT 'OCI_CREDENTIAL',
-    is_active        NUMBER(1) DEFAULT 1,  -- 1=actif, 0=inactif
-    created_date     DATE DEFAULT SYSDATE,
-    comments         VARCHAR2(500)
-);
-
-PROMPT ✅ Table UTL_FILE_DIRECTORY_MAPPING créée
-
-PROMPT ============================================
-PROMPT ÉTAPE 2/5 : Insertion des 6 mappings PARNA
-PROMPT ============================================
-
--- 1/6 : DIR_ARCH_RNA
-INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
-    (directory_name, object_uri, credential_name, is_active, comments)
-VALUES (
-    'DIR_ARCH_RNA',
-    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/archive/',
-    'OCI_CREDENTIAL', 1,
-    '/applis/08449-parna-p1/archive'
-);
-
--- 2/6 : DIR_IN_RNA
-INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
-    (directory_name, object_uri, credential_name, is_active, comments)
-VALUES (
-    'DIR_IN_RNA',
-    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
-    'OCI_CREDENTIAL', 1,
-    '/applis/08449-parna-p1/in'
-);
-
--- 3/6 : DIR_LOG_RNA
-INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
-    (directory_name, object_uri, credential_name, is_active, comments)
-VALUES (
-    'DIR_LOG_RNA',
-    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/logs/',
-    'OCI_CREDENTIAL', 1,
-    '/applis/logs/08449-parna-p1'
-);
-
--- 4/6 : DIR_OUT_RNA
-INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
-    (directory_name, object_uri, credential_name, is_active, comments)
-VALUES (
-    'DIR_OUT_RNA',
-    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/out/',
-    'OCI_CREDENTIAL', 1,
-    '/applis/08449-parna-p1/out'
-);
-
--- 5/6 : DIR_TEMP_RNA
-INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
-    (directory_name, object_uri, credential_name, is_active, comments)
-VALUES (
-    'DIR_TEMP_RNA',
-    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/temp/',
-    'OCI_CREDENTIAL', 1,
-    '/applis/08449-parna-p1/temp'
-);
-
--- 6/6 : IN_APPLI_DIR
-INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
-    (directory_name, object_uri, credential_name, is_active, comments)
-VALUES (
-    'IN_APPLI_DIR',
-    'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
-    'OCI_CREDENTIAL', 1,
-    '/applis/08449-parna-p1/in/'
-);
-
-COMMIT;
-PROMPT ✅ 6 mappings insérés
-
-PROMPT ============================================
-PROMPT ÉTAPE 3/5 : Création credential PLACEHOLDER
-PROMPT ============================================
-
--- Credential PLACEHOLDER (à mettre à jour avec les vraies valeurs OCI)
+DECLARE
+    v_step VARCHAR2(100);
+    v_count NUMBER;
 BEGIN
-    DBMS_CLOUD.CREATE_CREDENTIAL(
-        credential_name => 'OCI_CREDENTIAL',
-        username        => 'PLACEHOLDER_USER_OCID',
-        password        => 'PLACEHOLDER_PRIVATE_KEY'
+    -- ============================================
+    -- ÉTAPE 1/5 : Création table de mapping
+    -- ============================================
+    v_step := 'ÉTAPE 1/5 - Création table de mapping';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    -- Vérifier si la table existe déjà
+    SELECT COUNT(*) INTO v_count
+    FROM all_tables
+    WHERE owner = 'EXP_RNAPA' AND table_name = 'UTL_FILE_DIRECTORY_MAPPING';
+
+    IF v_count = 0 THEN
+        EXECUTE IMMEDIATE '
+            CREATE TABLE EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING (
+                directory_name   VARCHAR2(128) PRIMARY KEY,
+                object_uri       VARCHAR2(1000) NOT NULL,
+                credential_name  VARCHAR2(128) DEFAULT ''OCI_CREDENTIAL'',
+                is_active        NUMBER(1) DEFAULT 1,
+                created_date     DATE DEFAULT SYSDATE,
+                comments         VARCHAR2(500)
+            )';
+        DBMS_OUTPUT.PUT_LINE('✅ Table UTL_FILE_DIRECTORY_MAPPING créée');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('ℹ️ Table UTL_FILE_DIRECTORY_MAPPING existe déjà');
+    END IF;
+
+    -- ============================================
+    -- ÉTAPE 2/5 : Insertion des 6 mappings PARNA
+    -- ============================================
+    v_step := 'ÉTAPE 2/5 - Insertion des mappings';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    -- Nettoyer les anciens mappings si existants
+    DELETE FROM EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+    WHERE directory_name IN ('DIR_ARCH_RNA','DIR_IN_RNA','DIR_LOG_RNA','DIR_OUT_RNA','DIR_TEMP_RNA','IN_APPLI_DIR');
+
+    -- 1/6 : DIR_ARCH_RNA
+    INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+        (directory_name, object_uri, credential_name, is_active, comments)
+    VALUES (
+        'DIR_ARCH_RNA',
+        'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/archive/',
+        'OCI_CREDENTIAL', 1,
+        '/applis/08449-parna-p1/archive'
     );
-    DBMS_OUTPUT.PUT_LINE('✅ Credential OCI_CREDENTIAL créé (PLACEHOLDER)');
+    DBMS_OUTPUT.PUT_LINE('  + DIR_ARCH_RNA');
+
+    -- 2/6 : DIR_IN_RNA
+    INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+        (directory_name, object_uri, credential_name, is_active, comments)
+    VALUES (
+        'DIR_IN_RNA',
+        'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
+        'OCI_CREDENTIAL', 1,
+        '/applis/08449-parna-p1/in'
+    );
+    DBMS_OUTPUT.PUT_LINE('  + DIR_IN_RNA');
+
+    -- 3/6 : DIR_LOG_RNA
+    INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+        (directory_name, object_uri, credential_name, is_active, comments)
+    VALUES (
+        'DIR_LOG_RNA',
+        'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/logs/',
+        'OCI_CREDENTIAL', 1,
+        '/applis/logs/08449-parna-p1'
+    );
+    DBMS_OUTPUT.PUT_LINE('  + DIR_LOG_RNA');
+
+    -- 4/6 : DIR_OUT_RNA
+    INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+        (directory_name, object_uri, credential_name, is_active, comments)
+    VALUES (
+        'DIR_OUT_RNA',
+        'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/out/',
+        'OCI_CREDENTIAL', 1,
+        '/applis/08449-parna-p1/out'
+    );
+    DBMS_OUTPUT.PUT_LINE('  + DIR_OUT_RNA');
+
+    -- 5/6 : DIR_TEMP_RNA
+    INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+        (directory_name, object_uri, credential_name, is_active, comments)
+    VALUES (
+        'DIR_TEMP_RNA',
+        'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/temp/',
+        'OCI_CREDENTIAL', 1,
+        '/applis/08449-parna-p1/temp'
+    );
+    DBMS_OUTPUT.PUT_LINE('  + DIR_TEMP_RNA');
+
+    -- 6/6 : IN_APPLI_DIR
+    INSERT INTO EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING
+        (directory_name, object_uri, credential_name, is_active, comments)
+    VALUES (
+        'IN_APPLI_DIR',
+        'https://objectstorage.[REGION].oraclecloud.com/n/[NAMESPACE]/b/parna-exacc-files/o/in/',
+        'OCI_CREDENTIAL', 1,
+        '/applis/08449-parna-p1/in/'
+    );
+    DBMS_OUTPUT.PUT_LINE('  + IN_APPLI_DIR');
+    DBMS_OUTPUT.PUT_LINE('✅ 6 mappings insérés');
+
+    -- ============================================
+    -- ÉTAPE 3/5 : Création credential PLACEHOLDER
+    -- ============================================
+    v_step := 'ÉTAPE 3/5 - Création credential';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    BEGIN
+        DBMS_CLOUD.CREATE_CREDENTIAL(
+            credential_name => 'OCI_CREDENTIAL',
+            username        => 'PLACEHOLDER_USER_OCID',
+            password        => 'PLACEHOLDER_PRIVATE_KEY'
+        );
+        DBMS_OUTPUT.PUT_LINE('✅ Credential OCI_CREDENTIAL créé (PLACEHOLDER)');
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF SQLCODE = -20802 THEN
+                DBMS_OUTPUT.PUT_LINE('ℹ️ Credential OCI_CREDENTIAL existe déjà');
+            ELSE
+                RAISE;
+            END IF;
+    END;
+
+    -- COMMIT intermédiaire après les données
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('💾 Données committées avec succès');
+
 EXCEPTION
     WHEN OTHERS THEN
-        IF SQLCODE = -20802 THEN
-            DBMS_OUTPUT.PUT_LINE('ℹ️ Credential OCI_CREDENTIAL existe déjà');
-        ELSE
-            RAISE;
-        END IF;
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('');
+        DBMS_OUTPUT.PUT_LINE('❌ ERREUR lors de : ' || v_step);
+        DBMS_OUTPUT.PUT_LINE('❌ Message : ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('🔄 ROLLBACK effectué - Aucune modification appliquée');
+        RAISE;
 END;
 /
 
 PROMPT ============================================
-PROMPT ÉTAPE 4/5 : Création package UTL_FILE_WRAPPER
+PROMPT ▶ ÉTAPE 4/5 : Création package UTL_FILE_WRAPPER
 PROMPT ============================================
+
+-- Note: Les DDL (CREATE PACKAGE) font un COMMIT implicite
+-- En cas d'erreur, le package ne sera pas créé
 
 -- SPEC du package wrapper
 CREATE OR REPLACE PACKAGE EXP_RNAPA.UTL_FILE_WRAPPER AS
@@ -7681,24 +7733,51 @@ WHERE object_name = 'UTL_FILE_WRAPPER'
 ORDER BY object_type;
 
 PROMPT ============================================
-PROMPT ÉTAPE 5/5 : Attribution des droits à BANKREC
+PROMPT ▶ ÉTAPE 5/5 : Attribution des droits à BANKREC
 PROMPT ============================================
 
--- BANKREC pourra utiliser le wrapper via le synonyme PUBLIC
-GRANT SELECT ON EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING TO BANKREC;
-GRANT EXECUTE ON EXP_RNAPA.UTL_FILE_WRAPPER TO BANKREC;
+DECLARE
+    v_step VARCHAR2(100) := 'ÉTAPE 5/5 - Attribution des droits';
+BEGIN
+    -- BANKREC pourra utiliser le wrapper via le synonyme PUBLIC
+    EXECUTE IMMEDIATE 'GRANT SELECT ON EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING TO BANKREC';
+    DBMS_OUTPUT.PUT_LINE('  + GRANT SELECT sur UTL_FILE_DIRECTORY_MAPPING');
 
-PROMPT ✅ Droits accordés à BANKREC
+    EXECUTE IMMEDIATE 'GRANT EXECUTE ON EXP_RNAPA.UTL_FILE_WRAPPER TO BANKREC';
+    DBMS_OUTPUT.PUT_LINE('  + GRANT EXECUTE sur UTL_FILE_WRAPPER');
+
+    DBMS_OUTPUT.PUT_LINE('✅ Droits accordés à BANKREC');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('❌ ERREUR lors de : ' || v_step);
+        DBMS_OUTPUT.PUT_LINE('❌ Message : ' || SQLERRM);
+        RAISE;
+END;
+/
 
 -- Vérification des grants
+PROMPT
+PROMPT 📋 Vérification des droits accordés :
 SELECT grantee, table_name, privilege
 FROM user_tab_privs_made
 WHERE grantee = 'BANKREC'
 ORDER BY table_name;
 
+-- Vérification du statut des objets
+PROMPT
+PROMPT 📋 Vérification du statut des objets :
+SELECT object_name, object_type, status
+FROM all_objects
+WHERE owner = 'EXP_RNAPA'
+  AND object_name LIKE 'UTL_FILE%'
+ORDER BY object_type;
+
+PROMPT
 PROMPT ============================================
+PROMPT 🎉 DÉPLOIEMENT PRÉ-MIGRATION TERMINÉ
+PROMPT ============================================
+PROMPT
 PROMPT ⚠️ SYNONYME NON CRÉÉ (sera activé lors de la migration)
-PROMPT ============================================
 PROMPT
 PROMPT Pour activer le synonyme lors de la migration, exécuter :
 PROMPT   CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR EXP_RNAPA.UTL_FILE_WRAPPER;
@@ -7716,80 +7795,123 @@ PROMPT ============================================</code></pre>
 -- SCRIPT D'ACTIVATION - JOUR DE LA MIGRATION
 -- =============================================================================
 -- À exécuter le jour de la migration vers ExaCC
+-- ⚠️ GESTION DES TRANSACTIONS : ROLLBACK automatique en cas d'erreur
 -- =============================================================================
 
-SET SERVEROUTPUT ON
+SET SERVEROUTPUT ON SIZE UNLIMITED
 
 PROMPT ============================================
-PROMPT ÉTAPE 1 : Mise à jour des credentials OCI
+PROMPT 🚀 DÉBUT ACTIVATION MIGRATION
 PROMPT ============================================
 
--- Supprimer l'ancien credential placeholder
+DECLARE
+    v_step VARCHAR2(100);
+    v_synonym_exists NUMBER;
 BEGIN
-    DBMS_CLOUD.DROP_CREDENTIAL(credential_name => 'OCI_CREDENTIAL');
-    DBMS_OUTPUT.PUT_LINE('✅ Ancien credential supprimé');
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
+    -- ============================================
+    -- ÉTAPE 1 : Mise à jour des credentials OCI
+    -- ============================================
+    v_step := 'ÉTAPE 1 - Mise à jour credential OCI';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
 
--- Créer le vrai credential avec les infos OCI
--- ⚠️ REMPLACER PAR LES VRAIES VALEURS FOURNIES PAR L'ÉQUIPE OCI
-BEGIN
+    -- Supprimer l'ancien credential placeholder
+    BEGIN
+        DBMS_CLOUD.DROP_CREDENTIAL(credential_name => 'OCI_CREDENTIAL');
+        DBMS_OUTPUT.PUT_LINE('  - Ancien credential supprimé');
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('  - Pas d''ancien credential à supprimer');
+    END;
+
+    -- Créer le vrai credential avec les infos OCI
+    -- ⚠️ REMPLACER PAR LES VRAIES VALEURS FOURNIES PAR L'ÉQUIPE OCI
     DBMS_CLOUD.CREATE_CREDENTIAL(
         credential_name => 'OCI_CREDENTIAL',
         username        => 'ocid1.user.oc1..aaaa[VOTRE_USER_OCID]',
         password        => '[VOTRE_CLÉ_PRIVÉE_API_PEM]'
     );
     DBMS_OUTPUT.PUT_LINE('✅ Credential OCI créé avec succès');
-END;
-/
 
-PROMPT ============================================
-PROMPT ÉTAPE 2 : Activation du synonyme PUBLIC
-PROMPT ============================================
+    -- ============================================
+    -- ÉTAPE 2 : Activation du synonyme PUBLIC
+    -- ============================================
+    v_step := 'ÉTAPE 2 - Activation synonyme PUBLIC';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
 
--- Créer le synonyme PUBLIC (UNE SEULE LIGNE)
-CREATE OR REPLACE PUBLIC SYNONYM UTL_FILE FOR EXP_RNAPA.UTL_FILE_WRAPPER;
+    -- Vérifier si le synonyme existe déjà
+    SELECT COUNT(*) INTO v_synonym_exists
+    FROM all_synonyms
+    WHERE synonym_name = 'UTL_FILE' AND owner = 'PUBLIC';
 
-PROMPT ✅ Synonyme UTL_FILE → UTL_FILE_WRAPPER ACTIVÉ
+    IF v_synonym_exists > 0 THEN
+        EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM UTL_FILE';
+        DBMS_OUTPUT.PUT_LINE('  - Ancien synonyme supprimé');
+    END IF;
 
-PROMPT ============================================
-PROMPT ÉTAPE 3 : Recompilation des schémas impactés
-PROMPT ============================================
+    EXECUTE IMMEDIATE 'CREATE PUBLIC SYNONYM UTL_FILE FOR EXP_RNAPA.UTL_FILE_WRAPPER';
+    DBMS_OUTPUT.PUT_LINE('✅ Synonyme UTL_FILE → UTL_FILE_WRAPPER ACTIVÉ');
 
-BEGIN
-    DBMS_OUTPUT.PUT_LINE('Recompilation EXP_RNAPA...');
+    -- ============================================
+    -- ÉTAPE 3 : Recompilation des schémas impactés
+    -- ============================================
+    v_step := 'ÉTAPE 3 - Recompilation des schémas';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    DBMS_OUTPUT.PUT_LINE('  - Recompilation EXP_RNAPA...');
     DBMS_UTILITY.COMPILE_SCHEMA(schema => 'EXP_RNAPA', compile_all => FALSE);
 
-    DBMS_OUTPUT.PUT_LINE('Recompilation BANKREC...');
+    DBMS_OUTPUT.PUT_LINE('  - Recompilation BANKREC...');
     DBMS_UTILITY.COMPILE_SCHEMA(schema => 'BANKREC', compile_all => FALSE);
 
     DBMS_OUTPUT.PUT_LINE('✅ Recompilation terminée');
-END;
-/
 
-PROMPT ============================================
-PROMPT ÉTAPE 4 : Test rapide
-PROMPT ============================================
+    -- ============================================
+    -- ÉTAPE 4 : Test rapide
+    -- ============================================
+    v_step := 'ÉTAPE 4 - Test de validation';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
 
-DECLARE
-    v_file UTL_FILE.FILE_TYPE;
-    v_test VARCHAR2(100) := 'Test migration ExaCC - ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS');
-BEGIN
-    v_file := UTL_FILE.FOPEN('DIR_TEMP_RNA', 'test_migration.txt', 'W');
-    UTL_FILE.PUT_LINE(v_file, v_test);
-    UTL_FILE.FCLOSE(v_file);
-    UTL_FILE.FREMOVE('DIR_TEMP_RNA', 'test_migration.txt');
-    DBMS_OUTPUT.PUT_LINE('🎉 MIGRATION RÉUSSIE ! UTL_FILE utilise maintenant Object Storage OCI');
+    DECLARE
+        v_file UTL_FILE.FILE_TYPE;
+        v_test VARCHAR2(100) := 'Test migration ExaCC - ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS');
+    BEGIN
+        v_file := UTL_FILE.FOPEN('DIR_TEMP_RNA', 'test_migration.txt', 'W');
+        UTL_FILE.PUT_LINE(v_file, v_test);
+        UTL_FILE.FCLOSE(v_file);
+        UTL_FILE.FREMOVE('DIR_TEMP_RNA', 'test_migration.txt');
+        DBMS_OUTPUT.PUT_LINE('✅ Test réussi - Fichier créé et supprimé sur Object Storage');
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('⚠️ Test échoué: ' || SQLERRM);
+            DBMS_OUTPUT.PUT_LINE('   Vérifiez les credentials et les URIs');
+    END;
+
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('============================================');
+    DBMS_OUTPUT.PUT_LINE('🎉 MIGRATION RÉUSSIE !');
+    DBMS_OUTPUT.PUT_LINE('   UTL_FILE utilise maintenant Object Storage OCI');
+    DBMS_OUTPUT.PUT_LINE('============================================');
+
 EXCEPTION
     WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('❌ ERREUR: ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('');
+        DBMS_OUTPUT.PUT_LINE('❌ ERREUR CRITIQUE lors de : ' || v_step);
+        DBMS_OUTPUT.PUT_LINE('❌ Message : ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('');
+        DBMS_OUTPUT.PUT_LINE('🔄 Actions de rollback recommandées :');
+        DBMS_OUTPUT.PUT_LINE('   1. DROP PUBLIC SYNONYM UTL_FILE;');
+        DBMS_OUTPUT.PUT_LINE('   2. Recompiler les schémas');
+        DBMS_OUTPUT.PUT_LINE('');
+        RAISE;
 END;
 /
 
 PROMPT ============================================
-PROMPT ✅ MIGRATION TERMINÉE
+PROMPT ✅ ACTIVATION TERMINÉE
 PROMPT ============================================</code></pre>
         </div>
 
@@ -7802,18 +7924,97 @@ PROMPT ============================================</code></pre>
             <pre><code>-- =============================================================================
 -- ROLLBACK - Désactiver le synonyme (revenir à UTL_FILE standard)
 -- =============================================================================
+-- ⚠️ GESTION DES TRANSACTIONS : Opérations sécurisées avec vérifications
+-- =============================================================================
 
--- Supprimer le synonyme public
-DROP PUBLIC SYNONYM UTL_FILE;
+SET SERVEROUTPUT ON SIZE UNLIMITED
 
--- Recompiler les schémas
+PROMPT ============================================
+PROMPT 🔄 DÉBUT ROLLBACK MIGRATION
+PROMPT ============================================
+
+DECLARE
+    v_step VARCHAR2(100);
+    v_synonym_exists NUMBER;
+    v_invalid_count NUMBER;
 BEGIN
+    -- ============================================
+    -- ÉTAPE 1 : Vérification et suppression du synonyme
+    -- ============================================
+    v_step := 'ÉTAPE 1 - Suppression synonyme';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    -- Vérifier si le synonyme existe
+    SELECT COUNT(*) INTO v_synonym_exists
+    FROM all_synonyms
+    WHERE synonym_name = 'UTL_FILE' AND owner = 'PUBLIC';
+
+    IF v_synonym_exists > 0 THEN
+        EXECUTE IMMEDIATE 'DROP PUBLIC SYNONYM UTL_FILE';
+        DBMS_OUTPUT.PUT_LINE('✅ Synonyme PUBLIC UTL_FILE supprimé');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('ℹ️ Synonyme UTL_FILE n''existe pas (déjà supprimé)');
+    END IF;
+
+    -- ============================================
+    -- ÉTAPE 2 : Recompilation des schémas
+    -- ============================================
+    v_step := 'ÉTAPE 2 - Recompilation des schémas';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    DBMS_OUTPUT.PUT_LINE('  - Recompilation EXP_RNAPA...');
     DBMS_UTILITY.COMPILE_SCHEMA(schema => 'EXP_RNAPA', compile_all => FALSE);
+
+    DBMS_OUTPUT.PUT_LINE('  - Recompilation BANKREC...');
     DBMS_UTILITY.COMPILE_SCHEMA(schema => 'BANKREC', compile_all => FALSE);
+
+    DBMS_OUTPUT.PUT_LINE('✅ Recompilation terminée');
+
+    -- ============================================
+    -- ÉTAPE 3 : Vérification des objets invalides
+    -- ============================================
+    v_step := 'ÉTAPE 3 - Vérification objets invalides';
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('▶ ' || v_step);
+
+    SELECT COUNT(*) INTO v_invalid_count
+    FROM all_objects
+    WHERE owner IN ('EXP_RNAPA', 'BANKREC')
+      AND status = 'INVALID'
+      AND object_type IN ('PACKAGE', 'PACKAGE BODY', 'PROCEDURE', 'FUNCTION');
+
+    IF v_invalid_count > 0 THEN
+        DBMS_OUTPUT.PUT_LINE('⚠️ ' || v_invalid_count || ' objet(s) invalide(s) détecté(s)');
+        DBMS_OUTPUT.PUT_LINE('   Vérifiez avec : SELECT * FROM all_objects WHERE status = ''INVALID''');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('✅ Aucun objet invalide');
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('============================================');
+    DBMS_OUTPUT.PUT_LINE('✅ ROLLBACK TERMINÉ');
+    DBMS_OUTPUT.PUT_LINE('   UTL_FILE standard restauré');
+    DBMS_OUTPUT.PUT_LINE('============================================');
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('');
+        DBMS_OUTPUT.PUT_LINE('❌ ERREUR lors de : ' || v_step);
+        DBMS_OUTPUT.PUT_LINE('❌ Message : ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('');
+        DBMS_OUTPUT.PUT_LINE('🔧 Actions manuelles recommandées :');
+        DBMS_OUTPUT.PUT_LINE('   1. DROP PUBLIC SYNONYM UTL_FILE;');
+        DBMS_OUTPUT.PUT_LINE('   2. exec DBMS_UTILITY.COMPILE_SCHEMA(''EXP_RNAPA'', FALSE);');
+        DBMS_OUTPUT.PUT_LINE('   3. exec DBMS_UTILITY.COMPILE_SCHEMA(''BANKREC'', FALSE);');
+        RAISE;
 END;
 /
 
-PROMPT ✅ Synonyme supprimé - UTL_FILE standard restauré</code></pre>
+PROMPT ============================================
+PROMPT ✅ ROLLBACK COMPLET
+PROMPT ============================================</code></pre>
         </div>
 
         <div class="alert alert-success">
@@ -7823,6 +8024,10 @@ PROMPT ✅ Synonyme supprimé - UTL_FILE standard restauré</code></pre>
                 <strong>ARCHITECTURE :</strong><br>
                 📦 Schéma principal : <code>EXP_RNAPA</code> (table + wrapper)<br>
                 🔗 Schéma secondaire : <code>BANKREC</code> (accès via GRANT)<br><br>
+                <strong>🛡️ SÉCURITÉ :</strong><br>
+                🔄 Gestion des transactions avec <code>ROLLBACK</code> automatique en cas d'erreur<br>
+                📝 Logs détaillés de chaque étape<br>
+                ✓ Vérifications avant chaque opération<br><br>
                 <strong>MAINTENANT (5 étapes) :</strong><br>
                 ✅ 1. Créer table EXP_RNAPA.UTL_FILE_DIRECTORY_MAPPING<br>
                 ✅ 2. Insérer les 6 mappings<br>
