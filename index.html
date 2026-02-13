@@ -6170,30 +6170,46 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
 # ============================================
 # Exécuter depuis le répertoire applicatif PARNA
 # Usage: ./search_pkg_calls.ksh [chemin]  (défaut: répertoire courant)
+# Sortie: recherche_packages_YYYYMMDD_HHMMSS.txt
 
 SEARCH_PATH="${1:-.}"
+OUTPUT_FILE="recherche_packages_$(date +%Y%m%d_%H%M%S).txt"
 
-echo "============================================"
-echo "Recherche des appels aux packages UTL_FILE"
-echo "Chemin: $(cd "$SEARCH_PATH" && pwd)"
-echo "Date: $(date)"
-echo "============================================"
+# Fonction pour écrire dans le fichier ET afficher à l'écran
+log() {
+    echo "$1" | tee -a "$OUTPUT_FILE"
+}
+
+# Initialiser le fichier
+> "$OUTPUT_FILE"
+
+log "============================================"
+log "RECHERCHE DES APPELS AUX PACKAGES UTL_FILE"
+log "============================================"
+log "Chemin: $(cd "$SEARCH_PATH" && pwd)"
+log "Date: $(date)"
+log "============================================"
 
 # Liste des packages à rechercher
 PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
 
+TOTAL_FOUND=0
+
 for PKG in $PACKAGES; do
-    echo ""
-    echo "--- Recherche: $PKG ---"
+    log ""
+    log "--- Recherche: $PKG ---"
+    COUNT=0
     grep -r -l -i "$PKG" "$SEARCH_PATH" 2>/dev/null | grep -v "\.git" | while read file; do
-        echo "  [TROUVÉ] $file"
+        log "  [TROUVÉ] $file"
+        COUNT=$((COUNT + 1))
     done
 done
 
-echo ""
-echo "============================================"
-echo "Recherche terminée"
-echo "============================================"</code></pre>
+log ""
+log "============================================"
+log "RECHERCHE TERMINÉE"
+log "============================================"
+log "Rapport sauvegardé: $OUTPUT_FILE"</code></pre>
         </div>
 
         <h3>2. Script de recherche détaillée avec contexte</h3>
@@ -6208,25 +6224,54 @@ echo "============================================"</code></pre>
 # ============================================
 # Génère un rapport CSV avec fichier, ligne, contexte
 # Usage: ./search_pkg_detail.ksh [chemin]  (défaut: répertoire courant)
+# Sortie: rapport_packages_utlfile_YYYYMMDD_HHMMSS.csv
 
 SEARCH_PATH="${1:-.}"
-OUTPUT_FILE="rapport_packages_utlfile_$(date +%Y%m%d_%H%M%S).csv"
+OUTPUT_CSV="rapport_packages_utlfile_$(date +%Y%m%d_%H%M%S).csv"
+OUTPUT_LOG="rapport_packages_utlfile_$(date +%Y%m%d_%H%M%S).log"
 
-echo "Recherche dans: $(cd "$SEARCH_PATH" && pwd)"
-echo "Fichier;Package;Ligne;Contenu" > "$OUTPUT_FILE"
+echo "============================================"
+echo "RECHERCHE DÉTAILLÉE - PACKAGES UTL_FILE"
+echo "============================================"
+echo "Chemin: $(cd "$SEARCH_PATH" && pwd)"
+echo "Date: $(date)"
+echo "Fichier CSV: $OUTPUT_CSV"
+echo "Fichier LOG: $OUTPUT_LOG"
+echo "============================================"
+
+# En-tête CSV
+echo "Fichier;Package;Ligne;Contenu" > "$OUTPUT_CSV"
+
+# En-tête LOG
+echo "============================================" > "$OUTPUT_LOG"
+echo "RECHERCHE DÉTAILLÉE - PACKAGES UTL_FILE" >> "$OUTPUT_LOG"
+echo "Chemin: $(cd "$SEARCH_PATH" && pwd)" >> "$OUTPUT_LOG"
+echo "Date: $(date)" >> "$OUTPUT_LOG"
+echo "============================================" >> "$OUTPUT_LOG"
 
 PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
 
 for PKG in $PACKAGES; do
+    echo "" >> "$OUTPUT_LOG"
+    echo "--- $PKG ---" >> "$OUTPUT_LOG"
+    echo "Recherche: $PKG..."
+
     grep -r -n -i "$PKG" "$SEARCH_PATH" 2>/dev/null | grep -v "\.git" | while IFS=: read file line content; do
         # Nettoyer le contenu pour CSV
         clean_content=$(echo "$content" | sed 's/;/,/g' | sed 's/"//g' | tr -d '\r')
-        echo "$file;$PKG;$line;$clean_content" >> "$OUTPUT_FILE"
+        echo "$file;$PKG;$line;$clean_content" >> "$OUTPUT_CSV"
+        echo "  $file:$line" >> "$OUTPUT_LOG"
     done
 done
 
-echo "Rapport généré: $OUTPUT_FILE"
-echo "Nombre de lignes: $(wc -l < "$OUTPUT_FILE")"</code></pre>
+echo ""
+echo "============================================"
+echo "RECHERCHE TERMINÉE"
+echo "============================================"
+NB_LIGNES=$(($(wc -l < "$OUTPUT_CSV") - 1))
+echo "Occurrences trouvées: $NB_LIGNES"
+echo "Rapport CSV: $OUTPUT_CSV"
+echo "Rapport LOG: $OUTPUT_LOG"</code></pre>
         </div>
 
         <h3>3. Script pour identifier les jobs Control-M</h3>
@@ -6241,41 +6286,59 @@ echo "Nombre de lignes: $(wc -l < "$OUTPUT_FILE")"</code></pre>
 # ============================================
 # Recherche dans tous les fichiers à partir du répertoire courant
 # Usage: ./search_controlm.ksh [chemin]  (défaut: répertoire courant)
+# Sortie: jobs_controlm_YYYYMMDD_HHMMSS.txt + jobs_controlm_YYYYMMDD_HHMMSS.csv
 
 SEARCH_PATH="${1:-.}"
-OUTPUT_FILE="jobs_controlm_impactes_$(date +%Y%m%d).txt"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+OUTPUT_TXT="jobs_controlm_${TIMESTAMP}.txt"
+OUTPUT_CSV="jobs_controlm_${TIMESTAMP}.csv"
 
-echo "============================================" > "$OUTPUT_FILE"
-echo "JOBS CONTROL-M IMPACTÉS PAR MIGRATION UTL_FILE" >> "$OUTPUT_FILE"
-echo "Répertoire: $(cd "$SEARCH_PATH" && pwd)" >> "$OUTPUT_FILE"
-echo "Date: $(date)" >> "$OUTPUT_FILE"
-echo "============================================" >> "$OUTPUT_FILE"
+# Fonction pour écrire dans le fichier ET afficher à l'écran
+log() {
+    echo "$1" | tee -a "$OUTPUT_TXT"
+}
+
+# Initialiser les fichiers
+> "$OUTPUT_TXT"
+echo "Package;Job;Fichier" > "$OUTPUT_CSV"
+
+log "============================================"
+log "JOBS CONTROL-M IMPACTÉS - MIGRATION UTL_FILE"
+log "============================================"
+log "Répertoire: $(cd "$SEARCH_PATH" && pwd)"
+log "Date: $(date)"
+log "============================================"
 
 PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
 
-echo "" >> "$OUTPUT_FILE"
-echo "=== Fichiers trouvés ===" >> "$OUTPUT_FILE"
+log ""
+log "=== Fichiers trouvés ==="
+
+TOTAL_JOBS=0
 
 for PKG in $PACKAGES; do
     FOUND=$(grep -r -l -i "$PKG" "$SEARCH_PATH" 2>/dev/null | grep -v "\.git")
     if [ -n "$FOUND" ]; then
-        echo "" >> "$OUTPUT_FILE"
-        echo "Package: $PKG" >> "$OUTPUT_FILE"
+        log ""
+        log "Package: $PKG"
         echo "$FOUND" | while read f; do
             # Extraire le nom du job (généralement le nom du fichier)
             JOB_NAME=$(basename "$f" | sed 's/\.[^.]*$//')
-            echo "  - Job: $JOB_NAME ($f)" >> "$OUTPUT_FILE"
+            log "  - Job: $JOB_NAME ($f)"
+            echo "$PKG;$JOB_NAME;$f" >> "$OUTPUT_CSV"
+            TOTAL_JOBS=$((TOTAL_JOBS + 1))
         done
     fi
 done
 
-echo "" >> "$OUTPUT_FILE"
-echo "============================================" >> "$OUTPUT_FILE"
-echo "FIN DU RAPPORT" >> "$OUTPUT_FILE"
-
-cat "$OUTPUT_FILE"
-echo ""
-echo "Rapport sauvegardé: $OUTPUT_FILE"</code></pre>
+log ""
+log "============================================"
+log "FIN DU RAPPORT"
+log "============================================"
+NB_JOBS=$(($(wc -l < "$OUTPUT_CSV") - 1))
+log "Jobs identifiés: $NB_JOBS"
+log "Rapport TXT: $OUTPUT_TXT"
+log "Rapport CSV: $OUTPUT_CSV"</code></pre>
         </div>
 
         <h3>4. Résumé des scripts à tester (à compléter)</h3>
