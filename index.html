@@ -6134,6 +6134,182 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
         </div>
     </section>
 
+    <!-- SCRIPTS SERVEUR APPLI -->
+    <section>
+        <h2>📜 Scripts Serveur Appli - Recherche des appelants</h2>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">🎯</span>
+            <div>
+                <strong>Objectif :</strong> Identifier tous les scripts KSH/SQL sur le serveur applicatif qui appellent les packages UTL_FILE.<br>
+                Ces scripts seront à tester après la migration vers ExaCC.
+            </div>
+        </div>
+
+        <h3>Packages à rechercher</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+            <span style="background: #1565c0; color: white; padding: 5px 12px; border-radius: 15px;">PKG_TEC_FICHIERS</span>
+            <span style="background: #1565c0; color: white; padding: 5px 12px; border-radius: 15px;">PKG_DTC</span>
+            <span style="background: #1565c0; color: white; padding: 5px 12px; border-radius: 15px;">PKG_LOG</span>
+            <span style="background: #1565c0; color: white; padding: 5px 12px; border-radius: 15px;">PKG_RNADEXTBAATCP01</span>
+            <span style="background: #1565c0; color: white; padding: 5px 12px; border-radius: 15px;">PKG_RNADEXTAUTO01</span>
+            <span style="background: #1565c0; color: white; padding: 5px 12px; border-radius: 15px;">PKG_RNADEXTBAATGS01</span>
+            <span style="background: #6a1b9a; color: white; padding: 5px 12px; border-radius: 15px;">PKG_BR_PURGE</span>
+            <span style="background: #6a1b9a; color: white; padding: 5px 12px; border-radius: 15px;">PKG_BR_RECONCILIATION_SIGNOFF</span>
+        </div>
+
+        <h3>1. Script de recherche rapide</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>KSH - Recherche rapide dans les scripts (à exécuter sur le serveur appli)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>#!/bin/ksh
+# ============================================
+# RECHERCHE DES SCRIPTS APPELANT LES PACKAGES UTL_FILE
+# ============================================
+# Exécuter sur le serveur applicatif PARNA
+# Usage: ./search_pkg_calls.ksh /chemin/scripts
+
+SEARCH_PATH="${1:-/applis/08449-parna-p1}"
+
+echo "============================================"
+echo "Recherche des appels aux packages UTL_FILE"
+echo "Chemin: $SEARCH_PATH"
+echo "Date: $(date)"
+echo "============================================"
+
+# Liste des packages à rechercher
+PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
+
+for PKG in $PACKAGES; do
+    echo ""
+    echo "--- Recherche: $PKG ---"
+    grep -r -l -i "$PKG" "$SEARCH_PATH" --include="*.ksh" --include="*.sh" --include="*.sql" 2>/dev/null | while read file; do
+        echo "  [TROUVÉ] $file"
+    done
+done
+
+echo ""
+echo "============================================"
+echo "Recherche terminée"
+echo "============================================"</code></pre>
+        </div>
+
+        <h3>2. Script de recherche détaillée avec contexte</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>KSH - Recherche détaillée avec numéros de ligne</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>#!/bin/ksh
+# ============================================
+# RECHERCHE DÉTAILLÉE DES APPELS AUX PACKAGES
+# ============================================
+# Génère un rapport CSV avec fichier, ligne, contexte
+
+SEARCH_PATH="${1:-/applis/08449-parna-p1}"
+OUTPUT_FILE="rapport_packages_utlfile_$(date +%Y%m%d_%H%M%S).csv"
+
+echo "Fichier;Package;Ligne;Contenu" > "$OUTPUT_FILE"
+
+PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
+
+for PKG in $PACKAGES; do
+    grep -r -n -i "$PKG" "$SEARCH_PATH" --include="*.ksh" --include="*.sh" --include="*.sql" 2>/dev/null | while IFS=: read file line content; do
+        # Nettoyer le contenu pour CSV
+        clean_content=$(echo "$content" | sed 's/;/,/g' | sed 's/"//g' | tr -d '\r')
+        echo "$file;$PKG;$line;$clean_content" >> "$OUTPUT_FILE"
+    done
+done
+
+echo "Rapport généré: $OUTPUT_FILE"
+echo "Nombre de lignes: $(wc -l < "$OUTPUT_FILE")"</code></pre>
+        </div>
+
+        <h3>3. Script pour identifier les jobs Control-M</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>KSH - Identifier les jobs Control-M impactés</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre><code>#!/bin/ksh
+# ============================================
+# IDENTIFICATION DES JOBS CONTROL-M IMPACTÉS
+# ============================================
+# Recherche dans les répertoires Control-M standards
+
+CONTROLM_PATHS="/applis/08449-parna-p1/scripts /applis/08449-parna-p1/batch /applis/08449-parna-p1/ctm"
+OUTPUT_FILE="jobs_controlm_impactes_$(date +%Y%m%d).txt"
+
+echo "============================================" > "$OUTPUT_FILE"
+echo "JOBS CONTROL-M IMPACTÉS PAR MIGRATION UTL_FILE" >> "$OUTPUT_FILE"
+echo "Date: $(date)" >> "$OUTPUT_FILE"
+echo "============================================" >> "$OUTPUT_FILE"
+
+PACKAGES="PKG_TEC_FICHIERS PKG_DTC PKG_LOG PKG_RNADEXTBAATCP01 PKG_RNADEXTAUTO01 PKG_RNADEXTBAATGS01 PKG_BR_PURGE PKG_BR_RECONCILIATION_SIGNOFF"
+
+for PATH_CTM in $CONTROLM_PATHS; do
+    if [ -d "$PATH_CTM" ]; then
+        echo "" >> "$OUTPUT_FILE"
+        echo "=== Répertoire: $PATH_CTM ===" >> "$OUTPUT_FILE"
+
+        for PKG in $PACKAGES; do
+            FOUND=$(grep -r -l -i "$PKG" "$PATH_CTM" --include="*.ksh" --include="*.sh" --include="*.sql" 2>/dev/null)
+            if [ -n "$FOUND" ]; then
+                echo "" >> "$OUTPUT_FILE"
+                echo "Package: $PKG" >> "$OUTPUT_FILE"
+                echo "$FOUND" | while read f; do
+                    # Extraire le nom du job (généralement le nom du fichier)
+                    JOB_NAME=$(basename "$f" | sed 's/\.[^.]*$//')
+                    echo "  - Job: $JOB_NAME ($f)" >> "$OUTPUT_FILE"
+                done
+            fi
+        done
+    fi
+done
+
+echo "" >> "$OUTPUT_FILE"
+echo "============================================" >> "$OUTPUT_FILE"
+echo "FIN DU RAPPORT" >> "$OUTPUT_FILE"
+
+cat "$OUTPUT_FILE"
+echo ""
+echo "Rapport sauvegardé: $OUTPUT_FILE"</code></pre>
+        </div>
+
+        <h3>4. Résumé des scripts à tester (à compléter)</h3>
+        <div class="alert alert-info">
+            <span class="alert-icon">📝</span>
+            <div>
+                <strong>Instructions :</strong><br>
+                1. Exécuter le script de recherche sur le serveur applicatif<br>
+                2. Récupérer le rapport CSV généré<br>
+                3. Lister les jobs Control-M impactés<br>
+                4. Créer un plan de test post-migration
+            </div>
+        </div>
+
+        <table id="scripts-impactes">
+            <thead>
+                <tr>
+                    <th>Script / Job</th>
+                    <th>Package appelé</th>
+                    <th>Type</th>
+                    <th>Statut test</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #888; padding: 20px;">
+                        <em>Exécutez les scripts ci-dessus pour identifier les jobs impactés.<br>
+                        Les résultats seront ajoutés ici après analyse.</em>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
     <!-- AUDIT DB LINKS -->
     <section>
         <h2>🔗 Audit des DB Links PARNA</h2>
