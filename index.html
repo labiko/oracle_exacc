@@ -893,6 +893,7 @@
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
         <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts</a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
+        <li><a href="#dtc670" onclick="showTab('dtc670', this)">⚡ Optimisation DTC670-DTC671</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
         <li><a href="#captures" onclick="showTab('captures', this)">📷 Captures</a></li>
         -->
@@ -8068,6 +8069,461 @@ PROMPT ============================================</code></pre>
 
 </div>
 <!-- ==================== FIN ONGLET REMEDIATION ==================== -->
+
+<!-- ==================== ONGLET OPTIMISATION DTC670-DTC671 ==================== -->
+<div id="dtc670" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; margin-top: 20px;">
+        <h2>⚡ Optimisation SQL DTC670/DTC671 - PKG_RNADEXTAUTO01</h2>
+        <p style="margin: 15px 0;"><strong>SQL_ID : 4v9ag77cam8uu</strong> - Batch DTC 670/671 (BAATGS)</p>
+        <p style="color: #2e7d32;"><strong>Date : 20/02/2026</strong></p>
+    </section>
+
+    <!-- RESUME EXECUTIF -->
+    <section>
+        <h2>📊 Resume Executif</h2>
+        <table>
+            <tr style="background: #e3f2fd;">
+                <th>Metrique</th>
+                <th>Avant (Original)</th>
+                <th>Apres (Optimise CTE)</th>
+                <th>Gain</th>
+            </tr>
+            <tr>
+                <td><strong>Calcul DC_MAX</strong></td>
+                <td style="color: #c62828;">2x par ligne (sous-requete correlee)</td>
+                <td style="color: #2e7d32;">1x au total (CTE pre-calcule)</td>
+                <td style="background: #c8e6c9; color: #1b5e20; font-weight: bold;">~70%</td>
+            </tr>
+            <tr>
+                <td><strong>Hierarchie comptes</strong></td>
+                <td style="color: #c62828;">Sous-requetes repetees par ligne</td>
+                <td style="color: #2e7d32;">CTE factorise</td>
+                <td style="background: #c8e6c9; color: #1b5e20; font-weight: bold;">~15%</td>
+            </tr>
+            <tr>
+                <td><strong>Type UNION</strong></td>
+                <td style="color: #c62828;">UNION (tri + dedoublonnage)</td>
+                <td style="color: #2e7d32;">UNION ALL (pas de tri)</td>
+                <td style="background: #c8e6c9; color: #1b5e20; font-weight: bold;">~10%</td>
+            </tr>
+            <tr>
+                <td><strong>Hints Optimizer</strong></td>
+                <td style="color: #c62828;">optimizer_features_enable('10.2.0.4')</td>
+                <td style="color: #2e7d32;">LEADING + USE_HASH + MATERIALIZE</td>
+                <td style="background: #c8e6c9; color: #1b5e20; font-weight: bold;">~5%</td>
+            </tr>
+            <tr style="background: #1b5e20; color: white;">
+                <td colspan="3"><strong>GAIN TOTAL ESTIME</strong></td>
+                <td style="font-size: 1.2em;"><strong>80-90%</strong></td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- FICHIERS DISPONIBLES -->
+    <section>
+        <h2>📁 Fichiers de Deploiement</h2>
+        <table>
+            <tr style="background: #e3f2fd;">
+                <th>Fichier</th>
+                <th>Description</th>
+                <th>Gain</th>
+                <th>Statut</th>
+            </tr>
+            <tr>
+                <td><code>PKG_RNADEXTAUTO01_ORIGINAL.sql</code></td>
+                <td>Backup du package original (production)</td>
+                <td>-</td>
+                <td><span style="background: #e0e0e0; padding: 3px 8px; border-radius: 4px;">Backup</span></td>
+            </tr>
+            <tr>
+                <td><code>PKG_RNADEXTAUTO01_DEPLOY.sql</code></td>
+                <td>Optimisation minimale (hints + UNION ALL)</td>
+                <td style="color: #ff9800; font-weight: bold;">40-60%</td>
+                <td><span style="background: #fff3e0; color: #e65100; padding: 3px 8px; border-radius: 4px;">Option 1</span></td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td><strong><code>PKG_RNADEXTAUTO01_DEPLOY_FULL.sql</code></strong></td>
+                <td><strong>Optimisation COMPLETE avec CTE</strong></td>
+                <td style="color: #2e7d32; font-weight: bold;">80-90%</td>
+                <td><span style="background: #c8e6c9; color: #1b5e20; padding: 3px 8px; border-radius: 4px; font-weight: bold;">RECOMMANDE</span></td>
+            </tr>
+            <tr>
+                <td><code>VERIFICATION_DTC670_FULL_OPTIM.sql</code></td>
+                <td>Script de verification (compare ORIGINAL vs OPTIMISE)</td>
+                <td>-</td>
+                <td><span style="background: #e3f2fd; color: #1565c0; padding: 3px 8px; border-radius: 4px;">Test</span></td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td><strong><code>DTC670_CTE_STANDALONE.sql</code></strong></td>
+                <td><strong>Requete CTE seule (SELECT uniquement)</strong></td>
+                <td style="color: #2e7d32; font-weight: bold;">80-90%</td>
+                <td><span style="background: #c8e6c9; color: #1b5e20; padding: 3px 8px; border-radius: 4px;">STANDALONE</span></td>
+            </tr>
+            <tr style="background: #fff3e0; border: 2px solid #ff9800;">
+                <td><strong><code>DTC670_EXTRACTION_COMPLETE.sql</code></strong></td>
+                <td><strong>EXTRACTION COMPLETE (INSERT + NETTING + EXPORT CSV)</strong><br>
+                <span style="font-size: 0.85em; color: #e65100;">Equivalent exact du package F_Extraire_BAATGS + F_Generation_BAATGS</span></td>
+                <td style="color: #e65100; font-weight: bold;">80-90%</td>
+                <td><span style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold;">PRODUCTION</span></td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- PROBLEME ORIGINAL -->
+    <section>
+        <h2>🔴 Probleme Identifie</h2>
+        <p style="margin: 15px 0;">Le curseur <code>Curseur_Attendus_DC_Max</code> (lignes 471-629) calcule <strong>DC_MAX 2 fois par ligne</strong> via une sous-requete correlee :</p>
+        <pre style="background: #ffebee; padding: 15px; border-radius: 8px; overflow-x: auto; border-left: 4px solid #c62828;">
+-- PROBLEME : Cette sous-requete est executee pour CHAQUE ligne
+-- Une fois dans le SELECT :
+(SELECT MAX(E.TRANSACTION_DATE)
+ FROM BRR_TRANSACTIONS E
+ WHERE E.RECONCILIATION_REFERENCE = BRR_TRANSACTIONS.RECONCILIATION_REFERENCE
+   AND E.ACCOUNT_ID = BRR_TRANSACTIONS.ACCOUNT_ID) as DC_MAX
+
+-- Et une fois dans le WHERE :
+AND (SELECT MAX(E.TRANSACTION_DATE)
+     FROM BRR_TRANSACTIONS E
+     WHERE E.RECONCILIATION_REFERENCE = BRR_TRANSACTIONS.RECONCILIATION_REFERENCE
+       AND E.ACCOUNT_ID = BRR_TRANSACTIONS.ACCOUNT_ID) >= TO_DATE(s_DateArrete, 'DD/MM/RRRR')
+
+-- IMPACT : Millions d'executions de la meme sous-requete !
+-- CAUSE : Erreur ORA-01555 "Snapshot too old"</pre>
+    </section>
+
+    <!-- SOLUTION CTE -->
+    <section>
+        <h2>🟢 Solution : CTE (Common Table Expression)</h2>
+        <p style="margin: 15px 0;">Calcul de DC_MAX <strong>UNE SEULE FOIS</strong> dans un CTE, puis jointure :</p>
+        <pre style="background: #e8f5e9; padding: 15px; border-radius: 8px; overflow-x: auto; border-left: 4px solid #2e7d32;">
+CURSOR Curseur_Attendus_DC_Max IS
+WITH
+-- CTE 1 : Pre-calcul DC_MAX (UNE SEULE FOIS pour toutes les transactions)
+dc_max_calc AS (
+    SELECT /*+ MATERIALIZE */
+        RECONCILIATION_REFERENCE,
+        ACCOUNT_ID,
+        MAX(TRANSACTION_DATE) AS DC_MAX
+    FROM BRR_TRANSACTIONS
+    WHERE RECONCILIATION_REFERENCE IS NOT NULL
+    GROUP BY RECONCILIATION_REFERENCE, ACCOUNT_ID
+),
+-- CTE 2 : Hierarchie des comptes (evite sous-requetes repetees)
+compte_hierarchie AS (
+    SELECT /*+ MATERIALIZE */
+        H.ACCOUNT_ID,
+        B2.ACCT_NUM AS SERVICE,
+        RPAD(B3.ACCT_NUM, LENGTH(B3.ACCT_NUM)-2) AS TYPE_RAPRO_CODE,
+        DECODE(RPAD(B3.ACCT_NUM, LENGTH(B3.ACCT_NUM)-2),
+            'RB', 'Rapprochement Bancaire',
+            'RC', 'Rapprochement de Controle',
+            'JC', 'Justification de compte',
+            'CL', 'Compte de liaison') AS TYPE_RAPRO
+    FROM BRR_ACCOUNT_HIERARCHIES H
+    JOIN BS_ACCTS B2 ON B2.ACCT_ID = H.LEVEL_02_ACCOUNT_ID
+    JOIN BS_ACCTS B3 ON B3.ACCT_ID = H.LEVEL_03_ACCOUNT_ID
+)
+-- Requete OUTSTANDING
+SELECT /*+ LEADING(T A CH CM) USE_HASH(A CH CM) */ DISTINCT ...
+FROM BRR_TRANSACTIONS T
+JOIN compte_hierarchie CH ON CH.ACCOUNT_ID = T.ACCOUNT_ID
+WHERE T.STATE = 'OUTSTANDING'
+
+UNION ALL  -- Pas de UNION car OUTSTANDING/RECONCILED sont mutuellement exclusifs
+
+-- Requete RECONCILED avec DC_MAX pre-calcule
+SELECT /*+ LEADING(T A CH CM DCM) USE_HASH(A CH CM DCM) */ DISTINCT ...
+FROM BRR_TRANSACTIONS T
+JOIN compte_hierarchie CH ON CH.ACCOUNT_ID = T.ACCOUNT_ID
+JOIN dc_max_calc DCM ON DCM.RECONCILIATION_REFERENCE = T.RECONCILIATION_REFERENCE
+                     AND DCM.ACCOUNT_ID = T.ACCOUNT_ID
+WHERE T.STATE = 'RECONCILED'
+  AND DCM.DC_MAX >= TO_DATE(s_DateArrete, 'DD/MM/RRRR')  -- Filtre sur DC_MAX pre-calcule</pre>
+    </section>
+
+    <!-- PROCEDURE VERIFICATION -->
+    <section>
+        <h2>✅ Procedure de Verification (Avant Deploiement)</h2>
+        <p style="margin: 15px 0;">Executer le script de verification pour confirmer <strong>AUCUNE REGRESSION</strong> :</p>
+        <pre style="background: #fff3e0; padding: 15px; border-radius: 8px; overflow-x: auto; border-left: 4px solid #ff9800;">
+-- Connexion a la base
+sqlplus RNAPPL/****@P08449A
+
+-- Lancer la verification
+@VERIFICATION_DTC670_FULL_OPTIM.sql
+
+-- RESULTATS ATTENDUS :
+-- ============================================================
+-- [1/5] Comptage ORIGINAL :          VERSION    NB_LIGNES
+--                                    ORIGINAL   XXXXX
+-- [2/5] Comptage OPTIMISE CTE :      VERSION       NB_LIGNES
+--                                    OPTIMISE_CTE  XXXXX   &lt;-- MEME NOMBRE !
+-- [3/5] IDs dans ORIGINAL seulement : (aucune ligne = OK)
+-- [4/5] IDs dans OPTIMISE seulement : (aucune ligne = OK)
+-- [5/5] RESUME : Si tout OK => DEPLOIEMENT AUTORISE</pre>
+
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #4caf50;">
+            <strong style="color: #2e7d32;">Criteres de validation :</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                <li>Etape 1 et 2 : <strong>MEME nombre de lignes</strong></li>
+                <li>Etape 3 : <strong>AUCUNE ligne</strong> (pas d'ID manquant dans OPTIMISE)</li>
+                <li>Etape 4 : <strong>AUCUNE ligne</strong> (pas d'ID en trop dans OPTIMISE)</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- PROCEDURE DEPLOIEMENT -->
+    <section>
+        <h2>🚀 Procedure de Deploiement</h2>
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #1976d2;">
+            <strong style="color: #1565c0;">Etapes de deploiement :</strong>
+            <ol style="margin: 10px 0 0 20px;">
+                <li>Sauvegarder le package actuel : <code>PKG_RNADEXTAUTO01_ORIGINAL.sql</code></li>
+                <li>Lancer <code>VERIFICATION_DTC670_FULL_OPTIM.sql</code> et valider les resultats</li>
+                <li>Deployer le nouveau package : <code>@PKG_RNADEXTAUTO01_DEPLOY_FULL.sql</code></li>
+                <li>Recompiler : <code>ALTER PACKAGE PKG_RNADEXTAUTO01 COMPILE;</code></li>
+                <li>Verifier : <code>SELECT status FROM user_objects WHERE object_name = 'PKG_RNADEXTAUTO01';</code></li>
+            </ol>
+        </div>
+
+        <pre style="background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto;">
+-- Deploiement du package optimise
+sqlplus RNAPPL/****@P08449A
+
+-- Option FULL (recommande) - Gain 80-90%
+@PKG_RNADEXTAUTO01_DEPLOY_FULL.sql
+
+-- Verification compilation
+SELECT object_name, object_type, status
+FROM user_objects
+WHERE object_name = 'PKG_RNADEXTAUTO01';
+
+-- Resultat attendu : STATUS = VALID</pre>
+    </section>
+
+    <!-- INDEX RECOMMANDES -->
+    <section>
+        <h2>📈 Index Recommandes (Optionnel)</h2>
+        <p style="margin: 15px 0;">Index crees sur BANKREC.BR_DATA pour ameliorer les performances :</p>
+        <pre style="background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto;">
+-- Index sur BRR_TRANSACTIONS (deja crees le 20/02/2026)
+CREATE INDEX IDX_BRR_TRANS_STATE_DATE ON BANKREC.BR_DATA(STATE, TRANS_DATE);
+CREATE INDEX IDX_BRR_TRANS_ACCT_STATE ON BANKREC.BR_DATA(ACCT_ID, STATE);
+CREATE INDEX IDX_BRR_TRANS_REC_REF ON BANKREC.BR_DATA(REC_GROUP, ACCT_ID, TRANS_DATE);
+
+-- Mise a jour des statistiques
+EXEC DBMS_STATS.GATHER_TABLE_STATS('BANKREC', 'BR_DATA', CASCADE => TRUE);</pre>
+    </section>
+
+    <!-- HISTORIQUE VERSIONS -->
+    <section>
+        <h2>📋 Historique des Versions (Package)</h2>
+        <table>
+            <tr style="background: #e3f2fd;">
+                <th>Version</th>
+                <th>Date</th>
+                <th>Auteur</th>
+                <th>Modification</th>
+            </tr>
+            <tr>
+                <td>1.0</td>
+                <td>24/05/2007</td>
+                <td>MMA</td>
+                <td>Creation</td>
+            </tr>
+            <tr>
+                <td>1.2</td>
+                <td>30/10/2007</td>
+                <td>MMA</td>
+                <td>Ajout colonne DC_MAX</td>
+            </tr>
+            <tr>
+                <td>1.3</td>
+                <td>30/10/2007</td>
+                <td>MMA</td>
+                <td>Nouveau curseur Curseur_Attendus_DC_Max</td>
+            </tr>
+            <tr>
+                <td>1.7</td>
+                <td>10/02/2014</td>
+                <td>RPZ</td>
+                <td>Type rapprochement RB/RC uniquement</td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td><strong>1.8</strong></td>
+                <td><strong>20/02/2026</strong></td>
+                <td><strong>JOB</strong></td>
+                <td><strong>OPTIMISATION DTC670 - CTE dc_max_calc + compte_hierarchie</strong></td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- ROLLBACK -->
+    <section>
+        <h2>⏪ Procedure de Rollback</h2>
+        <div style="background: #ffebee; padding: 15px; border-radius: 8px; border-left: 4px solid #c62828;">
+            <strong style="color: #c62828;">En cas de probleme :</strong>
+            <pre style="background: transparent; padding: 10px 0; margin: 10px 0 0 0;">
+-- Restaurer le package original
+sqlplus RNAPPL/****@P08449A
+@PKG_RNADEXTAUTO01_ORIGINAL.sql
+
+-- Recompiler
+ALTER PACKAGE PKG_RNADEXTAUTO01 COMPILE;
+
+-- Verifier
+SELECT object_name, status FROM user_objects
+WHERE object_name = 'PKG_RNADEXTAUTO01';</pre>
+        </div>
+    </section>
+
+    <!-- FICHIERS BNNP_SQL -->
+    <section>
+        <h2>📂 Emplacement des Fichiers</h2>
+        <p style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-family: monospace;">
+            <strong>Dossier :</strong> BNNP_SQL/<br><br>
+            - <a href="BNNP_SQL/PKG_RNADEXTAUTO01_ORIGINAL.sql" style="color: #1565c0;">PKG_RNADEXTAUTO01_ORIGINAL.sql</a> (Backup)<br>
+            - <a href="BNNP_SQL/PKG_RNADEXTAUTO01_DEPLOY.sql" style="color: #1565c0;">PKG_RNADEXTAUTO01_DEPLOY.sql</a> (Option 1 - Minimale)<br>
+            - <a href="BNNP_SQL/PKG_RNADEXTAUTO01_DEPLOY_FULL.sql" style="color: #1565c0;">PKG_RNADEXTAUTO01_DEPLOY_FULL.sql</a> (Option 2 - RECOMMANDE)<br>
+            - <a href="BNNP_SQL/PKG_RNADEXTAUTO01_DEPLOY_FULL_OPTIM.sql" style="color: #1565c0;">PKG_RNADEXTAUTO01_DEPLOY_FULL_OPTIM.sql</a> (Curseur CTE seul)<br>
+            - <a href="BNNP_SQL/VERIFICATION_DTC670_FULL_OPTIM.sql" style="color: #1565c0;">VERIFICATION_DTC670_FULL_OPTIM.sql</a> (Test non-regression)<br>
+            - <a href="BNNP_SQL/DTC670_4v9ag77cam8uu_OPTIMISE.sql" style="color: #1565c0;">DTC670_4v9ag77cam8uu_OPTIMISE.sql</a> (Requete minimale + index)<br>
+            - <a href="BNNP_SQL/DTC670_CTE_STANDALONE.sql" style="color: #2e7d32;">DTC670_CTE_STANDALONE.sql</a> (Requete CTE seule)<br>
+            - <a href="BNNP_SQL/DTC670_4v9ag77cam8uu_EXTRACTION_SOURCE.sql" style="color: #e65100;">DTC670_4v9ag77cam8uu_EXTRACTION_SOURCE.sql</a> (EXTRACTION SOURCE - Comparaison)<br>
+            - <a href="BNNP_SQL/DTC670_4v9ag77cam8uu_EXTRACTION_COMPLETE.sql" style="color: #ff9800; font-weight: bold; font-size: 1.1em;">DTC670_4v9ag77cam8uu_EXTRACTION_COMPLETE.sql</a> (EXTRACTION OPTIMISE - PRODUCTION)<br>
+            - <a href="BNNP_SQL/DTC671_7prpuy907rpz2.sql" style="color: #9c27b0;">DTC671_7prpuy907rpz2.sql</a> (Requete DTC671 brute)
+        </p>
+    </section>
+
+    <!-- COMPARAISON DTC670 vs DTC671 -->
+    <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; margin-top: 20px;">
+        <h2>🔍 Comparaison DTC670 vs DTC671</h2>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <tr style="background: #ff9800; color: white;">
+                <th style="padding: 12px; text-align: left;">SQL_ID</th>
+                <th style="padding: 12px; text-align: left;">Batch</th>
+                <th style="padding: 12px; text-align: left;">:B1 (DATE_ARRETE)</th>
+                <th style="padding: 12px; text-align: left;">:B2 (TYPE_RAPRO)</th>
+            </tr>
+            <tr style="background: #fff8e1;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><code>4v9ag77cam8uu</code></td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>DTC670</strong></td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">19/02/2026</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">RB</td>
+            </tr>
+            <tr style="background: #ffffff;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><code>7prpuy907rpz2</code></td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>DTC671</strong></td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">28/02/2026</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">RB</td>
+            </tr>
+        </table>
+
+        <div style="background: #4caf50; color: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <h3 style="margin: 0 0 10px 0;">✅ Conclusion</h3>
+            <p style="margin: 0; font-size: 1.1em;">
+                <strong>DTC670 = DTC671 fonctionnellement.</strong><br>
+                Ce sont des executions differentes du <strong>meme curseur</strong> (<code>Curseur_Attendus_DC_Max</code>)
+                avec des parametres differents, mais le package a ete compile avec des espaces legerement differents a un moment donne.
+            </p>
+        </div>
+
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <h4 style="margin: 0 0 10px 0;">📝 Pourquoi 2 SQL_ID differents ?</h4>
+            <p style="margin: 0;">
+                Oracle calcule le <strong>SQL_ID</strong> = hash MD5 du texte SQL.<br>
+                Un seul espace de difference = SQL_ID different.<br><br>
+                <strong>Differences detectees :</strong>
+            </p>
+            <table style="width: 100%; margin-top: 10px; font-family: monospace; font-size: 0.9em;">
+                <tr>
+                    <td style="padding: 5px; background: #bbdefb;">DTC670</td>
+                    <td style="padding: 5px; background: #c8e6c9;">DTC671</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><code>/*+ optimizer</code></td>
+                    <td style="padding: 5px;"><code>/*+  optimizer</code> (2 espaces)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;"><code>TO_CHAR(:B1)</code></td>
+                    <td style="padding: 5px;"><code>TO_CHAR(:B1 )</code> (espace avant parenthese)</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="background: #1565c0; color: white; padding: 15px; border-radius: 8px;">
+            <strong>💡 L'optimisation CTE s'applique aux deux SQL_ID.</strong>
+        </div>
+    </section>
+
+    <!-- COMPARAISON SCRIPTS EXTRACTION -->
+    <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; margin-top: 20px;">
+        <h2>📊 Comparaison des Scripts d'Extraction</h2>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <tr style="background: #4caf50; color: white;">
+                <th style="padding: 12px; text-align: left;">Script</th>
+                <th style="padding: 12px; text-align: left;">Version</th>
+                <th style="padding: 12px; text-align: left;">Fichier CSV genere</th>
+            </tr>
+            <tr style="background: #fff8e1;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                    <a href="BNNP_SQL/DTC670_4v9ag77cam8uu_EXTRACTION_SOURCE.sql" style="color: #e65100; font-weight: bold;">
+                        DTC670_4v9ag77cam8uu_EXTRACTION_SOURCE.sql
+                    </a>
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>SOURCE</strong> (sous-requetes scalaires)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><code>*_BAATGS_SOURCE.txt</code></td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                    <a href="BNNP_SQL/DTC670_4v9ag77cam8uu_EXTRACTION_COMPLETE.sql" style="color: #2e7d32; font-weight: bold;">
+                        DTC670_4v9ag77cam8uu_EXTRACTION_COMPLETE.sql
+                    </a>
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>OPTIMISE</strong> (CTE)</td>
+                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><code>*_BAATGS.txt</code></td>
+            </tr>
+        </table>
+
+        <div style="background: #263238; color: #aed581; padding: 15px; border-radius: 8px; margin: 15px 0; font-family: monospace;">
+            <h4 style="margin: 0 0 10px 0; color: #81c784;">🔧 Pour comparer les resultats</h4>
+<pre style="margin: 0; white-space: pre-wrap;">
+# Executer les 2 scripts
+sqlplus EXP_RNAPA/****@P08449A @DTC670_4v9ag77cam8uu_EXTRACTION_SOURCE.sql
+sqlplus EXP_RNAPA/****@P08449A @DTC670_4v9ag77cam8uu_EXTRACTION_COMPLETE.sql
+
+# Comparer les fichiers
+diff /tmp/*_BAATGS_SOURCE.txt /tmp/*_BAATGS.txt
+</pre>
+        </div>
+
+        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">
+            <h4 style="margin: 0 0 10px 0;">⏱️ Difference de performance attendue</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background: #ffe0b2;">
+                    <th style="padding: 8px; text-align: left;">Version</th>
+                    <th style="padding: 8px; text-align: left;">Temps estime</th>
+                    <th style="padding: 8px; text-align: left;">Cause</th>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>SOURCE</strong></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; color: #c62828;">~2-4 heures</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">DC_MAX calcule <strong>par ligne</strong> (millions de sous-requetes)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><strong>OPTIMISE</strong></td>
+                    <td style="padding: 8px; color: #2e7d32;">~10-30 min</td>
+                    <td style="padding: 8px;">DC_MAX calcule <strong>une seule fois</strong> dans le CTE</td>
+                </tr>
+            </table>
+        </div>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET DTC670-DTC671 ==================== -->
 
 <!-- ==================== ONGLET CAPTURES ==================== -->
 <div id="captures" class="tab-content">
