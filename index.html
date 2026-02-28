@@ -9356,8 +9356,19 @@ async function handleFirebaseUpload(files) {
             document.getElementById('upload-progress-bar').style.width = '80%';
             document.getElementById('upload-progress-text').textContent = '80%';
 
-            await db.ref('uploadedFiles').push(fileData);
-            console.log('Fichier sauvegardé en base64!');
+            console.log('Envoi vers Firebase Realtime Database...');
+            console.log('Taille données:', JSON.stringify(fileData).length, 'caractères');
+
+            const startTime = Date.now();
+            try {
+                await db.ref('uploadedFiles').push(fileData);
+                console.log('Fichier sauvegardé en base64! Temps:', (Date.now() - startTime) / 1000, 's');
+            } catch (dbError) {
+                console.error('Erreur Firebase DB:', dbError);
+                console.error('Code:', dbError.code);
+                console.error('Message:', dbError.message);
+                throw dbError;
+            }
 
             // Succès
             document.getElementById('upload-progress-bar').style.width = '100%';
