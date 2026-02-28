@@ -891,7 +891,7 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.0.6</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.0.7</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#dtc670" onclick="showTab('dtc670', this)">⚡ Optimisation DTC670-DTC671</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
@@ -9282,12 +9282,13 @@ function initFirebaseUpload() {
 }
 
 async function handleFirebaseUpload(files) {
-    console.log('=== handleFirebaseUpload START (Base64 Mode) ===');
+    console.log('=== handleFirebaseUpload START (Chunked Mode) ===');
     console.log('Nombre de fichiers:', files.length);
 
     const statusEl = document.getElementById('firebase-upload-status');
     const db = firebase.database();
-    const MAX_SIZE_MB = 7; // Limite 7 Mo (devient ~10 Mo en base64)
+    const MAX_SIZE_MB = 15; // Limite augmentée à 15 Mo grâce au chunking
+    const CHUNK_SIZE = 400000; // 400 Ko par chunk (safe pour Firebase)
 
     for (const file of files) {
         console.log('--- Traitement fichier:', file.name);
@@ -9296,7 +9297,7 @@ async function handleFirebaseUpload(files) {
 
         statusEl.style.display = 'block';
 
-        // Vérifier la taille (7 Mo max pour base64)
+        // Vérifier la taille
         const fileSizeMB = file.size / (1024 * 1024);
         if (fileSizeMB > MAX_SIZE_MB) {
             console.error('Fichier trop volumineux:', fileSizeMB, 'Mo');
@@ -9319,7 +9320,7 @@ async function handleFirebaseUpload(files) {
         document.getElementById('upload-progress-bar').style.background = 'linear-gradient(90deg, #ff9800, #ff5722, #ff9800)';
         document.getElementById('upload-progress-text').textContent = '0%';
         document.getElementById('upload-bytes').textContent = `0 KB / ${(file.size / 1024).toFixed(0)} KB`;
-        document.getElementById('upload-speed').textContent = 'Base64';
+        document.getElementById('upload-speed').textContent = 'Chunked';
         document.getElementById('upload-state').textContent = '📖 Lecture fichier...';
         document.getElementById('upload-state').style.color = '#666';
 
@@ -9327,8 +9328,8 @@ async function handleFirebaseUpload(files) {
             const timestamp = Date.now();
 
             // Étape 1: Lire le fichier en base64
-            document.getElementById('upload-progress-bar').style.width = '30%';
-            document.getElementById('upload-progress-text').textContent = '30%';
+            document.getElementById('upload-progress-bar').style.width = '10%';
+            document.getElementById('upload-progress-text').textContent = '10%';
 
             console.log('Conversion en base64...');
             const base64Data = await new Promise((resolve, reject) => {
@@ -9339,35 +9340,52 @@ async function handleFirebaseUpload(files) {
             });
             console.log('Base64 length:', base64Data.length);
 
-            // Étape 2: Envoi vers Firebase
-            document.getElementById('upload-progress-bar').style.width = '60%';
-            document.getElementById('upload-progress-text').textContent = '60%';
-            document.getElementById('upload-state').textContent = '☁️ Envoi vers Firebase...';
+            // Étape 2: Découper en chunks
+            document.getElementById('upload-progress-bar').style.width = '20%';
+            document.getElementById('upload-progress-text').textContent = '20%';
+            document.getElementById('upload-state').textContent = '✂️ Découpage en chunks...';
 
-            const fileData = {
+            const chunks = [];
+            for (let i = 0; i < base64Data.length; i += CHUNK_SIZE) {
+                chunks.push(base64Data.slice(i, i + CHUNK_SIZE));
+            }
+            const totalChunks = chunks.length;
+            console.log('Nombre de chunks:', totalChunks);
+
+            // Étape 3: Créer l'entrée principale du fichier
+            const fileRef = db.ref('uploadedFiles').push();
+            const fileId = fileRef.key;
+            console.log('File ID:', fileId);
+
+            const fileMetadata = {
                 name: file.name,
                 size: file.size,
                 type: file.type || 'application/octet-stream',
-                base64: base64Data,
                 createdAt: timestamp,
-                storageType: 'base64'
+                storageType: 'chunked',
+                totalChunks: totalChunks,
+                chunkSize: CHUNK_SIZE
             };
 
-            document.getElementById('upload-progress-bar').style.width = '80%';
-            document.getElementById('upload-progress-text').textContent = '80%';
+            await fileRef.set(fileMetadata);
+            console.log('Métadonnées sauvegardées');
 
-            console.log('Envoi vers Firebase Realtime Database...');
-            console.log('Taille données:', JSON.stringify(fileData).length, 'caractères');
+            // Étape 4: Envoyer chaque chunk séparément
+            document.getElementById('upload-state').textContent = '☁️ Envoi des chunks...';
 
-            const startTime = Date.now();
-            try {
-                await db.ref('uploadedFiles').push(fileData);
-                console.log('Fichier sauvegardé en base64! Temps:', (Date.now() - startTime) / 1000, 's');
-            } catch (dbError) {
-                console.error('Erreur Firebase DB:', dbError);
-                console.error('Code:', dbError.code);
-                console.error('Message:', dbError.message);
-                throw dbError;
+            for (let i = 0; i < totalChunks; i++) {
+                const progress = 20 + Math.round((i / totalChunks) * 75);
+                document.getElementById('upload-progress-bar').style.width = progress + '%';
+                document.getElementById('upload-progress-text').textContent = progress + '%';
+                document.getElementById('upload-state').textContent = `☁️ Chunk ${i + 1}/${totalChunks}...`;
+                document.getElementById('upload-bytes').textContent = `${Math.round((i * CHUNK_SIZE) / 1024)} KB / ${Math.round(base64Data.length / 1024)} KB`;
+
+                console.log(`Envoi chunk ${i + 1}/${totalChunks}...`);
+                const startTime = Date.now();
+
+                await db.ref('fileChunks/' + fileId + '/' + i).set(chunks[i]);
+
+                console.log(`Chunk ${i + 1} envoyé en ${(Date.now() - startTime)}ms`);
             }
 
             // Succès
@@ -9377,7 +9395,7 @@ async function handleFirebaseUpload(files) {
             document.getElementById('upload-state').textContent = '✅ Terminé!';
             document.getElementById('upload-state').style.color = '#4caf50';
             statusEl.style.background = '#e8f5e9';
-            document.getElementById('upload-file-name').innerHTML = `✅ <strong>${file.name}</strong> uploadé !`;
+            document.getElementById('upload-file-name').innerHTML = `✅ <strong>${file.name}</strong> uploadé (${totalChunks} chunks)`;
 
             // Recharger la liste
             loadFirebaseFiles();
@@ -9448,12 +9466,15 @@ function renderFirebaseFiles() {
         else if (file.name.match(/\.(png|jpg|jpeg|gif|svg)$/i)) icon = '🖼️';
         else if (file.name.match(/\.(ksh|sh|py|js)$/i)) icon = '⚙️';
 
-        // Vérifier si c'est un fichier base64 ou URL classique
+        // Vérifier le type de stockage
+        const isChunked = file.storageType === 'chunked';
         const isBase64 = file.storageType === 'base64' || file.base64;
-        const storageIcon = isBase64 ? '💾' : '☁️';
+        const isLocalStorage = isChunked || isBase64;
+        const storageIcon = isChunked ? '🧩' : (isBase64 ? '💾' : '☁️');
+        const storageLabel = isChunked ? `${file.totalChunks} chunks` : (isBase64 ? 'base64' : 'url');
 
         // Boutons différents selon le mode de stockage
-        const downloadBtn = isBase64
+        const downloadBtn = isLocalStorage
             ? `<button onclick="downloadBase64File('${id}')" style="
                     background: #4caf50;
                     color: white;
@@ -9472,7 +9493,7 @@ function renderFirebaseFiles() {
                     font-size: 12px;
                 ">⬇️ Télécharger</a>`;
 
-        const openBtn = isBase64
+        const openBtn = isLocalStorage
             ? `<button onclick="openBase64File('${id}')" style="
                     background: #1a73e8;
                     color: white;
@@ -9505,7 +9526,7 @@ function renderFirebaseFiles() {
                 <div style="flex: 1; min-width: 0;">
                     <strong style="color: #333;">${icon} ${file.name}</strong>
                     <div style="font-size: 11px; color: #888; margin-top: 3px;">
-                        ${sizeStr} • ${dateStr} ${storageIcon}
+                        ${sizeStr} • ${dateStr} ${storageIcon} <span style="color:#999; font-size:10px;">${storageLabel}</span>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;">
@@ -9526,28 +9547,130 @@ function renderFirebaseFiles() {
     }).join('');
 }
 
-// Télécharger un fichier base64
-function downloadBase64File(fileId) {
+// Télécharger un fichier base64 (simple ou chunked)
+async function downloadBase64File(fileId) {
     const file = uploadedFilesData[fileId];
-    if (!file || !file.base64) {
+    if (!file) {
         alert('Fichier non trouvé');
         return;
     }
 
-    // Créer un lien de téléchargement
-    const link = document.createElement('a');
-    link.href = file.base64;
-    link.download = file.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const statusEl = document.getElementById('firebase-upload-status');
+
+    // Cas 1: Fichier chunked - reconstituer
+    if (file.storageType === 'chunked') {
+        console.log('=== Téléchargement fichier chunked ===');
+        console.log('Fichier:', file.name);
+        console.log('Chunks:', file.totalChunks);
+
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#e3f2fd';
+        statusEl.innerHTML = `⬇️ Téléchargement <strong>${file.name}</strong>...<br><small>Reconstitution de ${file.totalChunks} chunks...</small>`;
+
+        try {
+            const db = firebase.database();
+            const chunksSnapshot = await db.ref('fileChunks/' + fileId).once('value');
+            const chunksData = chunksSnapshot.val();
+
+            if (!chunksData) {
+                throw new Error('Chunks non trouvés');
+            }
+
+            // Reconstituer le base64 dans l'ordre
+            console.log('Reconstitution des chunks...');
+            let fullBase64 = '';
+            for (let i = 0; i < file.totalChunks; i++) {
+                if (!chunksData[i]) {
+                    throw new Error(`Chunk ${i} manquant`);
+                }
+                fullBase64 += chunksData[i];
+            }
+            console.log('Base64 reconstitué, longueur:', fullBase64.length);
+
+            // Créer le téléchargement
+            const link = document.createElement('a');
+            link.href = fullBase64;
+            link.download = file.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            statusEl.style.background = '#e8f5e9';
+            statusEl.innerHTML = `✅ <strong>${file.name}</strong> téléchargé !`;
+
+        } catch (error) {
+            console.error('Erreur reconstitution:', error);
+            statusEl.style.background = '#ffebee';
+            statusEl.innerHTML = `❌ Erreur: ${error.message}`;
+        }
+
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 3000);
+
+        return;
+    }
+
+    // Cas 2: Fichier base64 simple (ancien format)
+    if (file.base64) {
+        const link = document.createElement('a');
+        link.href = file.base64;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+    }
+
+    alert('Format de fichier non supporté');
 }
 
 // Ouvrir un fichier base64 dans un nouvel onglet
-function openBase64File(fileId) {
+async function openBase64File(fileId) {
     const file = uploadedFilesData[fileId];
-    if (!file || !file.base64) {
+    if (!file) {
         alert('Fichier non trouvé');
+        return;
+    }
+
+    let base64Data = file.base64;
+
+    // Si fichier chunked, reconstituer d'abord
+    if (file.storageType === 'chunked') {
+        const statusEl = document.getElementById('firebase-upload-status');
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#e3f2fd';
+        statusEl.innerHTML = `📂 Chargement <strong>${file.name}</strong>...`;
+
+        try {
+            const db = firebase.database();
+            const chunksSnapshot = await db.ref('fileChunks/' + fileId).once('value');
+            const chunksData = chunksSnapshot.val();
+
+            if (!chunksData) {
+                throw new Error('Chunks non trouvés');
+            }
+
+            base64Data = '';
+            for (let i = 0; i < file.totalChunks; i++) {
+                if (!chunksData[i]) {
+                    throw new Error(`Chunk ${i} manquant`);
+                }
+                base64Data += chunksData[i];
+            }
+
+            statusEl.style.display = 'none';
+        } catch (error) {
+            console.error('Erreur reconstitution:', error);
+            statusEl.style.background = '#ffebee';
+            statusEl.innerHTML = `❌ Erreur: ${error.message}`;
+            setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+            return;
+        }
+    }
+
+    if (!base64Data) {
+        alert('Données non trouvées');
         return;
     }
 
@@ -9556,10 +9679,10 @@ function openBase64File(fileId) {
     if (newWindow) {
         // Pour les images et PDF, afficher directement
         if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-            newWindow.document.write(`<iframe src="${file.base64}" style="width:100%;height:100%;border:none;"></iframe>`);
+            newWindow.document.write(`<iframe src="${base64Data}" style="width:100%;height:100%;border:none;"></iframe>`);
         } else {
             // Pour les autres fichiers, proposer le téléchargement
-            newWindow.location.href = file.base64;
+            newWindow.location.href = base64Data;
         }
     }
 }
@@ -9596,7 +9719,13 @@ async function deleteFirebaseFile(fileId) {
     try {
         const db = firebase.database();
 
-        // Supprimer de Database (le fichier base64 est stocké dedans)
+        // Si fichier chunked, supprimer aussi les chunks
+        if (file.storageType === 'chunked') {
+            console.log('Suppression des chunks pour:', fileId);
+            await db.ref('fileChunks/' + fileId).remove();
+        }
+
+        // Supprimer les métadonnées du fichier
         await db.ref('uploadedFiles/' + fileId).remove();
 
         statusEl.style.background = '#e8f5e9';

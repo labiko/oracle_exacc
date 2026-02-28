@@ -354,7 +354,7 @@ d4a0977 Ajout 3 DB Links dans Remédiation PARNA (PROD/RECETTE/DEV)
 | **Y** (mineur) | Nouvelle fonctionnalité |
 | **Z** (patch) | Correction bug, amélioration mineure |
 
-**Version actuelle : v1.0.6**
+**Version actuelle : v1.0.7**
 
 ---
 
