@@ -1,0 +1,28 @@
+@startuml
+actor Utilisateur
+participant "Navigateur Web" as Browser
+participant "Application Salesforce" as Salesforce
+participant "Application Web EDS" as EDS
+participant "Application Web Front GED" as FrontGED
+database "Base de données EDSZ" as EDSZ_DB
+database "Base de données ASPS_CONTENT" as ASPS_DB
+database "Système de Stockage GED" as GED_DB
+
+Utilisateur -> Browser : Accède à l'application
+Browser -> Salesforce : Connexion
+Salesforce -> Salesforce : Authentification
+Salesforce --> Browser : Redirection vers EDS
+Browser -> EDS : Accès à EDS
+EDS -> EDSZ_DB : Requête données
+EDSZ_DB --> EDS : Retour données
+EDS -> ASPS_DB : Requête contenu
+ASPS_DB --> EDS : Retour contenu
+EDS --> Browser : Affichage données EDS
+Browser -> FrontGED : Demande document
+FrontGED -> GED_DB : Requête document
+GED_DB --> FrontGED : Retour document
+FrontGED --> Browser : Affichage document
+Browser --> Utilisateur : Présentation des résultats
+
+@enduml
+
