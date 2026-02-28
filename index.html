@@ -5954,25 +5954,14 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
         </div>
     </div>
 
-    <!-- ============ UPLOAD GITHUB ============ -->
-    <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; margin-top: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <h2 style="margin: 0;">📤 Upload vers GitHub - SCRIPT_BNP</h2>
-            <button onclick="setupGitHubToken()" style="
-                background: #1a73e8;
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            ">🔑 Configurer Token GitHub</button>
-        </div>
-        <p style="margin: 10px 0;">Glissez-déposez vos fichiers pour les sauvegarder sur GitHub. Ils seront accessibles via URL.</p>
+    <!-- ============ UPLOAD FIREBASE STORAGE ============ -->
+    <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; margin-top: 20px;">
+        <h2 style="margin: 0 0 10px 0;">📤 Upload Fichiers (Firebase Storage)</h2>
+        <p style="margin: 10px 0; color: #666;">Glissez-déposez vos fichiers pour les sauvegarder. Supporte ZIP, SQL, XML, PDF... (max 100 Mo)</p>
 
         <!-- Zone de Drop -->
-        <div id="github-drop-zone" style="
-            border: 3px dashed #4caf50;
+        <div id="firebase-drop-zone" style="
+            border: 3px dashed #ff9800;
             border-radius: 15px;
             padding: 40px;
             text-align: center;
@@ -5982,25 +5971,24 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
             transition: all 0.3s;
         ">
             <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
-            <div style="font-size: 18px; font-weight: bold; color: #2e7d32;">Glissez vos fichiers ici</div>
+            <div style="font-size: 18px; font-weight: bold; color: #e65100;">Glissez vos fichiers ici</div>
             <div style="color: #666; margin-top: 10px;">ou cliquez pour sélectionner</div>
             <div style="color: #888; font-size: 12px; margin-top: 10px;">Fichiers: .sql, .xml, .txt, .ksh, .sh, .py, .json, .csv, .md, .zip, .pdf, .png, .jpg...</div>
-            <input type="file" id="github-file-input" multiple style="display: none;" accept=".sql,.xml,.txt,.ksh,.sh,.py,.json,.csv,.md,.html,.js,.css,.zip,.rar,.7z,.tar,.gz,.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.svg,.log,.cfg,.ini,.properties,.yaml,.yml">
+            <input type="file" id="firebase-file-input" multiple style="display: none;" accept=".sql,.xml,.txt,.ksh,.sh,.py,.json,.csv,.md,.html,.js,.css,.zip,.rar,.7z,.tar,.gz,.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.svg,.log,.cfg,.ini,.properties,.yaml,.yml">
         </div>
 
         <!-- Status upload -->
-        <div id="github-upload-status" style="display: none; padding: 15px; border-radius: 8px; margin: 10px 0;"></div>
+        <div id="firebase-upload-status" style="display: none; padding: 15px; border-radius: 8px; margin: 10px 0;"></div>
 
         <!-- Liste des fichiers uploadés -->
-        <div id="github-files-list" style="margin-top: 20px;">
-            <h3 style="color: #2e7d32; margin-bottom: 15px;">📋 Fichiers uploadés</h3>
-            <div id="github-files-container" style="max-height: 300px; overflow-y: auto;">
-                <!-- Fichiers chargés dynamiquement -->
+        <div id="firebase-files-list" style="margin-top: 20px;">
+            <h3 style="color: #e65100; margin-bottom: 15px;">📋 Fichiers uploadés</h3>
+            <div id="firebase-files-container" style="max-height: 400px; overflow-y: auto;">
                 <p style="color: #666; text-align: center;">Chargement des fichiers...</p>
             </div>
         </div>
     </section>
-    <!-- ============ FIN UPLOAD GITHUB ============ -->
+    <!-- ============ FIN UPLOAD FIREBASE STORAGE ============ -->
 
 </div>
 <!-- ==================== FIN ONGLET SCRIPTS ==================== -->
@@ -9203,36 +9191,19 @@ window.onload = function() {
     setTimeout(() => {
         initCapturesStorage();
         setupPasteListener();
-        initGitHubUpload();
+        initFirebaseUpload();
     }, 500);
 };
 
 // ============================================================
-// GITHUB UPLOAD - Glisser-déposer vers GitHub
+// FIREBASE STORAGE UPLOAD - Upload de fichiers
 // ============================================================
 
-const GITHUB_CONFIG = {
-    owner: 'labiko',
-    repo: 'oracle_exacc',
-    branch: 'main',
-    folder: 'SCRIPT_BNP',
-    getToken: () => localStorage.getItem('github_token') || ''
-};
+let uploadedFilesData = {};
 
-// Configurer le token GitHub
-function setupGitHubToken() {
-    const currentToken = localStorage.getItem('github_token');
-    const token = prompt('Entrez votre token GitHub (ghp_...):', currentToken || '');
-    if (token && token.startsWith('ghp_')) {
-        localStorage.setItem('github_token', token);
-        alert('Token sauvegardé !');
-        loadGitHubFiles();
-    }
-}
-
-function initGitHubUpload() {
-    const dropZone = document.getElementById('github-drop-zone');
-    const fileInput = document.getElementById('github-file-input');
+function initFirebaseUpload() {
+    const dropZone = document.getElementById('firebase-drop-zone');
+    const fileInput = document.getElementById('firebase-file-input');
 
     if (!dropZone || !fileInput) return;
 
@@ -9242,70 +9213,139 @@ function initGitHubUpload() {
     // Drag & Drop events
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.style.background = 'rgba(76, 175, 80, 0.2)';
-        dropZone.style.borderColor = '#2e7d32';
+        dropZone.style.background = 'rgba(255, 152, 0, 0.2)';
+        dropZone.style.borderColor = '#e65100';
     });
 
     dropZone.addEventListener('dragleave', (e) => {
         e.preventDefault();
         dropZone.style.background = 'rgba(255,255,255,0.8)';
-        dropZone.style.borderColor = '#4caf50';
+        dropZone.style.borderColor = '#ff9800';
     });
 
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.style.background = 'rgba(255,255,255,0.8)';
-        dropZone.style.borderColor = '#4caf50';
-
-        const files = e.dataTransfer.files;
-        handleGitHubUpload(files);
+        dropZone.style.borderColor = '#ff9800';
+        handleFirebaseUpload(e.dataTransfer.files);
     });
 
     // Input file change
     fileInput.addEventListener('change', (e) => {
-        handleGitHubUpload(e.target.files);
+        handleFirebaseUpload(e.target.files);
     });
 
     // Charger la liste des fichiers existants
-    loadGitHubFiles();
+    loadFirebaseFiles();
 }
 
-async function handleGitHubUpload(files) {
-    const statusEl = document.getElementById('github-upload-status');
-    const MAX_SIZE_MB = 50; // Limite pratique pour éviter les erreurs 500
+async function handleFirebaseUpload(files) {
+    console.log('=== handleFirebaseUpload START ===');
+    console.log('Nombre de fichiers:', files.length);
+
+    const statusEl = document.getElementById('firebase-upload-status');
+    const storage = firebase.storage();
+    const db = firebase.database();
+    const MAX_SIZE_MB = 100;
+
+    console.log('Firebase Storage:', storage);
+    console.log('Firebase Database:', db);
 
     for (const file of files) {
+        console.log('--- Traitement fichier:', file.name);
+        console.log('Taille:', file.size, 'bytes');
+        console.log('Type:', file.type);
+
         statusEl.style.display = 'block';
 
-        // Vérifier la taille du fichier
+        // Vérifier la taille
         const fileSizeMB = file.size / (1024 * 1024);
         if (fileSizeMB > MAX_SIZE_MB) {
+            console.error('Fichier trop volumineux:', fileSizeMB, 'Mo');
             statusEl.style.background = '#ffebee';
-            statusEl.innerHTML = `❌ <strong>${file.name}</strong> trop volumineux (${fileSizeMB.toFixed(1)} Mo).<br>
-                Limite GitHub API : ${MAX_SIZE_MB} Mo.<br>
-                <small>💡 Utilisez Git en ligne de commande pour les gros fichiers.</small>`;
+            statusEl.innerHTML = `❌ <strong>${file.name}</strong> trop volumineux (${fileSizeMB.toFixed(1)} Mo). Limite: ${MAX_SIZE_MB} Mo`;
             continue;
         }
 
         statusEl.style.background = '#e3f2fd';
-        statusEl.innerHTML = `⏳ Upload de <strong>${file.name}</strong> (${fileSizeMB.toFixed(1)} Mo) en cours...`;
+        statusEl.innerHTML = `⏳ Upload de <strong>${file.name}</strong> (${fileSizeMB.toFixed(1)} Mo)... <span id="upload-progress">0%</span>`;
 
         try {
-            const content = await readFileAsBase64(file);
-            await uploadToGitHub(file.name, content);
+            // Générer un nom unique
+            const timestamp = Date.now();
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const storagePath = `uploads/${timestamp}_${safeName}`;
+            console.log('Storage path:', storagePath);
+
+            const storageRef = storage.ref(storagePath);
+            console.log('Storage ref créé:', storageRef);
+
+            // Upload avec progression
+            console.log('Démarrage upload...');
+            const uploadTask = storageRef.put(file);
+            console.log('Upload task créé:', uploadTask);
+
+            // Écouter les événements
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    console.log('Progress:', progress + '%', '(' + snapshot.bytesTransferred + '/' + snapshot.totalBytes + ')');
+                    console.log('State:', snapshot.state);
+                    document.getElementById('upload-progress').textContent = progress + '%';
+                },
+                (error) => {
+                    console.error('Upload error callback:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                },
+                () => {
+                    console.log('Upload complete callback');
+                }
+            );
+
+            // Attendre la fin de l'upload
+            console.log('Attente fin upload...');
+            await uploadTask;
+            console.log('Upload terminé!');
+
+            // Obtenir l'URL de téléchargement
+            console.log('Récupération URL...');
+            const downloadURL = await storageRef.getDownloadURL();
+            console.log('Download URL:', downloadURL);
+
+            // Sauvegarder les métadonnées dans la database
+            const fileData = {
+                name: file.name,
+                storagePath: storagePath,
+                url: downloadURL,
+                size: file.size,
+                type: file.type || 'application/octet-stream',
+                createdAt: timestamp
+            };
+            console.log('Sauvegarde metadata:', fileData);
+
+            await db.ref('uploadedFiles').push(fileData);
+            console.log('Metadata sauvegardée!');
 
             statusEl.style.background = '#e8f5e9';
             statusEl.innerHTML = `✅ <strong>${file.name}</strong> uploadé avec succès !`;
 
             // Recharger la liste
-            await loadGitHubFiles();
+            loadFirebaseFiles();
 
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('=== ERREUR UPLOAD ===');
+            console.error('Error object:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            console.error('Error serverResponse:', error.serverResponse);
+            console.error('Error stack:', error.stack);
             statusEl.style.background = '#ffebee';
-            statusEl.innerHTML = `❌ Erreur: ${error.message}`;
+            statusEl.innerHTML = `❌ Erreur: ${error.code || ''} - ${error.message}`;
         }
     }
+
+    console.log('=== handleFirebaseUpload END ===');
 
     // Masquer le status après 5 secondes
     setTimeout(() => {
@@ -9313,132 +9353,53 @@ async function handleGitHubUpload(files) {
     }, 5000);
 }
 
-function readFileAsBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+function loadFirebaseFiles() {
+    const container = document.getElementById('firebase-files-container');
+    const db = firebase.database();
+
+    db.ref('uploadedFiles').orderByChild('createdAt').on('value', (snapshot) => {
+        uploadedFilesData = snapshot.val() || {};
+        renderFirebaseFiles();
+    }, (error) => {
+        console.error('Erreur chargement fichiers:', error);
+        container.innerHTML = `<p style="color: #ea4335; text-align: center;">❌ Erreur: ${error.message}</p>`;
     });
 }
 
-async function uploadToGitHub(filename, content) {
-    const { owner, repo, branch, folder, getToken } = GITHUB_CONFIG;
-    const token = getToken();
-    if (!token) {
-        setupGitHubToken();
-        throw new Error('Token GitHub requis. Configurez-le et réessayez.');
-    }
+function renderFirebaseFiles() {
+    const container = document.getElementById('firebase-files-container');
+    const fileIds = Object.keys(uploadedFilesData);
 
-    // Encoder le nom de fichier pour l'URL (garder le nom original pour le contenu)
-    const encodedFilename = encodeURIComponent(filename);
-    const path = `${folder}/${encodedFilename}`;
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-
-    console.log('Upload URL:', url);
-    console.log('Content length:', content.length);
-
-    // Vérifier si le fichier existe déjà (pour obtenir le SHA)
-    let sha = null;
-    try {
-        const checkResponse = await fetch(url, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        console.log('Check response status:', checkResponse.status);
-        if (checkResponse.ok) {
-            const existingFile = await checkResponse.json();
-            sha = existingFile.sha;
-            console.log('File exists, SHA:', sha);
-        }
-    } catch (e) {
-        console.log('File does not exist (OK):', e.message);
-    }
-
-    // Upload ou update
-    const body = {
-        message: `Upload ${filename} via web interface`,
-        content: content,
-        branch: branch
-    };
-
-    if (sha) {
-        body.sha = sha;
-    }
-
-    console.log('Sending PUT request...');
-    const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-            'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-    });
-
-    console.log('Response status:', response.status);
-
-    if (!response.ok) {
-        let errorMessage = `GitHub ${response.status}`;
-        try {
-            const errorData = await response.json();
-            console.error('GitHub API Error:', errorData);
-            errorMessage = `GitHub ${response.status}: ${errorData.message || JSON.stringify(errorData)}`;
-        } catch (e) {
-            // Réponse vide ou non-JSON
-            if (response.status === 500) {
-                errorMessage = 'Erreur serveur GitHub (500). Fichier peut-être trop volumineux.';
-            } else if (response.status === 422) {
-                errorMessage = 'Fichier invalide ou trop volumineux (422).';
-            }
-        }
-        throw new Error(errorMessage);
-    }
-
-    return response.json();
-}
-
-async function loadGitHubFiles() {
-    const container = document.getElementById('github-files-container');
-    const { owner, repo, branch, folder, getToken } = GITHUB_CONFIG;
-    const token = getToken();
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${folder}?ref=${branch}`;
-
-    if (!token) {
-        container.innerHTML = '<p style="color: #ff9800; text-align: center;">⚠️ <a href="#" onclick="setupGitHubToken(); return false;">Configurez votre token GitHub</a> pour voir les fichiers</p>';
+    if (fileIds.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center;">📂 Aucun fichier. Glissez des fichiers pour commencer.</p>';
         return;
     }
 
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
+    // Trier par date (plus récent en premier)
+    fileIds.sort((a, b) => {
+        const dateA = uploadedFilesData[a].createdAt || 0;
+        const dateB = uploadedFilesData[b].createdAt || 0;
+        return dateB - dateA;
+    });
 
-        if (!response.ok) {
-            if (response.status === 404) {
-                container.innerHTML = '<p style="color: #666; text-align: center;">📂 Dossier vide - Glissez des fichiers pour commencer</p>';
-                return;
-            }
-            throw new Error('Erreur chargement fichiers');
-        }
+    container.innerHTML = fileIds.map(id => {
+        const file = uploadedFilesData[id];
+        const date = new Date(file.createdAt);
+        const dateStr = date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+        const sizeStr = file.size < 1024 ? file.size + ' B' :
+                        file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + ' KB' :
+                        (file.size / (1024 * 1024)).toFixed(1) + ' MB';
 
-        const files = await response.json();
+        // Icône selon le type
+        let icon = '📄';
+        if (file.name.match(/\.(zip|rar|7z|tar|gz)$/i)) icon = '📦';
+        else if (file.name.match(/\.(sql)$/i)) icon = '🗃️';
+        else if (file.name.match(/\.(xml|json|yaml|yml)$/i)) icon = '📋';
+        else if (file.name.match(/\.(pdf)$/i)) icon = '📕';
+        else if (file.name.match(/\.(png|jpg|jpeg|gif|svg)$/i)) icon = '🖼️';
+        else if (file.name.match(/\.(ksh|sh|py|js)$/i)) icon = '⚙️';
 
-        if (files.length === 0) {
-            container.innerHTML = '<p style="color: #666; text-align: center;">📂 Dossier vide - Glissez des fichiers pour commencer</p>';
-            return;
-        }
-
-        container.innerHTML = files.map(file => `
+        return `
             <div style="
                 display: flex;
                 justify-content: space-between;
@@ -9449,119 +9410,62 @@ async function loadGitHubFiles() {
                 margin-bottom: 8px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             ">
-                <div>
-                    <strong style="color: #333;">📄 ${file.name}</strong>
+                <div style="flex: 1; min-width: 0;">
+                    <strong style="color: #333;">${icon} ${file.name}</strong>
                     <div style="font-size: 11px; color: #888; margin-top: 3px;">
-                        ${(file.size / 1024).toFixed(1)} KB
+                        ${sizeStr} • ${dateStr}
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <a href="https://labiko.github.io/oracle_exacc/${folder}/${file.name}"
-                       target="_blank"
-                       style="
-                           background: #1a73e8;
-                           color: white;
-                           padding: 6px 12px;
-                           border-radius: 5px;
-                           text-decoration: none;
-                           font-size: 12px;
-                       ">🔗 Ouvrir</a>
-                    <a href="${file.download_url}"
-                       download="${file.name}"
-                       style="
-                           background: #4caf50;
-                           color: white;
-                           padding: 6px 12px;
-                           border-radius: 5px;
-                           text-decoration: none;
-                           font-size: 12px;
-                       ">⬇️ Télécharger</a>
-                    <button onclick="copyFileUrl('${file.name}')"
-                       style="
-                           background: #ff9800;
-                           color: white;
-                           padding: 6px 12px;
-                           border-radius: 5px;
-                           border: none;
-                           cursor: pointer;
-                           font-size: 12px;
-                       ">📋 Copier URL</button>
-                    <button onclick="deleteGitHubFile('${file.name}', '${file.sha}')"
-                       style="
-                           background: #ea4335;
-                           color: white;
-                           padding: 6px 12px;
-                           border-radius: 5px;
-                           border: none;
-                           cursor: pointer;
-                           font-size: 12px;
-                       ">🗑️</button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;">
+                    <a href="${file.url}" target="_blank" style="
+                        background: #1a73e8;
+                        color: white;
+                        padding: 6px 12px;
+                        border-radius: 5px;
+                        text-decoration: none;
+                        font-size: 12px;
+                    ">🔗 Ouvrir</a>
+                    <a href="${file.url}" download="${file.name}" style="
+                        background: #4caf50;
+                        color: white;
+                        padding: 6px 12px;
+                        border-radius: 5px;
+                        text-decoration: none;
+                        font-size: 12px;
+                    ">⬇️ Télécharger</a>
+                    <button onclick="copyFirebaseFileUrl('${id}')" style="
+                        background: #ff9800;
+                        color: white;
+                        padding: 6px 12px;
+                        border-radius: 5px;
+                        border: none;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">📋 Copier URL</button>
+                    <button onclick="deleteFirebaseFile('${id}')" style="
+                        background: #ea4335;
+                        color: white;
+                        padding: 6px 12px;
+                        border-radius: 5px;
+                        border: none;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">🗑️</button>
                 </div>
             </div>
-        `).join('');
-
-    } catch (error) {
-        console.error('Load files error:', error);
-        container.innerHTML = `<p style="color: #ea4335; text-align: center;">❌ Erreur: ${error.message}</p>`;
-    }
+        `;
+    }).join('');
 }
 
-async function deleteGitHubFile(filename, sha) {
-    if (!confirm(`Supprimer ${filename} de GitHub ?`)) return;
+function copyFirebaseFileUrl(fileId) {
+    const file = uploadedFilesData[fileId];
+    if (!file) return;
 
-    const { owner, repo, branch, folder, getToken } = GITHUB_CONFIG;
-    const token = getToken();
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${folder}/${filename}`;
-
-    const statusEl = document.getElementById('github-upload-status');
-    statusEl.style.display = 'block';
-    statusEl.style.background = '#fff3e0';
-    statusEl.innerHTML = `🗑️ Suppression de <strong>${filename}</strong>...`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: `Delete ${filename} via web interface`,
-                sha: sha,
-                branch: branch
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur suppression');
-        }
-
-        statusEl.style.background = '#e8f5e9';
-        statusEl.innerHTML = `✅ <strong>${filename}</strong> supprimé !`;
-
-        await loadGitHubFiles();
-
-    } catch (error) {
-        statusEl.style.background = '#ffebee';
-        statusEl.innerHTML = `❌ Erreur: ${error.message}`;
-    }
-
-    setTimeout(() => {
-        statusEl.style.display = 'none';
-    }, 3000);
-}
-
-// Copier l'URL du fichier dans le presse-papier
-function copyFileUrl(filename) {
-    const { folder } = GITHUB_CONFIG;
-    const url = `https://labiko.github.io/oracle_exacc/${folder}/${filename}`;
-
-    navigator.clipboard.writeText(url).then(() => {
-        const statusEl = document.getElementById('github-upload-status');
+    navigator.clipboard.writeText(file.url).then(() => {
+        const statusEl = document.getElementById('firebase-upload-status');
         statusEl.style.display = 'block';
         statusEl.style.background = '#e3f2fd';
-        statusEl.innerHTML = `📋 URL copiée : <a href="${url}" target="_blank">${url}</a>`;
+        statusEl.innerHTML = `📋 URL copiée !<br><small style="word-break: break-all;">${file.url}</small>`;
 
         setTimeout(() => {
             statusEl.style.display = 'none';
@@ -9570,6 +9474,48 @@ function copyFileUrl(filename) {
         alert('Erreur copie: ' + err);
     });
 }
+
+async function deleteFirebaseFile(fileId) {
+    const file = uploadedFilesData[fileId];
+    if (!file) return;
+
+    if (!confirm(`Supprimer ${file.name} ?`)) return;
+
+    const statusEl = document.getElementById('firebase-upload-status');
+    statusEl.style.display = 'block';
+    statusEl.style.background = '#fff3e0';
+    statusEl.innerHTML = `🗑️ Suppression de <strong>${file.name}</strong>...`;
+
+    try {
+        const storage = firebase.storage();
+        const db = firebase.database();
+
+        // Supprimer de Storage
+        await storage.ref(file.storagePath).delete();
+
+        // Supprimer de Database
+        await db.ref('uploadedFiles/' + fileId).remove();
+
+        statusEl.style.background = '#e8f5e9';
+        statusEl.innerHTML = `✅ <strong>${file.name}</strong> supprimé !`;
+
+    } catch (error) {
+        console.error('Delete error:', error);
+        statusEl.style.background = '#ffebee';
+        statusEl.innerHTML = `❌ Erreur: ${error.message}`;
+
+        // Supprimer quand même de la database si le fichier n'existe plus
+        if (error.code === 'storage/object-not-found') {
+            const db = firebase.database();
+            await db.ref('uploadedFiles/' + fileId).remove();
+        }
+    }
+
+    setTimeout(() => {
+        statusEl.style.display = 'none';
+    }, 3000);
+}
+
 </script>
 
 </body>
