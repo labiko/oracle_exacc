@@ -9272,11 +9272,23 @@ function initGitHubUpload() {
 
 async function handleGitHubUpload(files) {
     const statusEl = document.getElementById('github-upload-status');
+    const MAX_SIZE_MB = 50; // Limite pratique pour éviter les erreurs 500
 
     for (const file of files) {
         statusEl.style.display = 'block';
+
+        // Vérifier la taille du fichier
+        const fileSizeMB = file.size / (1024 * 1024);
+        if (fileSizeMB > MAX_SIZE_MB) {
+            statusEl.style.background = '#ffebee';
+            statusEl.innerHTML = `❌ <strong>${file.name}</strong> trop volumineux (${fileSizeMB.toFixed(1)} Mo).<br>
+                Limite GitHub API : ${MAX_SIZE_MB} Mo.<br>
+                <small>💡 Utilisez Git en ligne de commande pour les gros fichiers.</small>`;
+            continue;
+        }
+
         statusEl.style.background = '#e3f2fd';
-        statusEl.innerHTML = `⏳ Upload de <strong>${file.name}</strong> en cours...`;
+        statusEl.innerHTML = `⏳ Upload de <strong>${file.name}</strong> (${fileSizeMB.toFixed(1)} Mo) en cours...`;
 
         try {
             const content = await readFileAsBase64(file);
@@ -9320,8 +9332,14 @@ async function uploadToGitHub(filename, content) {
         setupGitHubToken();
         throw new Error('Token GitHub requis. Configurez-le et réessayez.');
     }
-    const path = `${folder}/${filename}`;
+
+    // Encoder le nom de fichier pour l'URL (garder le nom original pour le contenu)
+    const encodedFilename = encodeURIComponent(filename);
+    const path = `${folder}/${encodedFilename}`;
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+    console.log('Upload URL:', url);
+    console.log('Content length:', content.length);
 
     // Vérifier si le fichier existe déjà (pour obtenir le SHA)
     let sha = null;
@@ -9332,12 +9350,14 @@ async function uploadToGitHub(filename, content) {
                 'Accept': 'application/vnd.github.v3+json'
             }
         });
+        console.log('Check response status:', checkResponse.status);
         if (checkResponse.ok) {
             const existingFile = await checkResponse.json();
             sha = existingFile.sha;
+            console.log('File exists, SHA:', sha);
         }
     } catch (e) {
-        // Fichier n'existe pas, c'est OK
+        console.log('File does not exist (OK):', e.message);
     }
 
     // Upload ou update
@@ -9348,9 +9368,10 @@ async function uploadToGitHub(filename, content) {
     };
 
     if (sha) {
-        body.sha = sha; // Mise à jour du fichier existant
+        body.sha = sha;
     }
 
+    console.log('Sending PUT request...');
     const response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -9361,9 +9382,23 @@ async function uploadToGitHub(filename, content) {
         body: JSON.stringify(body)
     });
 
+    console.log('Response status:', response.status);
+
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Erreur GitHub API');
+        let errorMessage = `GitHub ${response.status}`;
+        try {
+            const errorData = await response.json();
+            console.error('GitHub API Error:', errorData);
+            errorMessage = `GitHub ${response.status}: ${errorData.message || JSON.stringify(errorData)}`;
+        } catch (e) {
+            // Réponse vide ou non-JSON
+            if (response.status === 500) {
+                errorMessage = 'Erreur serveur GitHub (500). Fichier peut-être trop volumineux.';
+            } else if (response.status === 422) {
+                errorMessage = 'Fichier invalide ou trop volumineux (422).';
+            }
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
