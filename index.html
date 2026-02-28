@@ -5977,8 +5977,50 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
             <input type="file" id="firebase-file-input" multiple style="display: none;" accept=".sql,.xml,.txt,.ksh,.sh,.py,.json,.csv,.md,.html,.js,.css,.zip,.rar,.7z,.tar,.gz,.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.svg,.log,.cfg,.ini,.properties,.yaml,.yml">
         </div>
 
-        <!-- Status upload -->
-        <div id="firebase-upload-status" style="display: none; padding: 15px; border-radius: 8px; margin: 10px 0;"></div>
+        <!-- Status upload avec barre de progression -->
+        <div id="firebase-upload-status" style="display: none; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <div id="upload-file-name" style="font-weight: bold; margin-bottom: 10px;"></div>
+            <div style="background: #e0e0e0; border-radius: 10px; height: 24px; overflow: hidden; position: relative;">
+                <div id="upload-progress-bar" style="
+                    background: linear-gradient(90deg, #ff9800, #ff5722, #ff9800);
+                    background-size: 200% 100%;
+                    animation: progressGradient 1.5s ease infinite;
+                    height: 100%;
+                    width: 0%;
+                    border-radius: 10px;
+                    transition: width 0.3s ease;
+                "></div>
+                <div id="upload-progress-text" style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-weight: bold;
+                    font-size: 12px;
+                    color: #333;
+                    text-shadow: 0 0 3px white;
+                ">0%</div>
+            </div>
+            <div id="upload-details" style="font-size: 12px; color: #666; margin-top: 8px; display: flex; justify-content: space-between;">
+                <span id="upload-bytes">0 KB / 0 KB</span>
+                <span id="upload-speed"></span>
+                <span id="upload-state">En attente...</span>
+            </div>
+        </div>
+        <style>
+            @keyframes progressGradient {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.6; }
+            }
+            .upload-stalled {
+                animation: pulse 1s ease-in-out infinite;
+            }
+        </style>
 
         <!-- Liste des fichiers uploadés -->
         <div id="firebase-files-list" style="margin-top: 20px;">
@@ -9263,12 +9305,31 @@ async function handleFirebaseUpload(files) {
         if (fileSizeMB > MAX_SIZE_MB) {
             console.error('Fichier trop volumineux:', fileSizeMB, 'Mo');
             statusEl.style.background = '#ffebee';
-            statusEl.innerHTML = `❌ <strong>${file.name}</strong> trop volumineux (${fileSizeMB.toFixed(1)} Mo). Limite: ${MAX_SIZE_MB} Mo`;
+            document.getElementById('upload-file-name').innerHTML = `❌ <strong>${file.name}</strong> trop volumineux`;
+            document.getElementById('upload-progress-bar').style.width = '100%';
+            document.getElementById('upload-progress-bar').style.background = '#f44336';
+            document.getElementById('upload-progress-text').textContent = '⛔';
+            document.getElementById('upload-bytes').textContent = `${fileSizeMB.toFixed(1)} Mo`;
+            document.getElementById('upload-speed').textContent = '';
+            document.getElementById('upload-state').textContent = `Limite: ${MAX_SIZE_MB} Mo`;
+            document.getElementById('upload-state').style.color = '#f44336';
             continue;
         }
 
+        // Afficher la barre de progression
+        statusEl.style.display = 'block';
         statusEl.style.background = '#e3f2fd';
-        statusEl.innerHTML = `⏳ Upload de <strong>${file.name}</strong> (${fileSizeMB.toFixed(1)} Mo)... <span id="upload-progress">0%</span>`;
+        document.getElementById('upload-file-name').innerHTML = `📤 <strong>${file.name}</strong> (${fileSizeMB.toFixed(2)} Mo)`;
+        document.getElementById('upload-progress-bar').style.width = '0%';
+        document.getElementById('upload-progress-bar').style.background = 'linear-gradient(90deg, #ff9800, #ff5722, #ff9800)';
+        document.getElementById('upload-progress-text').textContent = '0%';
+        document.getElementById('upload-bytes').textContent = `0 KB / ${(file.size / 1024).toFixed(0)} KB`;
+        document.getElementById('upload-speed').textContent = '';
+        document.getElementById('upload-state').textContent = 'Démarrage...';
+
+        let lastBytes = 0;
+        let lastTime = Date.now();
+        let stallTimer = null;
 
         try {
             // Générer un nom unique
@@ -9289,17 +9350,57 @@ async function handleFirebaseUpload(files) {
             uploadTask.on('state_changed',
                 (snapshot) => {
                     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                    console.log('Progress:', progress + '%', '(' + snapshot.bytesTransferred + '/' + snapshot.totalBytes + ')');
-                    console.log('State:', snapshot.state);
-                    document.getElementById('upload-progress').textContent = progress + '%';
+                    const bytesKB = (snapshot.bytesTransferred / 1024).toFixed(0);
+                    const totalKB = (snapshot.totalBytes / 1024).toFixed(0);
+
+                    // Calculer la vitesse
+                    const now = Date.now();
+                    const timeDiff = (now - lastTime) / 1000;
+                    const bytesDiff = snapshot.bytesTransferred - lastBytes;
+                    let speed = '';
+                    if (timeDiff > 0 && bytesDiff > 0) {
+                        const speedKBps = (bytesDiff / 1024) / timeDiff;
+                        speed = speedKBps > 1024 ? `${(speedKBps / 1024).toFixed(1)} MB/s` : `${speedKBps.toFixed(0)} KB/s`;
+                        lastBytes = snapshot.bytesTransferred;
+                        lastTime = now;
+                    }
+
+                    // Détecter si bloqué
+                    clearTimeout(stallTimer);
+                    document.getElementById('upload-progress-bar').classList.remove('upload-stalled');
+                    stallTimer = setTimeout(() => {
+                        if (progress < 100) {
+                            document.getElementById('upload-progress-bar').classList.add('upload-stalled');
+                            document.getElementById('upload-state').textContent = '⚠️ Bloqué ?';
+                            document.getElementById('upload-state').style.color = '#f44336';
+                        }
+                    }, 5000);
+
+                    // Mettre à jour l'UI
+                    document.getElementById('upload-progress-bar').style.width = progress + '%';
+                    document.getElementById('upload-progress-text').textContent = progress + '%';
+                    document.getElementById('upload-bytes').textContent = `${bytesKB} KB / ${totalKB} KB`;
+                    document.getElementById('upload-speed').textContent = speed;
+                    document.getElementById('upload-state').style.color = '#666';
+                    document.getElementById('upload-state').textContent = snapshot.state === 'running' ? '🔄 En cours...' : snapshot.state;
+
+                    console.log('Progress:', progress + '%', '(' + snapshot.bytesTransferred + '/' + snapshot.totalBytes + ')', speed);
                 },
                 (error) => {
+                    clearTimeout(stallTimer);
                     console.error('Upload error callback:', error);
                     console.error('Error code:', error.code);
                     console.error('Error message:', error.message);
+                    document.getElementById('upload-progress-bar').style.background = '#f44336';
+                    document.getElementById('upload-state').textContent = '❌ Erreur: ' + error.code;
+                    document.getElementById('upload-state').style.color = '#f44336';
                 },
                 () => {
+                    clearTimeout(stallTimer);
                     console.log('Upload complete callback');
+                    document.getElementById('upload-progress-bar').style.background = '#4caf50';
+                    document.getElementById('upload-state').textContent = '✅ Terminé!';
+                    document.getElementById('upload-state').style.color = '#4caf50';
                 }
             );
 
@@ -9327,8 +9428,12 @@ async function handleFirebaseUpload(files) {
             await db.ref('uploadedFiles').push(fileData);
             console.log('Metadata sauvegardée!');
 
+            // Succès - garder la barre de progression verte
             statusEl.style.background = '#e8f5e9';
-            statusEl.innerHTML = `✅ <strong>${file.name}</strong> uploadé avec succès !`;
+            document.getElementById('upload-file-name').innerHTML = `✅ <strong>${file.name}</strong> uploadé avec succès !`;
+            document.getElementById('upload-progress-bar').style.width = '100%';
+            document.getElementById('upload-progress-bar').style.background = '#4caf50';
+            document.getElementById('upload-progress-text').textContent = '100%';
 
             // Recharger la liste
             loadFirebaseFiles();
@@ -9340,17 +9445,22 @@ async function handleFirebaseUpload(files) {
             console.error('Error message:', error.message);
             console.error('Error serverResponse:', error.serverResponse);
             console.error('Error stack:', error.stack);
+
+            // Erreur - barre rouge
             statusEl.style.background = '#ffebee';
-            statusEl.innerHTML = `❌ Erreur: ${error.code || ''} - ${error.message}`;
+            document.getElementById('upload-file-name').innerHTML = `❌ <strong>${file.name}</strong> - Échec`;
+            document.getElementById('upload-progress-bar').style.background = '#f44336';
+            document.getElementById('upload-state').textContent = error.code || error.message;
+            document.getElementById('upload-state').style.color = '#f44336';
         }
     }
 
     console.log('=== handleFirebaseUpload END ===');
 
-    // Masquer le status après 5 secondes
+    // Masquer le status après 8 secondes
     setTimeout(() => {
         statusEl.style.display = 'none';
-    }, 5000);
+    }, 8000);
 }
 
 function loadFirebaseFiles() {
