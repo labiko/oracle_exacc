@@ -9420,7 +9420,7 @@ async function loadGitHubFiles() {
                         ${(file.size / 1024).toFixed(1)} KB
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <a href="https://labiko.github.io/oracle_exacc/${folder}/${file.name}"
                        target="_blank"
                        style="
@@ -9432,7 +9432,7 @@ async function loadGitHubFiles() {
                            font-size: 12px;
                        ">🔗 Ouvrir</a>
                     <a href="${file.download_url}"
-                       target="_blank"
+                       download="${file.name}"
                        style="
                            background: #4caf50;
                            color: white;
@@ -9440,7 +9440,17 @@ async function loadGitHubFiles() {
                            border-radius: 5px;
                            text-decoration: none;
                            font-size: 12px;
-                       ">⬇️ Raw</a>
+                       ">⬇️ Télécharger</a>
+                    <button onclick="copyFileUrl('${file.name}')"
+                       style="
+                           background: #ff9800;
+                           color: white;
+                           padding: 6px 12px;
+                           border-radius: 5px;
+                           border: none;
+                           cursor: pointer;
+                           font-size: 12px;
+                       ">📋 Copier URL</button>
                     <button onclick="deleteGitHubFile('${file.name}', '${file.sha}')"
                        style="
                            background: #ea4335;
@@ -9505,6 +9515,25 @@ async function deleteGitHubFile(filename, sha) {
     setTimeout(() => {
         statusEl.style.display = 'none';
     }, 3000);
+}
+
+// Copier l'URL du fichier dans le presse-papier
+function copyFileUrl(filename) {
+    const { folder } = GITHUB_CONFIG;
+    const url = `https://labiko.github.io/oracle_exacc/${folder}/${filename}`;
+
+    navigator.clipboard.writeText(url).then(() => {
+        const statusEl = document.getElementById('github-upload-status');
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#e3f2fd';
+        statusEl.innerHTML = `📋 URL copiée : <a href="${url}" target="_blank">${url}</a>`;
+
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 3000);
+    }).catch(err => {
+        alert('Erreur copie: ' + err);
+    });
 }
 </script>
 
