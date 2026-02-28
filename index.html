@@ -5954,6 +5954,54 @@ sqlplus user/password@exacc-host:1521/SERVICE</code></pre>
         </div>
     </div>
 
+    <!-- ============ UPLOAD GITHUB ============ -->
+    <section style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <h2 style="margin: 0;">📤 Upload vers GitHub - SCRIPT_BNP</h2>
+            <button onclick="setupGitHubToken()" style="
+                background: #1a73e8;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            ">🔑 Configurer Token GitHub</button>
+        </div>
+        <p style="margin: 10px 0;">Glissez-déposez vos fichiers pour les sauvegarder sur GitHub. Ils seront accessibles via URL.</p>
+
+        <!-- Zone de Drop -->
+        <div id="github-drop-zone" style="
+            border: 3px dashed #4caf50;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(255,255,255,0.8);
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        ">
+            <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
+            <div style="font-size: 18px; font-weight: bold; color: #2e7d32;">Glissez vos fichiers ici</div>
+            <div style="color: #666; margin-top: 10px;">ou cliquez pour sélectionner</div>
+            <div style="color: #888; font-size: 12px; margin-top: 10px;">Fichiers: .sql, .xml, .txt, .ksh, .sh, .py, .json, .csv, .md, .zip, .pdf, .png, .jpg...</div>
+            <input type="file" id="github-file-input" multiple style="display: none;" accept=".sql,.xml,.txt,.ksh,.sh,.py,.json,.csv,.md,.html,.js,.css,.zip,.rar,.7z,.tar,.gz,.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.svg,.log,.cfg,.ini,.properties,.yaml,.yml">
+        </div>
+
+        <!-- Status upload -->
+        <div id="github-upload-status" style="display: none; padding: 15px; border-radius: 8px; margin: 10px 0;"></div>
+
+        <!-- Liste des fichiers uploadés -->
+        <div id="github-files-list" style="margin-top: 20px;">
+            <h3 style="color: #2e7d32; margin-bottom: 15px;">📋 Fichiers uploadés</h3>
+            <div id="github-files-container" style="max-height: 300px; overflow-y: auto;">
+                <!-- Fichiers chargés dynamiquement -->
+                <p style="color: #666; text-align: center;">Chargement des fichiers...</p>
+            </div>
+        </div>
+    </section>
+    <!-- ============ FIN UPLOAD GITHUB ============ -->
+
 </div>
 <!-- ==================== FIN ONGLET SCRIPTS ==================== -->
 
@@ -9155,8 +9203,309 @@ window.onload = function() {
     setTimeout(() => {
         initCapturesStorage();
         setupPasteListener();
+        initGitHubUpload();
     }, 500);
 };
+
+// ============================================================
+// GITHUB UPLOAD - Glisser-déposer vers GitHub
+// ============================================================
+
+const GITHUB_CONFIG = {
+    owner: 'labiko',
+    repo: 'oracle_exacc',
+    branch: 'main',
+    folder: 'SCRIPT_BNP',
+    getToken: () => localStorage.getItem('github_token') || ''
+};
+
+// Configurer le token GitHub
+function setupGitHubToken() {
+    const currentToken = localStorage.getItem('github_token');
+    const token = prompt('Entrez votre token GitHub (ghp_...):', currentToken || '');
+    if (token && token.startsWith('ghp_')) {
+        localStorage.setItem('github_token', token);
+        alert('Token sauvegardé !');
+        loadGitHubFiles();
+    }
+}
+
+function initGitHubUpload() {
+    const dropZone = document.getElementById('github-drop-zone');
+    const fileInput = document.getElementById('github-file-input');
+
+    if (!dropZone || !fileInput) return;
+
+    // Click pour sélectionner
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag & Drop events
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(76, 175, 80, 0.2)';
+        dropZone.style.borderColor = '#2e7d32';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(255,255,255,0.8)';
+        dropZone.style.borderColor = '#4caf50';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(255,255,255,0.8)';
+        dropZone.style.borderColor = '#4caf50';
+
+        const files = e.dataTransfer.files;
+        handleGitHubUpload(files);
+    });
+
+    // Input file change
+    fileInput.addEventListener('change', (e) => {
+        handleGitHubUpload(e.target.files);
+    });
+
+    // Charger la liste des fichiers existants
+    loadGitHubFiles();
+}
+
+async function handleGitHubUpload(files) {
+    const statusEl = document.getElementById('github-upload-status');
+
+    for (const file of files) {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#e3f2fd';
+        statusEl.innerHTML = `⏳ Upload de <strong>${file.name}</strong> en cours...`;
+
+        try {
+            const content = await readFileAsBase64(file);
+            await uploadToGitHub(file.name, content);
+
+            statusEl.style.background = '#e8f5e9';
+            statusEl.innerHTML = `✅ <strong>${file.name}</strong> uploadé avec succès !`;
+
+            // Recharger la liste
+            await loadGitHubFiles();
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            statusEl.style.background = '#ffebee';
+            statusEl.innerHTML = `❌ Erreur: ${error.message}`;
+        }
+    }
+
+    // Masquer le status après 5 secondes
+    setTimeout(() => {
+        statusEl.style.display = 'none';
+    }, 5000);
+}
+
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+async function uploadToGitHub(filename, content) {
+    const { owner, repo, branch, folder, getToken } = GITHUB_CONFIG;
+    const token = getToken();
+    if (!token) {
+        setupGitHubToken();
+        throw new Error('Token GitHub requis. Configurez-le et réessayez.');
+    }
+    const path = `${folder}/${filename}`;
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+    // Vérifier si le fichier existe déjà (pour obtenir le SHA)
+    let sha = null;
+    try {
+        const checkResponse = await fetch(url, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        if (checkResponse.ok) {
+            const existingFile = await checkResponse.json();
+            sha = existingFile.sha;
+        }
+    } catch (e) {
+        // Fichier n'existe pas, c'est OK
+    }
+
+    // Upload ou update
+    const body = {
+        message: `Upload ${filename} via web interface`,
+        content: content,
+        branch: branch
+    };
+
+    if (sha) {
+        body.sha = sha; // Mise à jour du fichier existant
+    }
+
+    const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur GitHub API');
+    }
+
+    return response.json();
+}
+
+async function loadGitHubFiles() {
+    const container = document.getElementById('github-files-container');
+    const { owner, repo, branch, folder, getToken } = GITHUB_CONFIG;
+    const token = getToken();
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${folder}?ref=${branch}`;
+
+    if (!token) {
+        container.innerHTML = '<p style="color: #ff9800; text-align: center;">⚠️ <a href="#" onclick="setupGitHubToken(); return false;">Configurez votre token GitHub</a> pour voir les fichiers</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                container.innerHTML = '<p style="color: #666; text-align: center;">📂 Dossier vide - Glissez des fichiers pour commencer</p>';
+                return;
+            }
+            throw new Error('Erreur chargement fichiers');
+        }
+
+        const files = await response.json();
+
+        if (files.length === 0) {
+            container.innerHTML = '<p style="color: #666; text-align: center;">📂 Dossier vide - Glissez des fichiers pour commencer</p>';
+            return;
+        }
+
+        container.innerHTML = files.map(file => `
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 15px;
+                background: white;
+                border-radius: 8px;
+                margin-bottom: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            ">
+                <div>
+                    <strong style="color: #333;">📄 ${file.name}</strong>
+                    <div style="font-size: 11px; color: #888; margin-top: 3px;">
+                        ${(file.size / 1024).toFixed(1)} KB
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="https://labiko.github.io/oracle_exacc/${folder}/${file.name}"
+                       target="_blank"
+                       style="
+                           background: #1a73e8;
+                           color: white;
+                           padding: 6px 12px;
+                           border-radius: 5px;
+                           text-decoration: none;
+                           font-size: 12px;
+                       ">🔗 Ouvrir</a>
+                    <a href="${file.download_url}"
+                       target="_blank"
+                       style="
+                           background: #4caf50;
+                           color: white;
+                           padding: 6px 12px;
+                           border-radius: 5px;
+                           text-decoration: none;
+                           font-size: 12px;
+                       ">⬇️ Raw</a>
+                    <button onclick="deleteGitHubFile('${file.name}', '${file.sha}')"
+                       style="
+                           background: #ea4335;
+                           color: white;
+                           padding: 6px 12px;
+                           border-radius: 5px;
+                           border: none;
+                           cursor: pointer;
+                           font-size: 12px;
+                       ">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Load files error:', error);
+        container.innerHTML = `<p style="color: #ea4335; text-align: center;">❌ Erreur: ${error.message}</p>`;
+    }
+}
+
+async function deleteGitHubFile(filename, sha) {
+    if (!confirm(`Supprimer ${filename} de GitHub ?`)) return;
+
+    const { owner, repo, branch, folder, getToken } = GITHUB_CONFIG;
+    const token = getToken();
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${folder}/${filename}`;
+
+    const statusEl = document.getElementById('github-upload-status');
+    statusEl.style.display = 'block';
+    statusEl.style.background = '#fff3e0';
+    statusEl.innerHTML = `🗑️ Suppression de <strong>${filename}</strong>...`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Delete ${filename} via web interface`,
+                sha: sha,
+                branch: branch
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur suppression');
+        }
+
+        statusEl.style.background = '#e8f5e9';
+        statusEl.innerHTML = `✅ <strong>${filename}</strong> supprimé !`;
+
+        await loadGitHubFiles();
+
+    } catch (error) {
+        statusEl.style.background = '#ffebee';
+        statusEl.innerHTML = `❌ Erreur: ${error.message}`;
+    }
+
+    setTimeout(() => {
+        statusEl.style.display = 'none';
+    }, 3000);
+}
 </script>
 
 </body>
