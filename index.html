@@ -9282,16 +9282,12 @@ function initFirebaseUpload() {
 }
 
 async function handleFirebaseUpload(files) {
-    console.log('=== handleFirebaseUpload START ===');
+    console.log('=== handleFirebaseUpload START (Base64 Mode) ===');
     console.log('Nombre de fichiers:', files.length);
 
     const statusEl = document.getElementById('firebase-upload-status');
-    const storage = firebase.storage();
     const db = firebase.database();
-    const MAX_SIZE_MB = 100;
-
-    console.log('Firebase Storage:', storage);
-    console.log('Firebase Database:', db);
+    const MAX_SIZE_MB = 7; // Limite 7 Mo (devient ~10 Mo en base64)
 
     for (const file of files) {
         console.log('--- Traitement fichier:', file.name);
@@ -9300,157 +9296,89 @@ async function handleFirebaseUpload(files) {
 
         statusEl.style.display = 'block';
 
-        // Vérifier la taille
+        // Vérifier la taille (7 Mo max pour base64)
         const fileSizeMB = file.size / (1024 * 1024);
         if (fileSizeMB > MAX_SIZE_MB) {
             console.error('Fichier trop volumineux:', fileSizeMB, 'Mo');
             statusEl.style.background = '#ffebee';
-            document.getElementById('upload-file-name').innerHTML = `❌ <strong>${file.name}</strong> trop volumineux`;
+            document.getElementById('upload-file-name').innerHTML = `❌ <strong>${file.name}</strong> trop volumineux (${fileSizeMB.toFixed(1)} Mo)`;
             document.getElementById('upload-progress-bar').style.width = '100%';
             document.getElementById('upload-progress-bar').style.background = '#f44336';
             document.getElementById('upload-progress-text').textContent = '⛔';
             document.getElementById('upload-bytes').textContent = `${fileSizeMB.toFixed(1)} Mo`;
             document.getElementById('upload-speed').textContent = '';
-            document.getElementById('upload-state').textContent = `Limite: ${MAX_SIZE_MB} Mo`;
+            document.getElementById('upload-state').innerHTML = `Limite: ${MAX_SIZE_MB} Mo`;
             document.getElementById('upload-state').style.color = '#f44336';
             continue;
         }
 
         // Afficher la barre de progression
-        statusEl.style.display = 'block';
         statusEl.style.background = '#e3f2fd';
         document.getElementById('upload-file-name').innerHTML = `📤 <strong>${file.name}</strong> (${fileSizeMB.toFixed(2)} Mo)`;
         document.getElementById('upload-progress-bar').style.width = '0%';
         document.getElementById('upload-progress-bar').style.background = 'linear-gradient(90deg, #ff9800, #ff5722, #ff9800)';
         document.getElementById('upload-progress-text').textContent = '0%';
         document.getElementById('upload-bytes').textContent = `0 KB / ${(file.size / 1024).toFixed(0)} KB`;
-        document.getElementById('upload-speed').textContent = '';
-        document.getElementById('upload-state').textContent = 'Démarrage...';
-
-        let lastBytes = 0;
-        let lastTime = Date.now();
-        let stallTimer = null;
+        document.getElementById('upload-speed').textContent = 'Base64';
+        document.getElementById('upload-state').textContent = '📖 Lecture fichier...';
+        document.getElementById('upload-state').style.color = '#666';
 
         try {
-            // Générer un nom unique
             const timestamp = Date.now();
-            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const storagePath = `uploads/${timestamp}_${safeName}`;
-            console.log('Storage path:', storagePath);
 
-            const storageRef = storage.ref(storagePath);
-            console.log('Storage ref créé:', storageRef);
+            // Étape 1: Lire le fichier en base64
+            document.getElementById('upload-progress-bar').style.width = '30%';
+            document.getElementById('upload-progress-text').textContent = '30%';
 
-            // Upload avec progression
-            console.log('Démarrage upload...');
-            const uploadTask = storageRef.put(file);
-            console.log('Upload task créé:', uploadTask);
+            console.log('Conversion en base64...');
+            const base64Data = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            console.log('Base64 length:', base64Data.length);
 
-            // Écouter les événements
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                    const bytesKB = (snapshot.bytesTransferred / 1024).toFixed(0);
-                    const totalKB = (snapshot.totalBytes / 1024).toFixed(0);
+            // Étape 2: Envoi vers Firebase
+            document.getElementById('upload-progress-bar').style.width = '60%';
+            document.getElementById('upload-progress-text').textContent = '60%';
+            document.getElementById('upload-state').textContent = '☁️ Envoi vers Firebase...';
 
-                    // Calculer la vitesse
-                    const now = Date.now();
-                    const timeDiff = (now - lastTime) / 1000;
-                    const bytesDiff = snapshot.bytesTransferred - lastBytes;
-                    let speed = '';
-                    if (timeDiff > 0 && bytesDiff > 0) {
-                        const speedKBps = (bytesDiff / 1024) / timeDiff;
-                        speed = speedKBps > 1024 ? `${(speedKBps / 1024).toFixed(1)} MB/s` : `${speedKBps.toFixed(0)} KB/s`;
-                        lastBytes = snapshot.bytesTransferred;
-                        lastTime = now;
-                    }
-
-                    // Détecter si bloqué
-                    clearTimeout(stallTimer);
-                    document.getElementById('upload-progress-bar').classList.remove('upload-stalled');
-                    stallTimer = setTimeout(() => {
-                        if (progress < 100) {
-                            document.getElementById('upload-progress-bar').classList.add('upload-stalled');
-                            document.getElementById('upload-state').textContent = '⚠️ Bloqué ?';
-                            document.getElementById('upload-state').style.color = '#f44336';
-                        }
-                    }, 5000);
-
-                    // Mettre à jour l'UI
-                    document.getElementById('upload-progress-bar').style.width = progress + '%';
-                    document.getElementById('upload-progress-text').textContent = progress + '%';
-                    document.getElementById('upload-bytes').textContent = `${bytesKB} KB / ${totalKB} KB`;
-                    document.getElementById('upload-speed').textContent = speed;
-                    document.getElementById('upload-state').style.color = '#666';
-                    document.getElementById('upload-state').textContent = snapshot.state === 'running' ? '🔄 En cours...' : snapshot.state;
-
-                    console.log('Progress:', progress + '%', '(' + snapshot.bytesTransferred + '/' + snapshot.totalBytes + ')', speed);
-                },
-                (error) => {
-                    clearTimeout(stallTimer);
-                    console.error('Upload error callback:', error);
-                    console.error('Error code:', error.code);
-                    console.error('Error message:', error.message);
-                    document.getElementById('upload-progress-bar').style.background = '#f44336';
-                    document.getElementById('upload-state').textContent = '❌ Erreur: ' + error.code;
-                    document.getElementById('upload-state').style.color = '#f44336';
-                },
-                () => {
-                    clearTimeout(stallTimer);
-                    console.log('Upload complete callback');
-                    document.getElementById('upload-progress-bar').style.background = '#4caf50';
-                    document.getElementById('upload-state').textContent = '✅ Terminé!';
-                    document.getElementById('upload-state').style.color = '#4caf50';
-                }
-            );
-
-            // Attendre la fin de l'upload
-            console.log('Attente fin upload...');
-            await uploadTask;
-            console.log('Upload terminé!');
-
-            // Obtenir l'URL de téléchargement
-            console.log('Récupération URL...');
-            const downloadURL = await storageRef.getDownloadURL();
-            console.log('Download URL:', downloadURL);
-
-            // Sauvegarder les métadonnées dans la database
             const fileData = {
                 name: file.name,
-                storagePath: storagePath,
-                url: downloadURL,
                 size: file.size,
                 type: file.type || 'application/octet-stream',
-                createdAt: timestamp
+                base64: base64Data,
+                createdAt: timestamp,
+                storageType: 'base64'
             };
-            console.log('Sauvegarde metadata:', fileData);
+
+            document.getElementById('upload-progress-bar').style.width = '80%';
+            document.getElementById('upload-progress-text').textContent = '80%';
 
             await db.ref('uploadedFiles').push(fileData);
-            console.log('Metadata sauvegardée!');
+            console.log('Fichier sauvegardé en base64!');
 
-            // Succès - garder la barre de progression verte
-            statusEl.style.background = '#e8f5e9';
-            document.getElementById('upload-file-name').innerHTML = `✅ <strong>${file.name}</strong> uploadé avec succès !`;
+            // Succès
             document.getElementById('upload-progress-bar').style.width = '100%';
             document.getElementById('upload-progress-bar').style.background = '#4caf50';
             document.getElementById('upload-progress-text').textContent = '100%';
+            document.getElementById('upload-state').textContent = '✅ Terminé!';
+            document.getElementById('upload-state').style.color = '#4caf50';
+            statusEl.style.background = '#e8f5e9';
+            document.getElementById('upload-file-name').innerHTML = `✅ <strong>${file.name}</strong> uploadé !`;
 
             // Recharger la liste
             loadFirebaseFiles();
 
         } catch (error) {
             console.error('=== ERREUR UPLOAD ===');
-            console.error('Error object:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
-            console.error('Error serverResponse:', error.serverResponse);
-            console.error('Error stack:', error.stack);
+            console.error('Error:', error);
 
-            // Erreur - barre rouge
             statusEl.style.background = '#ffebee';
             document.getElementById('upload-file-name').innerHTML = `❌ <strong>${file.name}</strong> - Échec`;
             document.getElementById('upload-progress-bar').style.background = '#f44336';
-            document.getElementById('upload-state').textContent = error.code || error.message;
+            document.getElementById('upload-state').textContent = error.message || 'Erreur inconnue';
             document.getElementById('upload-state').style.color = '#f44336';
         }
     }
@@ -9509,6 +9437,49 @@ function renderFirebaseFiles() {
         else if (file.name.match(/\.(png|jpg|jpeg|gif|svg)$/i)) icon = '🖼️';
         else if (file.name.match(/\.(ksh|sh|py|js)$/i)) icon = '⚙️';
 
+        // Vérifier si c'est un fichier base64 ou URL classique
+        const isBase64 = file.storageType === 'base64' || file.base64;
+        const storageIcon = isBase64 ? '💾' : '☁️';
+
+        // Boutons différents selon le mode de stockage
+        const downloadBtn = isBase64
+            ? `<button onclick="downloadBase64File('${id}')" style="
+                    background: #4caf50;
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 5px;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 12px;
+                ">⬇️ Télécharger</button>`
+            : `<a href="${file.url}" download="${file.name}" style="
+                    background: #4caf50;
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 5px;
+                    text-decoration: none;
+                    font-size: 12px;
+                ">⬇️ Télécharger</a>`;
+
+        const openBtn = isBase64
+            ? `<button onclick="openBase64File('${id}')" style="
+                    background: #1a73e8;
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 5px;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 12px;
+                ">🔗 Ouvrir</button>`
+            : `<a href="${file.url}" target="_blank" style="
+                    background: #1a73e8;
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 5px;
+                    text-decoration: none;
+                    font-size: 12px;
+                ">🔗 Ouvrir</a>`;
+
         return `
             <div style="
                 display: flex;
@@ -9523,35 +9494,12 @@ function renderFirebaseFiles() {
                 <div style="flex: 1; min-width: 0;">
                     <strong style="color: #333;">${icon} ${file.name}</strong>
                     <div style="font-size: 11px; color: #888; margin-top: 3px;">
-                        ${sizeStr} • ${dateStr}
+                        ${sizeStr} • ${dateStr} ${storageIcon}
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;">
-                    <a href="${file.url}" target="_blank" style="
-                        background: #1a73e8;
-                        color: white;
-                        padding: 6px 12px;
-                        border-radius: 5px;
-                        text-decoration: none;
-                        font-size: 12px;
-                    ">🔗 Ouvrir</a>
-                    <a href="${file.url}" download="${file.name}" style="
-                        background: #4caf50;
-                        color: white;
-                        padding: 6px 12px;
-                        border-radius: 5px;
-                        text-decoration: none;
-                        font-size: 12px;
-                    ">⬇️ Télécharger</a>
-                    <button onclick="copyFirebaseFileUrl('${id}')" style="
-                        background: #ff9800;
-                        color: white;
-                        padding: 6px 12px;
-                        border-radius: 5px;
-                        border: none;
-                        cursor: pointer;
-                        font-size: 12px;
-                    ">📋 Copier URL</button>
+                    ${openBtn}
+                    ${downloadBtn}
                     <button onclick="deleteFirebaseFile('${id}')" style="
                         background: #ea4335;
                         color: white;
@@ -9565,6 +9513,44 @@ function renderFirebaseFiles() {
             </div>
         `;
     }).join('');
+}
+
+// Télécharger un fichier base64
+function downloadBase64File(fileId) {
+    const file = uploadedFilesData[fileId];
+    if (!file || !file.base64) {
+        alert('Fichier non trouvé');
+        return;
+    }
+
+    // Créer un lien de téléchargement
+    const link = document.createElement('a');
+    link.href = file.base64;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Ouvrir un fichier base64 dans un nouvel onglet
+function openBase64File(fileId) {
+    const file = uploadedFilesData[fileId];
+    if (!file || !file.base64) {
+        alert('Fichier non trouvé');
+        return;
+    }
+
+    // Ouvrir dans un nouvel onglet
+    const newWindow = window.open();
+    if (newWindow) {
+        // Pour les images et PDF, afficher directement
+        if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+            newWindow.document.write(`<iframe src="${file.base64}" style="width:100%;height:100%;border:none;"></iframe>`);
+        } else {
+            // Pour les autres fichiers, proposer le téléchargement
+            newWindow.location.href = file.base64;
+        }
+    }
 }
 
 function copyFirebaseFileUrl(fileId) {
@@ -9597,13 +9583,9 @@ async function deleteFirebaseFile(fileId) {
     statusEl.innerHTML = `🗑️ Suppression de <strong>${file.name}</strong>...`;
 
     try {
-        const storage = firebase.storage();
         const db = firebase.database();
 
-        // Supprimer de Storage
-        await storage.ref(file.storagePath).delete();
-
-        // Supprimer de Database
+        // Supprimer de Database (le fichier base64 est stocké dedans)
         await db.ref('uploadedFiles/' + fileId).remove();
 
         statusEl.style.background = '#e8f5e9';
@@ -9613,12 +9595,6 @@ async function deleteFirebaseFile(fileId) {
         console.error('Delete error:', error);
         statusEl.style.background = '#ffebee';
         statusEl.innerHTML = `❌ Erreur: ${error.message}`;
-
-        // Supprimer quand même de la database si le fichier n'existe plus
-        if (error.code === 'storage/object-not-found') {
-            const db = firebase.database();
-            await db.ref('uploadedFiles/' + fileId).remove();
-        }
     }
 
     setTimeout(() => {
