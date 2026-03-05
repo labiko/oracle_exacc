@@ -1,0 +1,276 @@
+================================================================================
+ANALYSE ROOT CAUSE - Transaction 2817 EUR Non Visible dans BR_DATA
+================================================================================
+Date d'analyse : 07/02/2026
+Compte concerné : BBNP83292-EUR (Compte Accurate 342)
+RIB : 30004 02118 00016111832 92
+
+================================================================================
+1. CONTEXTE
+================================================================================
+
+PROBLÈME CONSTATÉ :
+La transaction de 2817 EUR (PAYMENT_REF: 55841990, Client: 90141615)
+du 17/10/2025 n'apparaît PAS individuellement dans BANKREC.BR_DATA.
+
+Par contre, la transaction de 22.36 EUR (Compte 394 - BNPP05492-EUR)
+du même flux apparaît BIEN individuellement dans BR_DATA.
+
+================================================================================
+2. ROOT CAUSE IDENTIFIÉE
+================================================================================
+
+CAUSE : MODE CUMUL ACTIF pour le compte 342 (BBNP83292-EUR)
+
+Une règle de cumul existe dans la table TA_RN_CUMUL_MR :
+  - ID_COMPTE_BANCAIRE_SYSTEME : 352 (compte 342)
+  - CODE_PRODUIT : ALL (tous les produits)
+  - CODE_MODE_REGLEMENT : VO (virements ordinaires)
+
+Cette règle provoque la CUMULATION de TOUTES les transactions VO
+du compte 342 au lieu d'un export en détail.
+
+VÉRIFICATION :
+{code:sql}
+SELECT
+    CMR.ID_COMPTE_BANCAIRE_SYSTEME,
+    P.CODE_PRODUIT,
+    MR.CODE_MODE_REGLEMENT,
+    'MODE CUMUL ACTIF' AS STATUT
+FROM TA_RN_CUMUL_MR CMR
+    JOIN TA_RN_PRODUIT P ON P.ID_PRODUIT = CMR.ID_PRODUIT
+    JOIN TA_RN_MODE_REGLEMENT MR ON MR.ID_MODE_REGLEMENT = CMR.ID_MODE_REGLEMENT
+WHERE CMR.ID_COMPTE_BANCAIRE_SYSTEME = 352
+  AND P.CODE_PRODUIT = 'ALL'
+  AND MR.CODE_MODE_REGLEMENT = 'VO';
+
+RÉSULTAT : 1 règle trouvée → CUMUL ACTIF
+{code}
+
+COMPARAISON avec le compte 394 (qui fonctionne) :
+{code:sql}
+Compte 394 (22.36 EUR)  : 0 règle de cumul → Export DÉTAIL ✅
+Compte 342 (2817 EUR)   : 1 règle de cumul → Export CUMUL ❌
+{code}
+
+================================================================================
+3. PREUVE : ANALYSE DU CUMUL DU 17/10/2025
+================================================================================
+
+La transaction 2817 EUR fait partie d'un LOT de 23 TRANSACTIONS VO
+cumulées en UNE SEULE ligne dans BR_DATA.
+
+DÉTAIL DES 23 TRANSACTIONS CUMULÉES :
+
+{noformat}
+N°   |         MONTANT | PAYMENT_REF  | CLIENT       | MARQUEUR
+-----|-----------------|--------------|--------------|---------------------------
+1    |        63345.11 | 55841342     | 614915689    |
+2    |         52366.6 | 55841119     | 50584239     |
+3    |        23594.42 | 55841984     | 90141615     |
+4    |        20579.93 | 55842693     | 55223070     |
+5    |        18918.93 | 55842185     | 927521954    |
+6    |         8085.56 | 55841522     | 696242248    |
+7    |         8085.56 | 55841525     | 696242248    |
+8    |         8085.56 | 55841528     | 696242248    |
+9    |          3793.8 | 55840800     | 606338367    |
+10   |         3708.57 | 55841664     | 696553487    |
+11   |            2817 | 55841990     | 90141615     | ← VOTRE TRANSACTION
+12   |         2410.37 | 55842212     | 601882866    |
+13   |          1466.4 | 55842458     | 696520226    |
+14   |          1466.4 | 55842455     | 696520226    |
+15   |         1465.71 | 55842452     | 696520226    |
+16   |         1465.71 | 55842248     | 696520226    |
+17   |         1283.21 | 55842236     | 696520226    |
+18   |          1282.3 | 55842245     | 696520226    |
+19   |             946 | 55842509     | 172438161    |
+20   |          555.49 | 55842239     | 696520226    |
+21   |          488.81 | 55842467     | 696520226    |
+22   |          488.41 | 55842257     | 696520226    |
+23   |          138.93 | 55842242     | 696520226    |
+-----|-----------------|--------------|--------------|---------------------------
+TOTAL|       226838.78 EUR
+{noformat}
+
+VÉRIFICATION DANS BR_DATA :
+{noformat}
+BBNP83292-EUR, 17/10/2025, "Ecriture cumul quotidien", VO, EUR, 226838,78
+{noformat}
+
+Le montant 226838.78 EUR correspond EXACTEMENT à la somme des 23 transactions.
+
+CONSTAT :
+✅ La transaction 2817 EUR est BIEN traitée par le système
+✅ Elle est BIEN importée dans TA_RN_IMPORT_GESTION
+✅ Elle est BIEN exportée dans TA_RN_EXPORT
+❌ MAIS elle est exportée en CUMUL et non en DÉTAIL
+❌ Elle n'apparaît donc PAS individuellement dans BR_DATA
+
+================================================================================
+4. IMPACT ACTUEL
+================================================================================
+
+COMPORTEMENT ACTUEL du compte 342 (BBNP83292-EUR) :
+- Toutes les transactions VO sont cumulées quotidiennement
+- Une seule ligne par jour dans BR_DATA avec la somme totale
+- Impossible de tracer une transaction VO individuelle
+- Le commentaire dans BR_DATA indique "Ecriture cumul quotidien"
+
+COMPORTEMENT du compte 394 (BNPP05492-EUR) :
+- Chaque transaction VO apparaît individuellement
+- Traçabilité complète de chaque opération
+- Pas de cumul
+
+================================================================================
+5. SOLUTIONS PROPOSÉES
+================================================================================
+
+----- OPTION A : SUPPRIMER LA RÈGLE DE CUMUL (RECOMMANDÉ) -----
+
+DESCRIPTION :
+Supprimer complètement la règle de cumul ALL+VO pour le compte 342.
+Toutes les transactions VO seront désormais exportées EN DÉTAIL.
+
+SCRIPT SQL :
+{code:sql}
+-- Sauvegarde avant suppression
+CREATE TABLE TA_RN_CUMUL_MR_BACKUP AS
+SELECT * FROM TA_RN_CUMUL_MR
+WHERE ID_COMPTE_BANCAIRE_SYSTEME = 352;
+
+-- Suppression de la règle
+DELETE FROM TA_RN_CUMUL_MR
+WHERE ID_COMPTE_BANCAIRE_SYSTEME = 352
+  AND ID_PRODUIT = (SELECT ID_PRODUIT FROM TA_RN_PRODUIT WHERE CODE_PRODUIT = 'ALL')
+  AND ID_MODE_REGLEMENT = (SELECT ID_MODE_REGLEMENT FROM TA_RN_MODE_REGLEMENT WHERE CODE_MODE_REGLEMENT = 'VO');
+
+COMMIT;
+{code}
+
+IMPACT :
+✅ Toutes les transactions VO du compte 342 apparaîtront individuellement dans BR_DATA
+✅ Traçabilité complète de chaque opération
+✅ Comportement identique au compte 394
+⚠️ Augmentation du volume de lignes dans BR_DATA (23 lignes au lieu de 1 pour le 17/10/2025)
+
+RÉVERSIBILITÉ :
+Oui, la règle peut être recréée si nécessaire.
+
+
+----- OPTION B : EXCLUSION GRANULAIRE PAR PRODUIT -----
+
+DESCRIPTION :
+Remplacer la règle globale "ALL" par des règles spécifiques pour
+chaque produit SAUF le produit 90141615 (client de la transaction 2817).
+
+IMPACT :
+✅ Le produit 90141615 sera exporté en détail
+✅ Les autres produits continueront d'être cumulés
+⚠️ Maintenance plus complexe (gestion de la liste des produits)
+
+RECOMMANDATION :
+À privilégier si seul le produit 90141615 doit être en détail.
+
+
+----- OPTION C : CONSERVER LE CUMUL (AUCUNE ACTION) -----
+
+DESCRIPTION :
+Conserver le paramétrage actuel. Le cumul est le comportement souhaité.
+
+IMPACT :
+✅ Aucun changement
+❌ Les transactions VO continueront d'apparaître en cumul uniquement
+❌ Pas de traçabilité individuelle des opérations
+
+RECOMMANDATION :
+À privilégier si le métier confirme que le cumul est le comportement attendu.
+
+================================================================================
+6. RECOMMANDATION TECHNIQUE
+================================================================================
+
+RECOMMANDATION : OPTION A (Supprimer la règle de cumul)
+
+JUSTIFICATIONS :
+1. Cohérence avec les autres comptes (394 n'a pas de cumul)
+2. Traçabilité complète des opérations
+3. Simplicité de mise en œuvre et de maintenance
+4. Réversibilité totale
+
+AVANT MODIFICATION :
+⚠️ Validation métier OBLIGATOIRE pour confirmer que le cumul n'est PAS souhaité
+⚠️ Test sur environnement de qualification avant production
+⚠️ Vérifier l'impact sur les processus de rapprochement bancaire
+
+================================================================================
+7. QUESTIONS POUR LE MÉTIER
+================================================================================
+
+Question 1 : Le compte BBNP83292-EUR doit-il exporter les virements VO :
+  [ ] EN DÉTAIL (chaque transaction individuellement) ← Recommandé
+  [ ] EN CUMUL (une ligne par jour avec la somme totale)
+
+Question 2 : Cette règle de cumul ALL+VO est-elle :
+  [ ] Une erreur de paramétrage (créée lors de tests)
+  [ ] Un paramétrage fonctionnel voulu historiquement
+
+Question 3 : Y a-t-il d'autres comptes avec la même règle ALL+VO ?
+  [ ] À vérifier avec le script de diagnostic
+
+Question 4 : Quel est l'impact métier du cumul actuel ?
+  [ ] Problématique (besoin de traçabilité individuelle)
+  [ ] Acceptable (le cumul quotidien suffit)
+
+================================================================================
+8. PROCHAINES ÉTAPES
+================================================================================
+
+1. ✅ Root cause identifiée et documentée
+2. ⏳ ATTENTE validation métier sur l'option à privilégier
+3. ⏳ Si OPTION A retenue : Test sur qualification
+4. ⏳ Déploiement en production après validation
+5. ⏳ Vérification post-déploiement
+
+================================================================================
+9. FICHIERS ET SCRIPTS DISPONIBLES
+================================================================================
+
+Documentation complète disponible dans :
+  BNNP_SQL/ROOT_CAUSE_ANALYSIS.md
+  BNNP_SQL/SOLUTION_OPTIONS.md
+  BNNP_SQL/INVESTIGATION_COMPLETE_2817.md
+  BNNP_SQL/INDEX_DOCUMENTATION.md
+
+Scripts de vérification :
+  VERIF_CUMUL_COMPTE_342.sql
+  VERIF_CUMUL_COMPTE_394.sql
+  COMPARAISON_CUMUL_342_VS_394.sql
+  LISTE_TRANSACTIONS_CUMUL_17102025.sql
+
+Scripts de diagnostic :
+  VERIF_HISTORIQUE_CUMUL_PROD.sql
+  VERIF_EXPORT_CUMUL_342.sql
+
+Script Python d'extraction :
+  extract_transactions_342.py
+
+================================================================================
+10. CONTACTS
+================================================================================
+
+Analyse technique réalisée par : [VOTRE NOM]
+Date : 07/02/2026
+Environnement : PRODUCTION (P08449A)
+
+Pour toute question technique, contacter : [VOTRE EMAIL/ÉQUIPE]
+
+================================================================================
+FIN DE L'ANALYSE
+================================================================================
+
+CONCLUSION :
+Le système fonctionne CORRECTEMENT selon le paramétrage actuel (cumul ALL+VO).
+Pour avoir les transactions VO en DÉTAIL, il faut modifier ce paramétrage
+après validation métier.
+
+Merci de valider l'option souhaitée pour que nous puissions procéder.

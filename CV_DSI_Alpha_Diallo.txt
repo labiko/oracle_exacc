@@ -1,0 +1,474 @@
+═══════════════════════════════════════════════════════════════════════════════
+                     ALPHA DIALLO - CV ADAPTÉ POSTE DSI
+═══════════════════════════════════════════════════════════════════════════════
+
+INFORMATIONS PERSONNELLES
+─────────────────────────────────────────────────────────────────────────────
+Téléphone : 06 20 95 16 45
+Email : diallo.labico@hotmail.fr
+Nationalité : Française
+Permis : Permis B
+
+
+═══════════════════════════════════════════════════════════════════════════════
+DIRECTEUR DES SYSTÈMES D'INFORMATION
+10 ans d'expérience en pilotage stratégique IT
+═══════════════════════════════════════════════════════════════════════════════
+
+
+PROFIL
+─────────────────────────────────────────────────────────────────────────────
+
+Directeur des Systèmes d'Information avec 10 ans d'expérience en pilotage
+stratégique IT et transformation digitale. Expert en gouvernance des systèmes
+d'information, alignement IT/Business et conduite du changement au sein
+d'environnements bancaires et industriels exigeants (AXA, BNP Paribas).
+
+Reconnu pour ma capacité à piloter des projets structurants à forte valeur
+ajoutée : migrations cloud (Azure PaaS/CaaS), modernisation d'architectures
+legacy, conformité RGPD, et intégration de solutions IA. Fort d'une expertise
+technique approfondie (.NET, Cloud Azure, bases de données, DevOps,
+cybersécurité ISO 27032) me permettant d'arbitrer les choix architecturaux
+et d'accompagner les équipes dans l'excellence opérationnelle.
+
+Leadership éprouvé dans la gestion d'équipes pluridisciplinnes (développement,
+production, architecture, réseau), la coordination multi-sites et le pilotage
+budgétaire de projets complexes. Maîtrise des méthodologies Agile (Scrum,
+Kanban) et des outils de gouvernance IT (JIRA, ServiceNow, Azure DevOps).
+
+Orienté résultats, j'allie vision stratégique et pragmatisme opérationnel pour
+optimiser la performance des SI, réduire la dette technique, anticiper les
+risques et accompagner la croissance de l'entreprise par l'innovation
+technologique.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+RÉALISATIONS STRATÉGIQUES CLÉS
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ Migration cloud Azure PaaS → CaaS pour 15+ applications critiques
+✓ Transformation digitale : Intégration IA pour automatisation documentaire
+  contractuelle (ROI +35% en productivité)
+✓ Mise en place d'une architecture de sécurité multi-niveaux : WAF, rate
+  limiting, protection DDoS
+✓ Sécurisation des APIs critiques contre les injections SQL et attaques XSS
+✓ Implémentation de solutions anti-fraude et détection d'anomalies
+  comportementales
+✓ Conformité RGPD : Conception et déploiement d'un système de purge
+  automatisée des données personnelles
+✓ Réduction de 40% des incidents production via monitoring prédictif et
+  analyse proactive des risques
+✓ Modernisation architecturale : Migration de 50+ services SOAP legacy
+  vers REST API avec OAuth2
+✓ Optimisation budgétaire : Consolidation infrastructure cloud (-25% coûts)
+  et rationalisation du parc serveurs
+✓ Excellence opérationnelle : Refactoring architectural et optimisation
+  performance bases de données (amélioration temps réponse de 60%)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+COMPÉTENCES DSI - STRUCTURÉES PAR DOMAINE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. STRATÉGIE ET GOUVERNANCE IT
+─────────────────────────────────────────────────────────────────────────────
+   • Définition et pilotage de roadmaps IT alignées sur les objectifs business
+   • Gestion de la dette technique et plans de modernisation
+   • Arbitrage architectural et validation des choix technologiques
+   • Veille technologique et réglementaire continue
+   • Élaboration de tableaux de bord direction et KPI stratégiques
+   • Gestion budgétaire multi-projets et optimisation des coûts IT
+
+
+2. MANAGEMENT D'ÉQUIPE
+─────────────────────────────────────────────────────────────────────────────
+   • Leadership d'équipes techniques pluridisciplinaires (jusqu'à 7 personnes)
+   • Recrutement, évaluation et développement des compétences
+   • Animation d'équipes transverses (dev, ops, architecture, réseau, sécurité)
+   • Coordination multi-sites et gestion de prestataires externes
+   • Méthodes Agile : Scrum Master, animation cérémonies, coaching équipes
+   • Communication ascendante (direction) et descendante (équipes)
+
+
+3. GESTION DE PROJETS IT
+─────────────────────────────────────────────────────────────────────────────
+   • Pilotage de projets stratégiques complexes de A à Z
+   • Gestion de backlog technique et métier (JIRA, Azure DevOps)
+   • Planification, estimation des charges et allocation des ressources
+   • Pilotage d'appels d'offres et négociation avec prestataires
+   • Gestion des risques et anticipation proactive des blocages
+   • Reporting direction et communication parties prenantes
+   • Cadrage de projets : diagrammes UML, use case, flux, séquence
+
+
+4. TRANSFORMATION NUMÉRIQUE
+─────────────────────────────────────────────────────────────────────────────
+   • Modernisation d'architectures legacy vers cloud natives
+   • Intégration de solutions IA/ML pour automatisation métier
+   • Refonte architecturale SOAP → REST API avec OAuth2
+   • Digitalisation des processus métier et dématérialisation
+   • Conduite du changement et accompagnement utilisateurs
+   • Innovation technologique : POC, expérimentations, R&D
+
+
+5. SYSTÈMES, DÉVELOPPEMENT ET E-COMMERCE
+─────────────────────────────────────────────────────────────────────────────
+   • Architecture SI : CQRS, DDD, MediatR, Microservices
+   • Stack technique : .NET Core 8, C#, ASP.NET MVC, Blazor
+   • APIs : REST, SOAP, GraphQL - Authentification OAuth2, JWT
+   • Bases de données : SQL Server, Oracle 19c, optimisation performance
+   • Frontend : Angular, JavaScript, HTML5, CSS3
+   • Reverse Engineering et documentation technique
+   • Audits de code source et refactoring architectural
+
+
+6. INFRASTRUCTURE & CLOUD
+─────────────────────────────────────────────────────────────────────────────
+   • Cloud Azure : PaaS, CaaS, Container Registry, Service Bus, AKS
+   • Conteneurisation : Docker, Kubernetes, orchestration
+   • DevOps : CI/CD (Azure DevOps, Jenkins, TeamCity), pipelines automatisés
+   • Infrastructure as Code et automatisation déploiements
+   • Migration cloud : PaaS → CaaS, SQL as a Service
+   • Virtualisation : VMWare, gestion parc serveurs
+   • Réseau : Zoning N-tiers, architecture réseau sécurisée
+
+
+7. SÉCURITÉ ET CONFORMITÉ
+─────────────────────────────────────────────────────────────────────────────
+   • Diplôme ISO/IEC 27032 Lead Cybersecurity Manager
+   • Gouvernance sécurité : politiques, procédures, audits
+   • Sécurité applicative web : protection DDoS, injection SQL, XSS, CSRF
+   • Web Application Firewall (WAF) et filtrage applicatif
+   • Tests d'intrusion (pentest) et audits de vulnérabilités
+   • Sécurité secteur gaming : anti-fraude, protection transactions, KYC/AML
+   • Conformité RGPD : identification données sensibles, purge automatisée
+   • Sécurisation des APIs : OAuth2, JWT, cryptage
+   • Gestion des vulnérabilités et plans de remédiation
+   • Sensibilisation et formation équipes à la cybersécurité
+
+
+8. CONTINUITÉ D'ACTIVITÉ ET RÉSILIENCE
+─────────────────────────────────────────────────────────────────────────────
+   • Supervision : Dynatrace, Kibana, Azure Monitor
+   • Monitoring proactif et analyse prédictive des incidents
+   • Gestion de crise et résolution d'incidents critiques en production
+   • Plans de continuité d'activité (PCA) et disaster recovery
+   • Haute disponibilité et scalabilité des architectures
+   • Optimisation performance et tuning bases de données
+   • Anticipation des risques techniques et réduction incidents (-40%)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+EXPÉRIENCE PROFESSIONNELLE
+═══════════════════════════════════════════════════════════════════════════════
+
+
+RESPONSABLE DE PROJET TECHNIQUE / IT MANAGER
+AXA FRANCE, Paris
+Novembre 2024 - Présent
+─────────────────────────────────────────────────────────────────────────────
+
+PILOTAGE STRATÉGIQUE IT ET TRANSFORMATION DIGITALE
+
+Stratégie et Gouvernance IT :
+• Définition et pilotage de la roadmap de modernisation technique
+  (migration .NET 4 → .NET 8)
+• Traitement de la dette technique et gestion des obsolescences critiques
+• Arbitrage des choix architecturaux et validation des solutions techniques
+• Élaboration de roadmaps de migration et documentation technique stratégique
+• Reverse Engineering sur infrastructure cloud Azure (reconstruction API
+  perdues lors de migration)
+
+Management d'Équipe :
+• Encadrement et animation d'une équipe pluridisciplinaire de 4 développeurs
+• Allocation des ressources, affectation de tâches et montée en compétences
+• Animation de meetings quotidiens avec les équipes métier
+• Coordination avec les équipes OPS, Architecture, Réseau et Sécurité
+
+Gestion de Projets IT :
+• Pilotage de projets stratégiques transverses (migration PaaS → CaaS Azure)
+• Gestion de backlog technique et métier via JIRA
+• Estimation délais/charges, validation des jalons micro et macro
+• Gestion budgétaire de projets et reporting direction
+• Communication et validation avec les parties prenantes métier
+
+Transformation Numérique :
+• Refonte architecturale : migration de services GED SOAP legacy vers REST
+  avec authentification OAuth2
+• Intégration d'une solution IA pour reconnaissance et classement automatique
+  de documents contractuels (gain productivité +35%)
+• Modernisation des mécanismes d'authentification et de cryptage
+  (librairies maison)
+• Identification et documentation WSDL et schémas XML (services SOAP),
+  utilisation SoapUI
+
+Infrastructure & Cloud :
+• Pilotage migration cloud Azure PaaS vers CaaS pour 15+ applications critiques
+• Mise en place pipelines CI/CD et conteneurisation Docker
+• Gestion Azure Container Registry, Service Bus, Kubernetes/AKS
+• Migration bases de données SQL as a Service
+
+Sécurité et Conformité :
+• Pilotage projet RGPD : identification technique des critères de purge et
+  script de suppression automatisée des données personnelles
+• Modernisation sécurité : OAuth2, cryptage, authentification renforcée
+• Audits de code source C# .NET MVC : analyse qualité, sécurité et performance
+
+Continuité d'Activité :
+• Anticipation et gestion proactive des risques techniques
+• Réduction de 40% des incidents production via monitoring Kibana et analyse
+  prédictive
+• Optimisation performance bases de données : consolidation SQL Server,
+  refactoring architectural
+
+Environnement Technique :
+Cloud Azure (PaaS, CaaS), .NET Core 8, C#, Visual Studio 2022, API REST/SOAP,
+SoapUI, SQL Server, Docker, Kubernetes, Azure Service Bus, MediatR Pattern,
+Blazor, Azure Container Registry, Azure DevOps, CQRS, DDD, JetBrains dotPeek,
+Kibana, Scrum Agile, Kanban, Confluence, JIRA
+
+
+
+RESPONSABLE D'APPLICATION / APPLICATION MANAGER
+BNP PARIBAS, Paris
+Avril 2022 - Octobre 2024
+─────────────────────────────────────────────────────────────────────────────
+
+DIRECTION OPÉRATIONNELLE SI ET ALIGNEMENT BUSINESS
+
+Stratégie et Gouvernance IT :
+• Interface stratégique entre la Direction Financière (métier) et les équipes
+  techniques (Production, Développement, Infrastructure)
+• Analyse des besoins métiers et traduction en solutions IT alignées
+• Gestion du scope des versions et roadmap produit
+• Veille technologique et proposition d'innovations
+• Référent technique pour arbitrage des choix architecturaux
+
+Management d'Équipe :
+• Pilotage d'une équipe de 7 développeurs : objectifs, suivi performances,
+  développement compétences
+• Animation d'équipe et reporting d'activité à la direction
+• Coordination transverse : équipes exploitation, fonctionnelles, support
+  produit, batch, infra
+• Gestion et délégation des développements
+
+Gestion de Projets IT :
+• Planification et estimation des développements (Front & Back End)
+• Gestion de backlog technique et métier via JIRA
+• Rédaction de spécifications techniques et cahiers des charges
+• Gestion budgétaire de projets
+• Validation des jalons et communication parties prenantes
+• Utilisation ServiceNow pour gestion des changements
+
+Transformation Numérique :
+• Pilotage refonte services GED : migration SOAP vers REST avec OAuth2
+• Intégration solution IA pour reconnaissance et classement automatique de
+  documents contractuels
+• Digitalisation processus métier Comptabilité
+• Modernisation des architectures applicatives
+
+Infrastructure & Cloud :
+• Pilotage migration infrastructure PaaS vers CaaS Azure
+• Coordination avec équipes Architecture, Réseau et Sécurité
+• Gestion pipelines migration bases de données SQL as a Service
+• Mise en place environnement non-production (VMWare)
+• Évolution zoning réseau N-tiers
+• Gestion obsolescence et changement parc serveurs
+
+Sécurité et Conformité :
+• Implémentation OAuth2 pour sécurisation APIs
+• Audit sécurité services exposés
+• Pilotage projet RGPD : purge automatisée données personnelles
+• Respect procédures changements via ServiceNow
+
+Continuité d'Activité :
+• Monitoring proactif via Dynatrace
+• Analyse et résolution d'incidents critiques en production
+• Analyse bugs/incidents requêtes PL/SQL et optimisation
+• Mise en place plans continuité d'activité
+• Suivi production et anticipation des risques
+• Audits performance et refactoring
+
+Développement & Techniques :
+• Audit code source C# .NET MVC : qualité, performance, optimisations
+• Rédaction spécifications techniques
+• Préparation jeux d'essai et scénarii de recette
+• Réalisation tests unitaires
+
+Environnement Technique :
+Azure DevOps, CI/CD, AKS, Kubernetes, Git Lab, Dynatrace, ServiceNow,
+Oracle 19C Linux, .NET Core C#, .NET Framework ASP.NET MVC, MsTest,
+Selenium C#, PowerShell, Agile Scrum
+
+
+
+CHEF DE PROJET TECHNIQUE / TECHNICAL PROJECT MANAGER
+HUTCHINSON, Paris
+Avril 2021 - Mars 2022
+─────────────────────────────────────────────────────────────────────────────
+
+PILOTAGE DE PROJETS IT ET GOUVERNANCE TECHNIQUE
+
+Stratégie et Gouvernance IT :
+• Cadrage de projets et définition roadmaps techniques
+• Conception architecturale : MLD/UML, création bases de données
+• Gestion obsolescence parc serveurs et plan de renouvellement
+• Veille technologique et proposition solutions innovantes
+
+Management d'Équipe :
+• Encadrement équipes développeurs et métiers
+• Coordination multi-équipes (produit, batch, infrastructure)
+• Animation réunions avancement et brainstorming
+• Diffusion concepts Agilité dans l'entreprise
+
+Gestion de Projets IT :
+• Planification tâches et affectation aux équipes développeurs
+• Estimation charges et suivi avancement (burndown charts)
+• Pilotage appels d'offres et négociation avec prestataires
+• Gestion budgétaire projets
+• Animation cérémonies Scrum (Daily, Sprint Planning, Retro)
+
+Infrastructure & Réseau :
+• Évolution zoning réseau N-tiers
+• Mise en place environnements non-production (VMWare)
+• Gestion changements via ServiceNow
+• Supervision infrastructure et optimisations
+
+DevOps et Automatisation :
+• Mise en place déploiements automatisés via TeamCity
+• Pipelines CI/CD Azure DevOps, Jenkins
+• Conteneurisation Kubernetes/AKS
+• Livraisons versions applications
+
+Développement & Qualité :
+• Rédaction guides et supports techniques utilisateurs
+• Participation tests fonctionnels et unitaires
+• Assistance équipe pour maximiser efficacité
+• Suivi production et correction anomalies
+
+Environnement Technique :
+Jenkins, CI/CD, Git Lab, JIRA, SQL Server, .NET Core C# MVC, .NET Framework
+ASP.NET MVC, xUnit, Agile Scrum, TeamCity
+
+
+
+TECH LEAD / RESPONSABLE TECHNIQUE
+ORANGE O.B.S, Paris
+Janvier 2018 - Mars 2021
+─────────────────────────────────────────────────────────────────────────────
+
+EXPERTISE TECHNIQUE ET LEADERSHIP D'ÉQUIPE
+
+Management et Leadership Technique :
+• Interface stratégique Business / équipes Production et Développement
+• Référent technique pour arbitrage solutions complexes
+• Formateur techniques d'optimisation performance bases de données SQL Server
+• Rédaction supports techniques formation
+• Animation réunions avancement client et brainstorming internes
+• Chiffrage tâches et estimation projets
+
+Développement et Architecture :
+• Développement et maintenance évolutive applications .NET
+• Rédaction et validation spécifications techniques
+• Développement nouvelles IHM (Angular, ASP.NET MVC)
+• Modélisation UML et migration bases de données SQL versions supérieures
+• Audits code source SQL et optimisations
+• Revues de code et refactoring
+
+Performance et Optimisation :
+• Expert optimisation performance bases de données SQL Server
+• Tuning avancé : indexation, plans exécution, refactoring requêtes
+• Analyse bugs/incidents requêtes Transact SQL / PL/SQL
+• Réalisation traitements batch
+• Power BI DAX pour génération rapports intégrés ASP.NET MVC
+
+DevOps et Qualité :
+• Tests fonctionnels et d'intégration
+• TDD, NUnit, tests unitaires
+• Déploiement applications TeamCity
+• Packaging et livraisons
+• Support client et maintenance applicative
+
+Environnement Technique :
+C#, REST API, TDD, NUnit, principes SOLID, ASP.NET MVC 4, .NET Core MVC,
+Entity Framework 5, Cloud Azure, JavaScript, HTML5, CSS, SSIS, AngularJS,
+jQuery, SQL Server, TFS (Team Foundation Server), SVN, Scrum Agile
+
+
+
+DÉVELOPPEUR ASP.NET MVC
+VERLINGUE, Rennes
+Janvier 2017 - Novembre 2017
+─────────────────────────────────────────────────────────────────────────────
+• Développement et maintenance logiciel
+• Rédaction et validation spécifications techniques
+• Développement nouvelles IHM
+• Participation tests fonctionnels et d'intégration
+• Livraison et déploiement applications
+• Animation réunions avancement client
+• Développement solutions techniques (batch, API)
+• Revues de code et refactoring
+• Utilisation Entity Framework Core pour gestion bases de données
+
+Environnement : C#, ASP.NET, Oracle/PL SQL, Crystal Report, Entity Framework,
+JavaScript, Unity, HTML, CSS
+
+
+
+DÉVELOPPEUR ASP.NET MVC
+PSA PEUGEOT CITROËN, Paris
+Janvier 2016 - Décembre 2016
+─────────────────────────────────────────────────────────────────────────────
+• Prise en compte expressions de besoins métier
+• Participation réunions suivi avancement
+• Chiffrage tâches et développement
+• Participation phases test et déploiement
+• Correction anomalies
+• Utilisation Google Tag Manager (GTM)
+• Méthodologie Agile Scrum
+
+Environnement : C#, ASP.NET MVC, SQL Server, JavaScript, HTML5, CSS,
+Méthodologie Agile Scrum
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FORMATION
+═══════════════════════════════════════════════════════════════════════════════
+
+DIPLÔME ISO/IEC 27032 LEAD CYBERSECURITY MANAGER
+ORSYS
+Février 2023
+─────────────────────────────────────────────────────────────────────────────
+Formation spécialisée en cybersécurité : gouvernance, gestion des risques,
+conformité, mise en œuvre stratégies sécurité SI
+
+
+MASTER II INFORMATIQUE - SYSTÈMES EMBARQUÉS
+UNIVERSITÉ PARIS VIII VINCENNES-SAINT-DENIS
+Septembre 2015 - Juin 2016
+─────────────────────────────────────────────────────────────────────────────
+Spécialisation : Architecture des systèmes, développement logiciel,
+gestion de projets
+
+
+═══════════════════════════════════════════════════════════════════════════════
+LANGUES
+═══════════════════════════════════════════════════════════════════════════════
+Français : Langue maternelle
+Anglais : Technique (lecture documentation, communication projets internationaux)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+COMPÉTENCES COMPLÉMENTAIRES
+═══════════════════════════════════════════════════════════════════════════════
+✓ Diplôme ISO/IEC 27032 Lead Cybersecurity Manager (2023)
+✓ Méthodologies : Agile Scrum (Scrum Master), Kanban, ITIL
+✓ Outils gouvernance : JIRA, Confluence, Azure DevOps, ServiceNow
+✓ Gestion budgétaire projets IT
+✓ Pilotage appels d'offres et négociation contrats
+✓ Communication direction et parties prenantes
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FIN DU CV
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - Ismatou DIALLO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --accent: #f43f5e;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --light: #f1f5f9;
+            --white: #ffffff;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            --gradient-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .no-print { display: none !important; }
+            .container {
+                box-shadow: none !important;
+                max-width: 100% !important;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            padding: 30px;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+
+        /* Actions */
+        .actions {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .btn-print { background: var(--white); color: var(--primary); }
+        .btn-reset { background: var(--accent); color: white; }
+
+        /* Header moderne */
+        header {
+            background: var(--gradient-dark);
+            padding: 50px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .photo-container {
+            width: 160px;
+            height: 160px;
+            border-radius: 24px;
+            background: var(--gradient);
+            padding: 4px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+
+        .photo-container:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 20px 40px rgba(99,102,241,0.4);
+        }
+
+        .photo-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            background: var(--dark-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            color: var(--gray-light);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .photo-inner img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 2;
+        }
+
+        .photo-inner:hover::after {
+            content: '📷';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            z-index: 3;
+        }
+
+        .header-content {
+            flex: 1;
+            color: white;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-content h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .job-title {
+            font-size: 1.3em;
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .job-title::before {
+            content: '';
+            width: 40px;
+            height: 3px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 18px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .contact-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .contact-item .icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .contact-item span {
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Main content */
+        main {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            min-height: 600px;
+        }
+
+        .left-column {
+            padding: 40px;
+            background: var(--white);
+        }
+
+        .right-column {
+            padding: 40px;
+            background: var(--light);
+            border-left: 1px solid #e2e8f0;
+        }
+
+        /* Section titles */
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        /* Experience cards */
+        .experience-item {
+            position: relative;
+            padding: 25px;
+            margin-bottom: 20px;
+            background: var(--light);
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+
+        .experience-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .exp-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--dark);
+        }
+
+        .exp-company {
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .exp-date {
+            background: var(--gradient);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .exp-tasks {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .exp-tasks li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            color: var(--gray);
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exp-tasks li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 6px;
+            height: 6px;
+            background: var(--secondary);
+            border-radius: 50%;
+        }
+
+        .exp-tasks li span { flex: 1; }
+
+        .software-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .software-tag {
+            background: var(--dark);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        /* Action buttons */
+        .add-btn, .remove-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0.7;
+        }
+
+        .add-btn { background: var(--success); color: white; }
+        .add-btn:hover { opacity: 1; transform: scale(1.1); }
+        .remove-btn { background: var(--accent); color: white; }
+        .remove-btn:hover { opacity: 1; transform: scale(1.1); }
+
+        .delete-exp-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .experience-item:hover .delete-exp-btn { opacity: 1; }
+
+        .add-exp-btn {
+            background: var(--gradient);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .add-exp-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(99,102,241,0.3); }
+
+        /* Skills */
+        .skill-category {
+            margin-bottom: 25px;
+        }
+
+        .skill-category h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            background: white;
+            color: var(--dark);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+
+        .skill-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .skill-tag.software {
+            background: var(--gradient);
+            color: white;
+        }
+
+        /* Formation */
+        .formation-item {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+
+        .formation-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .formation-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95em;
+        }
+
+        .formation-school {
+            color: var(--gray);
+            font-size: 0.85em;
+            margin-top: 4px;
+        }
+
+        .formation-date {
+            color: var(--primary);
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Languages */
+        .language-item {
+            margin-bottom: 18px;
+        }
+
+        .language-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .language-name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9em;
+        }
+
+        .language-level-text {
+            color: var(--gray);
+            font-size: 0.8em;
+        }
+
+        .language-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .language-progress {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* Editable */
+        [contenteditable="true"] {
+            outline: none;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        [contenteditable="true"]:hover {
+            background: rgba(99,102,241,0.08);
+        }
+
+        [contenteditable="true"]:focus {
+            background: rgba(99,102,241,0.15);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+        }
+
+        /* Edit hint */
+        .edit-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .photo-input { display: none; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            main { grid-template-columns: 1fr; }
+            header { flex-direction: column; text-align: center; padding: 30px; }
+            .contact-info { justify-content: center; }
+            .job-title { justify-content: center; }
+            .job-title::before { display: none; }
+            .actions { position: static; justify-content: center; margin-bottom: 20px; }
+            body { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="actions no-print">
+        <button class="btn btn-print" onclick="printCV()">🖨️ Imprimer / PDF</button>
+        <button class="btn btn-reset" onclick="resetCV()">🔄 Réinitialiser</button>
+    </div>
+
+    <input type="file" id="photo-input" class="photo-input" accept="image/*">
+
+    <div class="container" id="cv-content">
+        <header>
+            <div class="photo-container" id="photo-container" title="Cliquez pour ajouter une photo">
+                <div class="photo-inner">
+                    <span id="photo-initials">ID</span>
+                    <img id="profile-photo" src="" alt="Photo" style="display: none;">
+                </div>
+            </div>
+            <div class="header-content">
+                <h1 contenteditable="true">Ismatou DIALLO</h1>
+                <div class="job-title" contenteditable="true">Gestionnaire de Paie & Assistante RH</div>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="icon">📧</div>
+                        <span contenteditable="true">ismalabico@gmail.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <div class="icon">📱</div>
+                        <span contenteditable="true">07 51 22 94 42</span>
+                    </div>
+                    <div class="contact-item">
+                        <div class="icon">📍</div>
+                        <span contenteditable="true">Vaux-le-Pénil, 77000</span>
+                    </div>
+                    <div class="contact-item">
+                        <div class="icon">🚗</div>
+                        <span contenteditable="true">Permis B</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="left-column">
+                <section class="section">
+                    <h2 class="section-title">Expériences</h2>
+                    <div id="experiences-container">
+                        <div class="experience-item">
+                            <button class="delete-exp-btn no-print" onclick="deleteExperience(this)">×</button>
+                            <div class="exp-header">
+                                <div>
+                                    <div class="exp-title" contenteditable="true">Assistante Ressources Humaines</div>
+                                    <div class="exp-company" contenteditable="true">Entreprise (à préciser)</div>
+                                </div>
+                                <span class="exp-date" contenteditable="true">Nov. 2023 - Mai 2024</span>
+                            </div>
+                            <ul class="exp-tasks">
+                                <li><span contenteditable="true">Embauche de A à Z (contrats, DPAE, intégration)</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Gestion des contrats de travail</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Mutuelle : Affiliation et dispenses</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Suivi des absences et périodes d'essai</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                            </ul>
+                            <button class="add-btn no-print" onclick="addTask(this)">+</button>
+                            <div class="software-tags">
+                                <span class="software-tag" contenteditable="true">Pléiades</span>
+                            </div>
+                        </div>
+
+                        <div class="experience-item">
+                            <button class="delete-exp-btn no-print" onclick="deleteExperience(this)">×</button>
+                            <div class="exp-header">
+                                <div>
+                                    <div class="exp-title" contenteditable="true">Gestionnaire de Paie</div>
+                                    <div class="exp-company" contenteditable="true">Entreprise (à préciser)</div>
+                                </div>
+                                <span class="exp-date" contenteditable="true">Jan. 2023 - Oct. 2023</span>
+                            </div>
+                            <ul class="exp-tasks">
+                                <li><span contenteditable="true">Processus complet de paie : éléments variables → bulletin</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Gestion des absences (maladie, AT, etc.)</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Établissement et calcul des STC</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Gestion des délégations syndicales</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                            </ul>
+                            <button class="add-btn no-print" onclick="addTask(this)">+</button>
+                            <div class="software-tags">
+                                <span class="software-tag" contenteditable="true">Kelio</span>
+                                <span class="software-tag" contenteditable="true">Silae</span>
+                            </div>
+                        </div>
+
+                        <div class="experience-item">
+                            <button class="delete-exp-btn no-print" onclick="deleteExperience(this)">×</button>
+                            <div class="exp-header">
+                                <div>
+                                    <div class="exp-title" contenteditable="true">Assistante RH</div>
+                                    <div class="exp-company" contenteditable="true">Entreprise (à préciser)</div>
+                                </div>
+                                <span class="exp-date" contenteditable="true">Juin 2022 - Déc. 2022</span>
+                            </div>
+                            <ul class="exp-tasks">
+                                <li><span contenteditable="true">Embauche de A à Z et gestion des contrats</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Suivi des travailleurs étrangers</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                            </ul>
+                            <button class="add-btn no-print" onclick="addTask(this)">+</button>
+                            <div class="software-tags">
+                                <span class="software-tag" contenteditable="true">Pléiades</span>
+                            </div>
+                        </div>
+
+                        <div class="experience-item">
+                            <button class="delete-exp-btn no-print" onclick="deleteExperience(this)">×</button>
+                            <div class="exp-header">
+                                <div>
+                                    <div class="exp-title" contenteditable="true">Stage - Assistante Paie</div>
+                                    <div class="exp-company" contenteditable="true">Entreprise (à préciser)</div>
+                                </div>
+                                <span class="exp-date" contenteditable="true">Fév. 2022 - Avr. 2022</span>
+                            </div>
+                            <ul class="exp-tasks">
+                                <li><span contenteditable="true">Collecte et saisie des éléments variables de paie</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                                <li><span contenteditable="true">Télédéclaration des charges sociales</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                            </ul>
+                            <button class="add-btn no-print" onclick="addTask(this)">+</button>
+                            <div class="software-tags">
+                                <span class="software-tag" contenteditable="true">CEGID</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="add-exp-btn no-print" onclick="addExperience()">+ Ajouter une expérience</button>
+                </section>
+            </div>
+
+            <div class="right-column">
+                <section class="section">
+                    <h2 class="section-title">Compétences</h2>
+
+                    <div class="skill-category">
+                        <h4>Gestion de Paie</h4>
+                        <div class="skill-tags">
+                            <span class="skill-tag" contenteditable="true">Bulletins de paie</span>
+                            <span class="skill-tag" contenteditable="true">STC</span>
+                            <span class="skill-tag" contenteditable="true">DSN</span>
+                            <span class="skill-tag" contenteditable="true">Charges sociales</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <h4>Administration RH</h4>
+                        <div class="skill-tags">
+                            <span class="skill-tag" contenteditable="true">Contrats</span>
+                            <span class="skill-tag" contenteditable="true">DPAE</span>
+                            <span class="skill-tag" contenteditable="true">Mutuelle</span>
+                            <span class="skill-tag" contenteditable="true">Absences</span>
+                        </div>
+                    </div>
+
+                    <div class="skill-category">
+                        <h4>Logiciels</h4>
+                        <div class="skill-tags">
+                            <span class="skill-tag software" contenteditable="true">Silae</span>
+                            <span class="skill-tag software" contenteditable="true">Kelio</span>
+                            <span class="skill-tag software" contenteditable="true">Pléiades</span>
+                            <span class="skill-tag software" contenteditable="true">CEGID</span>
+                            <span class="skill-tag software" contenteditable="true">Sage</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">Formation</h2>
+
+                    <div class="formation-item">
+                        <div class="formation-title" contenteditable="true">Formation Gestionnaire de Paie</div>
+                        <div class="formation-school" contenteditable="true">M2I SCRIBTEL</div>
+                        <div class="formation-date" contenteditable="true">2021 - 2022</div>
+                    </div>
+
+                    <div class="formation-item">
+                        <div class="formation-title" contenteditable="true">Équivalence diplôme</div>
+                        <div class="formation-school" contenteditable="true">ENIC-NARIC France</div>
+                        <div class="formation-date" contenteditable="true">2020</div>
+                    </div>
+
+                    <div class="formation-item">
+                        <div class="formation-title" contenteditable="true">Licence Gestion / Comptabilité</div>
+                        <div class="formation-school" contenteditable="true">UNIC - Guinée</div>
+                        <div class="formation-date" contenteditable="true">2007 - 2008</div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">Langues</h2>
+
+                    <div class="language-item">
+                        <div class="language-header">
+                            <span class="language-name" contenteditable="true">Français</span>
+                            <span class="language-level-text">Natif</span>
+                        </div>
+                        <div class="language-bar">
+                            <div class="language-progress" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="language-item">
+                        <div class="language-header">
+                            <span class="language-name" contenteditable="true">Anglais</span>
+                            <span class="language-level-text">Intermédiaire</span>
+                        </div>
+                        <div class="language-bar">
+                            <div class="language-progress" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">Qualités</h2>
+                    <div class="skill-tags">
+                        <span class="skill-tag" contenteditable="true">Autonomie</span>
+                        <span class="skill-tag" contenteditable="true">Rigueur</span>
+                        <span class="skill-tag" contenteditable="true">Organisation</span>
+                        <span class="skill-tag" contenteditable="true">Discrétion</span>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div class="edit-hint no-print">
+        💡 Cliquez sur le texte pour modifier | <span style="color: #10b981;">+</span> Ajouter | <span style="color: #f43f5e;">−</span> Supprimer
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'cv_ismatou_diallo_v2';
+
+        function saveCV() {
+            localStorage.setItem(STORAGE_KEY, document.getElementById('cv-content').innerHTML);
+            showNotification('✅ Sauvegardé !', '#10b981');
+        }
+
+        function loadCV() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) document.getElementById('cv-content').innerHTML = saved;
+        }
+
+        function showNotification(msg, color) {
+            const hint = document.querySelector('.edit-hint');
+            const original = hint.innerHTML;
+            hint.innerHTML = msg;
+            hint.style.background = color;
+            setTimeout(() => { hint.innerHTML = original; hint.style.background = '#0f172a'; }, 1500);
+        }
+
+        function resetCV() {
+            if (confirm('Réinitialiser le CV ?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem('cv_photo_v2');
+                location.reload();
+            }
+        }
+
+        function displayPhoto(data) {
+            const img = document.getElementById('profile-photo');
+            const initials = document.getElementById('photo-initials');
+            if (img) {
+                img.src = data;
+                img.style.display = 'block';
+            }
+            if (initials) initials.style.display = 'none';
+        }
+
+        function handlePhotoUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { alert('Photo trop grande (max 2MB)'); return; }
+            const reader = new FileReader();
+            reader.onload = e => {
+                displayPhoto(e.target.result);
+                localStorage.setItem('cv_photo_v2', e.target.result);
+                showNotification('📷 Photo ajoutée !', '#10b981');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadPhoto() {
+            const photo = localStorage.getItem('cv_photo_v2');
+            if (photo) displayPhoto(photo);
+        }
+
+        function setupPhotoClick() {
+            const container = document.querySelector('.photo-container');
+            if (container) {
+                container.onclick = () => document.getElementById('photo-input').click();
+            }
+        }
+
+        function addTask(btn) {
+            const ul = btn.previousElementSibling;
+            const li = document.createElement('li');
+            li.innerHTML = '<span contenteditable="true">Nouvelle tâche</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button>';
+            ul.appendChild(li);
+            li.querySelector('span').focus();
+            saveCV();
+        }
+
+        function removeTask(btn) {
+            btn.parentElement.remove();
+            saveCV();
+        }
+
+        function deleteExperience(btn) {
+            if (confirm('Supprimer cette expérience ?')) {
+                btn.parentElement.remove();
+                saveCV();
+            }
+        }
+
+        function addExperience() {
+            const container = document.getElementById('experiences-container');
+            const exp = document.createElement('div');
+            exp.className = 'experience-item';
+            exp.innerHTML = `
+                <button class="delete-exp-btn no-print" onclick="deleteExperience(this)">×</button>
+                <div class="exp-header">
+                    <div>
+                        <div class="exp-title" contenteditable="true">Titre du poste</div>
+                        <div class="exp-company" contenteditable="true">Entreprise</div>
+                    </div>
+                    <span class="exp-date" contenteditable="true">Date</span>
+                </div>
+                <ul class="exp-tasks">
+                    <li><span contenteditable="true">Mission principale</span><button class="remove-btn no-print" onclick="removeTask(this)">−</button></li>
+                </ul>
+                <button class="add-btn no-print" onclick="addTask(this)">+</button>
+                <div class="software-tags">
+                    <span class="software-tag" contenteditable="true">Logiciel</span>
+                </div>
+            `;
+            container.insertBefore(exp, container.firstChild);
+            exp.querySelector('.exp-title').focus();
+            saveCV();
+        }
+
+        function printCV() { window.print(); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCV();
+            loadPhoto();
+            setupPhotoClick();
+
+            document.getElementById('photo-input').addEventListener('change', function() {
+                handlePhotoUpload(this);
+            });
+
+            document.addEventListener('click', e => {
+                if (e.target.closest('.photo-container')) {
+                    document.getElementById('photo-input').click();
+                }
+            });
+
+            document.getElementById('cv-content').addEventListener('input', e => {
+                if (e.target.hasAttribute('contenteditable')) {
+                    clearTimeout(window.saveTimeout);
+                    window.saveTimeout = setTimeout(saveCV, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

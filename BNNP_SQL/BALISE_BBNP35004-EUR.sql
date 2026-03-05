@@ -1,0 +1,213 @@
+-- ============================================================
+-- INSERTION BALISES GEST - BBNP35004-EUR
+-- ============================================================
+-- Date : 24/02/2026 (MAJ modele)
+-- Compte cible : BBNP35004-EUR
+-- Compte modele : BBNP85504-EUR (propre, sans doublons)
+-- Type balise : GEST
+-- ============================================================
+
+SET SERVEROUTPUT ON
+SET LINESIZE 200
+SET PAGESIZE 100
+
+-- ============================================================
+-- ETAPE 1 : VERIFICATION PRE-INSERTION
+-- ============================================================
+PROMPT ============================================================
+PROMPT VERIFICATION PRE-INSERTION pour BBNP35004-EUR
+PROMPT ============================================================
+
+-- 1.1 Verifier que le compte cible existe
+PROMPT
+PROMPT [1/4] Verification existence compte BBNP35004-EUR...
+SELECT
+    ID_COMPTE_ACCURATE,
+    NUM_COMPTE_ACCURATE,
+    NOM,
+    FLAG_ACTIF,
+    TYPE_RAPPRO
+FROM TA_RN_COMPTE_ACCURATE
+WHERE NUM_COMPTE_ACCURATE = 'BBNP35004-EUR';
+
+-- 1.2 Balises ACTUELLES du compte cible (avant insertion)
+PROMPT
+PROMPT [2/4] Balises ACTUELLES de BBNP35004-EUR (GEST)...
+SELECT
+    CA.NUM_COMPTE_ACCURATE,
+    BPC.NUM_COL_FEEDER,
+    B.NOM_BALISE,
+    B.TYPE_BALISE,
+    BPC.INDICATEUR_MANUEL_AUTO
+FROM TA_RN_BALISE_PAR_COMPTE BPC
+JOIN TA_RN_COMPTE_ACCURATE CA ON CA.ID_COMPTE_ACCURATE = BPC.ID_COMPTE_ACCURATE
+JOIN TA_RN_BALISE B ON B.ID_BALISE = BPC.ID_BALISE
+WHERE CA.NUM_COMPTE_ACCURATE = 'BBNP35004-EUR'
+  AND B.TYPE_BALISE = 'GEST'
+ORDER BY BPC.NUM_COL_FEEDER;
+
+-- 1.3 Balises du compte MODELE (ce qui sera copie)
+PROMPT
+PROMPT [3/4] Balises MODELE BBNP85504-EUR (a copier)...
+SELECT
+    CA.NUM_COMPTE_ACCURATE,
+    BPC.NUM_COL_FEEDER,
+    B.NOM_BALISE,
+    B.TYPE_BALISE,
+    BPC.INDICATEUR_MANUEL_AUTO
+FROM TA_RN_BALISE_PAR_COMPTE BPC
+JOIN TA_RN_COMPTE_ACCURATE CA ON CA.ID_COMPTE_ACCURATE = BPC.ID_COMPTE_ACCURATE
+JOIN TA_RN_BALISE B ON B.ID_BALISE = BPC.ID_BALISE
+WHERE CA.NUM_COMPTE_ACCURATE = 'BBNP85504-EUR'
+  AND B.TYPE_BALISE = 'GEST'
+ORDER BY BPC.NUM_COL_FEEDER;
+
+-- 1.4 PREVIEW des lignes qui seront inserees
+PROMPT
+PROMPT [4/4] PREVIEW - Lignes qui seront inserees...
+SELECT
+    'BBNP35004-EUR' AS COMPTE_CIBLE,
+    BalRef.NUM_COL_FEEDER,
+    B.NOM_BALISE,
+    BalRef.INDICATEUR_MANUEL_AUTO,
+    'A INSERER' AS ACTION
+FROM TA_RN_BALISE_PAR_COMPTE BalRef
+JOIN TA_RN_BALISE B ON B.ID_BALISE = BalRef.ID_BALISE
+LEFT JOIN TA_RN_BALISE_PAR_COMPTE Balise1
+    ON Balise1.NUM_COL_FEEDER = BalRef.NUM_COL_FEEDER
+    AND Balise1.ID_BALISE = BalRef.ID_BALISE
+    AND Balise1.INDICATEUR_MANUEL_AUTO = BalRef.INDICATEUR_MANUEL_AUTO
+    AND Balise1.ID_COMPTE_ACCURATE IN (
+        SELECT ID_COMPTE_ACCURATE FROM TA_RN_COMPTE_ACCURATE
+        WHERE NUM_COMPTE_ACCURATE = 'BBNP35004-EUR'
+    )
+WHERE BalRef.ID_COMPTE_ACCURATE IN (
+    SELECT ID_COMPTE_ACCURATE FROM TA_RN_COMPTE_ACCURATE
+    WHERE NUM_COMPTE_ACCURATE = 'BBNP85504-EUR'
+)
+AND BalRef.ID_BALISE IN (
+    SELECT ID_BALISE FROM TA_RN_BALISE WHERE TYPE_BALISE = 'GEST'
+)
+AND Balise1.NUM_COL_FEEDER IS NULL
+ORDER BY BalRef.NUM_COL_FEEDER;
+
+PROMPT
+PROMPT ============================================================
+PROMPT Si le PREVIEW est OK, decommenter ETAPE 2 et executer
+PROMPT ============================================================
+
+-- ============================================================
+-- ETAPE 2 : INSERTION
+-- ============================================================
+/*
+PROMPT
+PROMPT ============================================================
+PROMPT INSERTION BALISES GEST pour BBNP35004-EUR
+PROMPT ============================================================
+
+INSERT INTO TA_RN_BALISE_PAR_COMPTE (
+    ID_COMPTE_ACCURATE,
+    NUM_COL_FEEDER,
+    ID_BALISE,
+    INDICATEUR_MANUEL_AUTO
+)
+SELECT
+    (SELECT ID_COMPTE_ACCURATE FROM TA_RN_COMPTE_ACCURATE
+     WHERE NUM_COMPTE_ACCURATE = 'BBNP35004-EUR') AS ID_COMPTE_ACCURATE,
+    BalRef.NUM_COL_FEEDER,
+    BalRef.ID_BALISE,
+    BalRef.INDICATEUR_MANUEL_AUTO
+FROM TA_RN_BALISE_PAR_COMPTE BalRef
+LEFT JOIN TA_RN_BALISE_PAR_COMPTE Balise1
+    ON Balise1.NUM_COL_FEEDER = BalRef.NUM_COL_FEEDER
+    AND Balise1.ID_BALISE = BalRef.ID_BALISE
+    AND Balise1.INDICATEUR_MANUEL_AUTO = BalRef.INDICATEUR_MANUEL_AUTO
+    AND Balise1.ID_COMPTE_ACCURATE IN (
+        SELECT ID_COMPTE_ACCURATE FROM TA_RN_COMPTE_ACCURATE
+        WHERE NUM_COMPTE_ACCURATE = 'BBNP35004-EUR'
+    )
+WHERE BalRef.ID_COMPTE_ACCURATE IN (
+    SELECT ID_COMPTE_ACCURATE FROM TA_RN_COMPTE_ACCURATE
+    WHERE NUM_COMPTE_ACCURATE = 'BBNP85504-EUR'
+)
+AND BalRef.ID_BALISE IN (
+    SELECT ID_BALISE FROM TA_RN_BALISE WHERE TYPE_BALISE = 'GEST'
+)
+AND Balise1.NUM_COL_FEEDER IS NULL;
+
+PROMPT Lignes inserees :
+SELECT SQL%ROWCOUNT || ' lignes inserees' FROM DUAL;
+
+COMMIT;
+
+PROMPT
+PROMPT ============================================================
+PROMPT INSERTION TERMINEE - BBNP35004-EUR
+PROMPT ============================================================
+*/
+
+-- ============================================================
+-- ETAPE 3 : VERIFICATION POST-INSERTION
+-- ============================================================
+/*
+PROMPT
+PROMPT ============================================================
+PROMPT VERIFICATION POST-INSERTION pour BBNP35004-EUR
+PROMPT ============================================================
+
+SELECT
+    CA.NUM_COMPTE_ACCURATE,
+    BPC.NUM_COL_FEEDER,
+    B.NOM_BALISE,
+    B.TYPE_BALISE,
+    BPC.INDICATEUR_MANUEL_AUTO
+FROM TA_RN_BALISE_PAR_COMPTE BPC
+JOIN TA_RN_COMPTE_ACCURATE CA ON CA.ID_COMPTE_ACCURATE = BPC.ID_COMPTE_ACCURATE
+JOIN TA_RN_BALISE B ON B.ID_BALISE = BPC.ID_BALISE
+WHERE CA.NUM_COMPTE_ACCURATE = 'BBNP35004-EUR'
+  AND B.TYPE_BALISE = 'GEST'
+ORDER BY BPC.NUM_COL_FEEDER;
+
+PROMPT
+PROMPT Comparaison avec le modele BBNP85504-EUR :
+SELECT
+    'BBNP35004-EUR' AS COMPTE,
+    COUNT(*) AS NB_BALISES_GEST
+FROM TA_RN_BALISE_PAR_COMPTE BPC
+JOIN TA_RN_COMPTE_ACCURATE CA ON CA.ID_COMPTE_ACCURATE = BPC.ID_COMPTE_ACCURATE
+JOIN TA_RN_BALISE B ON B.ID_BALISE = BPC.ID_BALISE
+WHERE CA.NUM_COMPTE_ACCURATE = 'BBNP35004-EUR'
+  AND B.TYPE_BALISE = 'GEST'
+UNION ALL
+SELECT
+    'BBNP85504-EUR' AS COMPTE,
+    COUNT(*) AS NB_BALISES_GEST
+FROM TA_RN_BALISE_PAR_COMPTE BPC
+JOIN TA_RN_COMPTE_ACCURATE CA ON CA.ID_COMPTE_ACCURATE = BPC.ID_COMPTE_ACCURATE
+JOIN TA_RN_BALISE B ON B.ID_BALISE = BPC.ID_BALISE
+WHERE CA.NUM_COMPTE_ACCURATE = 'BBNP85504-EUR'
+  AND B.TYPE_BALISE = 'GEST';
+*/
+
+-- ============================================================
+-- ROLLBACK (en cas de probleme)
+-- ============================================================
+/*
+PROMPT
+PROMPT ============================================================
+PROMPT ROLLBACK - Suppression balises GEST de BBNP35004-EUR
+PROMPT ============================================================
+
+DELETE FROM TA_RN_BALISE_PAR_COMPTE
+WHERE ID_COMPTE_ACCURATE IN (
+    SELECT ID_COMPTE_ACCURATE FROM TA_RN_COMPTE_ACCURATE
+    WHERE NUM_COMPTE_ACCURATE = 'BBNP35004-EUR'
+)
+AND ID_BALISE IN (
+    SELECT ID_BALISE FROM TA_RN_BALISE WHERE TYPE_BALISE = 'GEST'
+);
+
+COMMIT;
+
+PROMPT Rollback termine - Balises GEST supprimees pour BBNP35004-EUR
+*/

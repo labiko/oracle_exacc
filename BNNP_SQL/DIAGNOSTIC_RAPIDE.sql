@@ -1,0 +1,65 @@
+-- ============================================================================
+-- DIAGNOSTIC RAPIDE - Transaction manquante dans BR_DATA
+-- ============================================================================
+-- Usage: Modifier le RIB ci-dessous puis executer
+-- ============================================================================
+
+SET LINESIZE 300
+SET PAGESIZE 200
+
+-- PARAMETRE A MODIFIER
+DEFINE RIB = '00016111832'
+
+PROMPT
+PROMPT ============================================================================
+PROMPT DIAGNOSTIC RAPIDE - RIB: &RIB
+PROMPT ============================================================================
+
+-- 1. IDENTIFICATION DU COMPTE
+PROMPT
+PROMPT === 1. COMPTE ===
+SELECT
+    CBS.ID_COMPTE_BANCAIRE_SYSTEME AS ID_CBS,
+    CA.NUM_COMPTE_ACCURATE,
+    CA.TYPE_RAPPRO,
+    CASE CA.TYPE_RAPPRO
+        WHEN 'B' THEN 'Script: RNADGENEXPGES01'
+        WHEN 'J' THEN 'Script: RNADGENJUCGES01'
+    END AS SCRIPT
+FROM TA_RN_COMPTE_BANCAIRE_SYSTEME CBS
+    JOIN TA_RN_GESTION_ACCURATE GA ON GA.ID_COMPTE_BANCAIRE_SYSTEME = CBS.ID_COMPTE_BANCAIRE_SYSTEME
+    JOIN TA_RN_COMPTE_ACCURATE CA ON CA.ID_COMPTE_ACCURATE = GA.ID_COMPTE_ACCURATE
+WHERE CBS.RIBIDENTIFICATION = '&RIB';
+
+-- 2. REGLES DE CUMUL (ROOT CAUSE!)
+PROMPT
+PROMPT === 2. REGLES DE CUMUL (SI LIGNES = PROBLEME!) ===
+SELECT
+    '[ALERTE] CUMUL ACTIF' AS DIAGNOSTIC,
+    CMR.ID_COMPTE_BANCAIRE_SYSTEME AS ID_CBS,
+    P.CODE_PRODUIT,
+    MR.CODE_MODE_REGLEMENT,
+    CASE WHEN P.CODE_PRODUIT = 'ALL' AND MR.CODE_MODE_REGLEMENT = 'VO'
+         THEN '>>> TOUTES TRANSACTIONS VO CUMULEES! <<<'
+         ELSE 'Cumul partiel'
+    END AS IMPACT
+FROM TA_RN_COMPTE_BANCAIRE_SYSTEME CBS
+    JOIN TA_RN_CUMUL_MR CMR ON CMR.ID_COMPTE_BANCAIRE_SYSTEME = CBS.ID_COMPTE_BANCAIRE_SYSTEME
+    JOIN TA_RN_PRODUIT P ON P.ID_PRODUIT = CMR.ID_PRODUIT
+    JOIN TA_RN_MODE_REGLEMENT MR ON MR.ID_MODE_REGLEMENT = CMR.ID_MODE_REGLEMENT
+WHERE CBS.RIBIDENTIFICATION = '&RIB';
+
+PROMPT
+PROMPT ============================================================================
+PROMPT SI CUMUL DETECTE -> SOLUTION:
+PROMPT ============================================================================
+PROMPT
+PROMPT DELETE FROM TA_RN_CUMUL_MR
+PROMPT WHERE ID_COMPTE_BANCAIRE_SYSTEME = (
+PROMPT     SELECT ID_COMPTE_BANCAIRE_SYSTEME
+PROMPT     FROM TA_RN_COMPTE_BANCAIRE_SYSTEME
+PROMPT     WHERE RIBIDENTIFICATION = '&RIB'
+PROMPT );
+PROMPT COMMIT;
+PROMPT
+PROMPT ============================================================================

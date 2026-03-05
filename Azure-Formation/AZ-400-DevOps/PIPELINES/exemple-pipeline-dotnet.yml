@@ -1,0 +1,199 @@
+# Pipeline CI/CD Complet pour Application ASP.NET
+# Exemple pour AZ-400 - À adapter selon ton projet
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    exclude:
+      - README.md
+      - docs/*
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetVersion: '8.0.x'
+  azureSubscription: 'Azure-Service-Connection'  # À créer dans Azure DevOps
+  webAppName: 'app-formation-alpha'              # Nom de ton App Service
+
+stages:
+# ============================================
+# STAGE 1 : BUILD
+# ============================================
+- stage: Build
+  displayName: 'Build & Test'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build .NET Application'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    # Installer .NET SDK
+    - task: UseDotNet@2
+      displayName: 'Install .NET SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '$(dotnetVersion)'
+
+    # Restaurer les packages NuGet
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore NuGet Packages'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    # Compiler l'application
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Application'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-restore'
+
+    # Exécuter les tests unitaires
+    - task: DotNetCoreCLI@2
+      displayName: 'Run Unit Tests'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-build --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)'
+
+    # Publier les résultats de couverture de code
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish Code Coverage'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+
+    # Publier l'application
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Application'
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/app'
+        zipAfterPublish: true
+
+    # Publier les artefacts
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/app'
+        ArtifactName: 'webapp'
+
+# ============================================
+# STAGE 2 : DEPLOY TO DEV
+# ============================================
+- stage: DeployDev
+  displayName: 'Deploy to Development'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+
+  jobs:
+  - deployment: DeployDev
+    displayName: 'Deploy to Dev Environment'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'Development'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy to Azure App Service (Dev)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: 'webApp'
+              appName: '$(webAppName)-dev'
+              package: '$(Pipeline.Workspace)/webapp/**/*.zip'
+
+# ============================================
+# STAGE 3 : DEPLOY TO STAGING
+# ============================================
+- stage: DeployStaging
+  displayName: 'Deploy to Staging'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+  jobs:
+  - deployment: DeployStaging
+    displayName: 'Deploy to Staging Slot'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'Staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy to Staging Slot'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: 'webApp'
+              appName: '$(webAppName)'
+              deployToSlotOrASE: true
+              slotName: 'staging'
+              package: '$(Pipeline.Workspace)/webapp/**/*.zip'
+
+          # Test de santé après déploiement
+          - task: Bash@3
+            displayName: 'Health Check'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Waiting for deployment to stabilize..."
+                sleep 30
+
+                response=$(curl -s -o /dev/null -w "%{http_code}" https://$(webAppName)-staging.azurewebsites.net/health)
+
+                if [ $response -eq 200 ]; then
+                  echo "Health check passed!"
+                else
+                  echo "Health check failed with status: $response"
+                  exit 1
+                fi
+
+# ============================================
+# STAGE 4 : DEPLOY TO PRODUCTION
+# ============================================
+- stage: DeployProd
+  displayName: 'Deploy to Production'
+  dependsOn: DeployStaging
+  condition: succeeded()
+
+  jobs:
+  - deployment: DeployProd
+    displayName: 'Swap to Production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'Production'  # Nécessite approbation manuelle
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # Swap staging vers production
+          - task: AzureAppServiceManage@0
+            displayName: 'Swap Staging to Production'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              Action: 'Swap Slots'
+              WebAppName: '$(webAppName)'
+              ResourceGroupName: 'RG-Formation'
+              SourceSlot: 'staging'
+              SwapWithProduction: true
+
+          # Notification (optionnel)
+          - task: Bash@3
+            displayName: 'Notify Deployment Success'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "🚀 Deployment to production completed successfully!"
+                echo "Application URL: https://$(webAppName).azurewebsites.net"

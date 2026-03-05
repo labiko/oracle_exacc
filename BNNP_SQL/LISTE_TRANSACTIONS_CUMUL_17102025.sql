@@ -1,0 +1,145 @@
+-- ============================================================================
+-- LISTE DES TRANSACTIONS CUMULÉES - 17/10/2025
+-- Compte BBNP83292-EUR (RIB: 00016111832)
+-- Cumul dans BR_DATA: 226838.78 EUR
+-- ============================================================================
+
+SET LINESIZE 300
+SET PAGESIZE 500
+
+PROMPT ============================================================================
+PROMPT TRANSACTIONS CUMULÉES - Compte BBNP83292-EUR - 17/10/2025
+PROMPT ============================================================================
+
+PROMPT
+PROMPT 1. TOUTES LES TRANSACTIONS VO du 17/10/2025 pour le compte 342
+PROMPT
+
+SELECT
+    ROW_NUMBER() OVER (ORDER BY TO_NUMBER(IG.OPERATIONNETAMOUNT) DESC) AS NUM_LIGNE,
+    IG.OPERATIONNETAMOUNT AS MONTANT,
+    IG.PAYMENTREFERENCE AS PAYMENT_REF,
+    IG.NUMEROCLIENT AS CLIENT,
+    IG.IDENTIFICATION AS CODE_SOCIETE,
+    IG.SETTLEMENTMODE AS MODE,
+    IG.TYPEREGLEMENT AS TYPE,
+    IG.OPERATIONNETAMOUNTCURRENCY AS DEVISE,
+    TO_CHAR(IG.DATEVALUE, 'YYYY-MM-DD HH24:MI:SS') AS DATE_VALUE,
+    CASE
+        WHEN IG.OPERATIONNETAMOUNT = '2817' THEN '[CIBLE] VOTRE TRANSACTION'
+        ELSE ''
+    END AS MARQUEUR
+FROM TA_RN_IMPORT_GESTION IG
+    JOIN TA_RN_COMPTE_BANCAIRE_SYSTEME CBS
+        ON CBS.RIBBANKCODE||CBS.RIBBRANCHCODE||CBS.RIBIDENTIFICATION||CBS.RIBCHECKDIGIT = IG.IDENTIFICATIONRIB
+WHERE CBS.ID_COMPTE_BANCAIRE_SYSTEME = 352
+  AND IG.SETTLEMENTMODE = 'VO'
+  AND TO_CHAR(IG.DATEVALUE, 'YYYY-MM-DD') = '2025-10-17'
+ORDER BY TO_NUMBER(IG.OPERATIONNETAMOUNT) DESC;
+
+PROMPT
+
+PROMPT ============================================================================
+PROMPT 2. CALCUL DU CUMUL
+PROMPT ============================================================================
+
+SELECT
+    COUNT(*) AS NB_TRANSACTIONS_VO,
+    SUM(TO_NUMBER(IG.OPERATIONNETAMOUNT)) AS CUMUL_CALCULE,
+    226838.78 AS CUMUL_BR_DATA,
+    SUM(TO_NUMBER(IG.OPERATIONNETAMOUNT)) - 226838.78 AS ECART,
+    CASE
+        WHEN ABS(SUM(TO_NUMBER(IG.OPERATIONNETAMOUNT)) - 226838.78) < 0.01 THEN '[OK] COHERENT'
+        ELSE '[WARN] ECART DETECTE'
+    END AS STATUT
+FROM TA_RN_IMPORT_GESTION IG
+    JOIN TA_RN_COMPTE_BANCAIRE_SYSTEME CBS
+        ON CBS.RIBBANKCODE||CBS.RIBBRANCHCODE||CBS.RIBIDENTIFICATION||CBS.RIBCHECKDIGIT = IG.IDENTIFICATIONRIB
+WHERE CBS.ID_COMPTE_BANCAIRE_SYSTEME = 352
+  AND IG.SETTLEMENTMODE = 'VO'
+  AND TO_CHAR(IG.DATEVALUE, 'YYYY-MM-DD') = '2025-10-17';
+
+PROMPT
+
+PROMPT ============================================================================
+PROMPT 3. VÉRIFICATION - Transaction 2817 dans le lot ?
+PROMPT ============================================================================
+
+SELECT
+    CASE
+        WHEN COUNT(*) > 0 THEN '[OK] OUI - Transaction 2817 TROUVEE'
+        ELSE '[KO] NON - Transaction 2817 ABSENTE'
+    END AS RESULTAT,
+    COUNT(*) AS NB_OCCURRENCES
+FROM TA_RN_IMPORT_GESTION IG
+    JOIN TA_RN_COMPTE_BANCAIRE_SYSTEME CBS
+        ON CBS.RIBBANKCODE||CBS.RIBBRANCHCODE||CBS.RIBIDENTIFICATION||CBS.RIBCHECKDIGIT = IG.IDENTIFICATIONRIB
+WHERE CBS.ID_COMPTE_BANCAIRE_SYSTEME = 352
+  AND IG.SETTLEMENTMODE = 'VO'
+  AND TO_CHAR(IG.DATEVALUE, 'YYYY-MM-DD') = '2025-10-17'
+  AND IG.OPERATIONNETAMOUNT = '2817';
+
+PROMPT
+
+PROMPT ============================================================================
+PROMPT 4. TOP 10 DES MONTANTS LES PLUS ÉLEVÉS
+PROMPT ============================================================================
+
+SELECT *
+FROM (
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY TO_NUMBER(IG.OPERATIONNETAMOUNT) DESC) AS RANG,
+        IG.OPERATIONNETAMOUNT AS MONTANT,
+        IG.PAYMENTREFERENCE AS PAYMENT_REF,
+        IG.NUMEROCLIENT AS CLIENT,
+        CASE
+            WHEN IG.OPERATIONNETAMOUNT = '2817' THEN '[CIBLE]'
+            ELSE ''
+        END AS MARQUEUR
+    FROM TA_RN_IMPORT_GESTION IG
+        JOIN TA_RN_COMPTE_BANCAIRE_SYSTEME CBS
+            ON CBS.RIBBANKCODE||CBS.RIBBRANCHCODE||CBS.RIBIDENTIFICATION||CBS.RIBCHECKDIGIT = IG.IDENTIFICATIONRIB
+    WHERE CBS.ID_COMPTE_BANCAIRE_SYSTEME = 352
+      AND IG.SETTLEMENTMODE = 'VO'
+      AND TO_CHAR(IG.DATEVALUE, 'YYYY-MM-DD') = '2025-10-17'
+    ORDER BY TO_NUMBER(IG.OPERATIONNETAMOUNT) DESC
+)
+WHERE ROWNUM <= 10;
+
+PROMPT
+
+PROMPT ============================================================================
+PROMPT 5. CUMUL DANS TA_RN_EXPORT
+PROMPT ============================================================================
+
+SELECT
+    SOURCE,
+    ACCNUM,
+    ORAMT AS MONTANT_CUMUL,
+    TRDAT AS DATE_TRADE,
+    ORAMTCCY AS DEVISE,
+    COMMENTAIRE,
+    TO_CHAR(DT_INSERT, 'YYYY-MM-DD HH24:MI:SS') AS DATE_INSERTION
+FROM TA_RN_EXPORT
+WHERE SOURCE = 'GEST'
+  AND ACCNUM LIKE '%83292%'
+  AND TO_CHAR(TRDAT, 'YYYY-MM-DD') = '2025-10-17'
+  AND COMMENTAIRE LIKE '%cumul%';
+
+PROMPT
+
+PROMPT ============================================================================
+PROMPT CONCLUSION
+PROMPT ============================================================================
+PROMPT
+PROMPT La transaction 2817 EUR fait partie d'un LOT de transactions VO
+PROMPT qui ont été CUMULÉES en une seule ligne de 226838.78 EUR.
+PROMPT
+PROMPT Cette cumulation est provoquée par la règle ALL+VO dans TA_RN_CUMUL_MR.
+PROMPT
+PROMPT Pour avoir 2817 EUR EN DÉTAIL dans BR_DATA:
+PROMPT → Supprimer la règle de cumul (voir SOLUTION_OPTIONS.md OPTION A)
+PROMPT
+PROMPT ============================================================================
+PROMPT FIN EXTRACTION
+PROMPT ============================================================================

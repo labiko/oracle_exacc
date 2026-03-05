@@ -1,0 +1,194 @@
+# Pipeline CI/CD avec Docker et Azure Container Registry
+# Exemple pour AZ-400 - Déploiement conteneurisé
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - README.md
+
+variables:
+  dockerRegistry: 'acrformationalpha.azurecr.io'  # Ton Azure Container Registry
+  imageName: 'myapp'
+  azureSubscription: 'Azure-Service-Connection'
+  aksCluster: 'aks-formation'
+  aksResourceGroup: 'RG-Formation-AKS'
+
+stages:
+# ============================================
+# STAGE 1 : BUILD DOCKER IMAGE
+# ============================================
+- stage: BuildDocker
+  displayName: 'Build & Push Docker Image'
+  jobs:
+  - job: BuildAndPush
+    displayName: 'Build Docker Image'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    # Login to ACR
+    - task: Docker@2
+      displayName: 'Login to ACR'
+      inputs:
+        containerRegistry: 'ACR-Service-Connection'
+        command: 'login'
+
+    # Build et Push en une seule tâche
+    - task: Docker@2
+      displayName: 'Build and Push Image'
+      inputs:
+        containerRegistry: 'ACR-Service-Connection'
+        repository: '$(imageName)'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(Build.BuildId)
+          latest
+
+    # Publier les manifests Kubernetes comme artefacts
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish K8s Manifests'
+      inputs:
+        PathtoPublish: 'k8s/'
+        ArtifactName: 'manifests'
+
+# ============================================
+# STAGE 2 : SECURITY SCAN
+# ============================================
+- stage: SecurityScan
+  displayName: 'Security Scanning'
+  dependsOn: BuildDocker
+  jobs:
+  - job: ScanImage
+    displayName: 'Scan Docker Image'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    # Installer Trivy
+    - task: Bash@3
+      displayName: 'Install Trivy'
+      inputs:
+        targetType: 'inline'
+        script: |
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+
+    # Scanner l'image
+    - task: Bash@3
+      displayName: 'Scan Image with Trivy'
+      inputs:
+        targetType: 'inline'
+        script: |
+          trivy image --exit-code 0 --severity HIGH,CRITICAL \
+            $(dockerRegistry)/$(imageName):$(Build.BuildId)
+
+# ============================================
+# STAGE 3 : DEPLOY TO AKS DEV
+# ============================================
+- stage: DeployAKSDev
+  displayName: 'Deploy to AKS (Dev)'
+  dependsOn: SecurityScan
+  jobs:
+  - deployment: DeployDev
+    displayName: 'Deploy to Dev Namespace'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'AKS-Development'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # Télécharger les manifests
+          - download: current
+            artifact: manifests
+
+          # Remplacer les variables dans les manifests
+          - task: Bash@3
+            displayName: 'Update Image Tag'
+            inputs:
+              targetType: 'inline'
+              script: |
+                sed -i 's|IMAGE_TAG|$(Build.BuildId)|g' $(Pipeline.Workspace)/manifests/deployment.yaml
+                sed -i 's|ACR_NAME|$(dockerRegistry)|g' $(Pipeline.Workspace)/manifests/deployment.yaml
+
+          # Déployer sur AKS
+          - task: KubernetesManifest@0
+            displayName: 'Deploy to AKS'
+            inputs:
+              action: 'deploy'
+              kubernetesServiceConnection: 'AKS-Dev-Connection'
+              namespace: 'development'
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yaml
+                $(Pipeline.Workspace)/manifests/service.yaml
+              containers: |
+                $(dockerRegistry)/$(imageName):$(Build.BuildId)
+
+# ============================================
+# STAGE 4 : DEPLOY TO AKS PRODUCTION
+# ============================================
+- stage: DeployAKSProd
+  displayName: 'Deploy to AKS (Production)'
+  dependsOn: DeployAKSDev
+  condition: succeeded()
+  jobs:
+  - deployment: DeployProd
+    displayName: 'Deploy to Production Namespace'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'AKS-Production'  # Approbation requise
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: manifests
+
+          - task: Bash@3
+            displayName: 'Update Image Tag'
+            inputs:
+              targetType: 'inline'
+              script: |
+                sed -i 's|IMAGE_TAG|$(Build.BuildId)|g' $(Pipeline.Workspace)/manifests/deployment.yaml
+                sed -i 's|ACR_NAME|$(dockerRegistry)|g' $(Pipeline.Workspace)/manifests/deployment.yaml
+
+          # Déploiement canary (optionnel - déploie 10% puis 100%)
+          - task: KubernetesManifest@0
+            displayName: 'Deploy Canary (10%)'
+            inputs:
+              action: 'deploy'
+              kubernetesServiceConnection: 'AKS-Prod-Connection'
+              namespace: 'production'
+              strategy: 'canary'
+              percentage: 10
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yaml
+                $(Pipeline.Workspace)/manifests/service.yaml
+              containers: |
+                $(dockerRegistry)/$(imageName):$(Build.BuildId)
+
+          # Attendre validation
+          - task: Bash@3
+            displayName: 'Wait for Canary Validation'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Canary deployed. Waiting 5 minutes for monitoring..."
+                sleep 300
+
+          # Promouvoir à 100%
+          - task: KubernetesManifest@0
+            displayName: 'Promote to 100%'
+            inputs:
+              action: 'promote'
+              kubernetesServiceConnection: 'AKS-Prod-Connection'
+              namespace: 'production'
+              strategy: 'canary'
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yaml

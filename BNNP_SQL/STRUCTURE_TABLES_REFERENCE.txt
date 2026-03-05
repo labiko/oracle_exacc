@@ -1,0 +1,178 @@
+================================================================================
+VERIFICATION STRUCTURE DES TABLES - 07/02/2026 10:50:01
+================================================================================
+
+1. TABLE: TA_RN_BANQUE_ACCURATE
+   Lignes: 303 | Analysee: 17/01/2024
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_PERIMETRE_BANQUE                NUMBER              22        N
+   ID_COMPTE_ACCURATE                 NUMBER              22        N
+
+2. TABLE: TA_RN_COMPTE_ACCURATE
+   Lignes: 349 | Analysee: 16/04/2025
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_COMPTE_ACCURATE                 NUMBER              22        N
+   NUM_COMPTE_ACCURATE                VARCHAR2(64)        64        N
+   NOM                                VARCHAR2(128)       128       Y
+   FLAG_ACTIF                         CHAR(1)             1         N
+   TYPE_RAPPRO                        CHAR(1)             1         N
+
+3. TABLE: TA_RN_COMPTE_BANCAIRE
+   Lignes: 249 | Analysee: 19/04/2023
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_COMPTE_BANCAIRE                 NUMBER              22        N
+   NOM                                VARCHAR2(32)        32        N
+   BANKCODE                           VARCHAR2(5)         5         N
+   BRANCHCODE                         VARCHAR2(5)         5         N
+   IDENTIFICATION                     VARCHAR2(11)        11        N
+
+4. TABLE: TA_RN_EXPORT_JC
+   Lignes: 0 | Analysee: 07/08/2024
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ACCNUM                             VARCHAR2(128)       128       Y
+   TRANSDATE                          VARCHAR2(128)       128       Y
+   VALUEDATE                          VARCHAR2(128)       128       Y
+   NARR                               VARCHAR2(250)       250       Y
+   INTREF                             VARCHAR2(128)       128       Y
+   EXTREF                             VARCHAR2(128)       128       Y
+   TYPEMVT                            VARCHAR2(128)       128       Y
+   DEPT                               VARCHAR2(128)       128       Y
+   USER1                              VARCHAR2(128)       128       Y
+   USER2                              VARCHAR2(128)       128       Y
+   USER3                              VARCHAR2(128)       128       Y
+   USER4                              VARCHAR2(128)       128       Y
+   USER5                              VARCHAR2(128)       128       Y
+   USER6                              VARCHAR2(128)       128       Y
+   CURR                               VARCHAR2(128)       128       Y
+   ORAMT                              VARCHAR2(128)       128       Y
+   RECPT                              VARCHAR2(128)       128       Y
+   PAYMT                              VARCHAR2(128)       128       Y
+   QUANT                              VARCHAR2(128)       128       Y
+   PERC                               VARCHAR2(128)       128       Y
+   UNITPRICE                          VARCHAR2(128)       128       Y
+   USERDATEA                          VARCHAR2(128)       128       Y
+   USERDATEB                          VARCHAR2(128)       128       Y
+   USER7                              VARCHAR2(128)       128       Y
+   USER8                              VARCHAR2(128)       128       Y
+   FLAGA                              VARCHAR2(128)       128       Y
+   FLAGB                              VARCHAR2(128)       128       Y
+   FLAGC                              VARCHAR2(128)       128       Y
+   FLAGD                              VARCHAR2(128)       128       Y
+   FLAGE                              VARCHAR2(128)       128       Y
+   FLAGF                              VARCHAR2(128)       128       Y
+   FLAGG                              VARCHAR2(128)       128       Y
+   FLAGH                              VARCHAR2(128)       128       Y
+   ISSTATEMENT                        VARCHAR2(128)       128       Y
+   ISHOLDING                          VARCHAR2(128)       128       Y
+   WF_STR                             VARCHAR2(128)       128       Y
+   PERIOD                             VARCHAR2(128)       128       Y
+   USER9                              VARCHAR2(128)       128       Y
+   USER10                             VARCHAR2(128)       128       Y
+   USER11                             VARCHAR2(128)       128       Y
+   USER12                             VARCHAR2(128)       128       Y
+   USER13                             VARCHAR2(128)       128       Y
+   USER14                             VARCHAR2(128)       128       Y
+   USER15                             VARCHAR2(128)       128       Y
+   USER16                             VARCHAR2(128)       128       Y
+   USERDATEC                          VARCHAR2(128)       128       Y
+   USERDATED                          VARCHAR2(128)       128       Y
+   USERDECB                           VARCHAR2(128)       128       Y
+   USERDECC                           VARCHAR2(128)       128       Y
+   USERDECD                           VARCHAR2(128)       128       Y
+   SOURCE                             CHAR(4)             4         Y
+   ID_CHARGEMENT                      NUMBER              22        Y
+
+5. TABLE: TA_RN_GESTION_JC
+   Lignes: 18 | Analysee: 08/03/2023
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_COMPTE_ACCURATE                 NUMBER              22        N
+   ID_PRODUIT                         NUMBER              22        N
+   ID_MODE_REGLEMENT                  NUMBER              22        N
+
+6. TABLE: TA_RN_IMPORT_GESTION_JC
+   Lignes: 2320 | Analysee: 04/02/2026
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   DATECREATION                       VARCHAR2(128)       128       Y
+   FROMDATETIME                       VARCHAR2(128)       128       Y
+   TODATETIME                         VARCHAR2(128)       128       Y
+   TYPEREGLEMENT                      VARCHAR2(128)       128       Y
+   STATUTREGLEMENT                    VARCHAR2(128)       128       Y
+   IDENTIFICATION                     VARCHAR2(128)       128       Y
+   ISSUER                             VARCHAR2(128)       128       Y
+   SCHEME                             VARCHAR2(128)       128       Y
+   PAYMENTREFERENCE                   VARCHAR2(128)       128       Y
+   POLICYREFERENCE                    VARCHAR2(128)       128       Y
+   NUMEROCLIENT                       VARCHAR2(128)       128       Y
+   NOMCLIENT                          VARCHAR2(128)       128       Y
+   SETTLEMENTMODE                     VARCHAR2(128)       128       Y
+   BANKCODE                           VARCHAR2(128)       128       Y
+   BRANCHCODE                         VARCHAR2(128)       128       Y
+   IDENTIFICATIONRIB                  VARCHAR2(128)       128       Y
+   RIBCHECKDIGIT                      VARCHAR2(128)       128       Y
+   VALUEDATE                          VARCHAR2(128)       128       Y
+   TRADEDATE                          VARCHAR2(128)       128       Y
+   OPERATIONNETAMOUNT                 VARCHAR2(128)       128       Y
+   OPERATIONNETAMOUNTCURRENCY         VARCHAR2(128)       128       Y
+   BENEFICIARYNAME                    VARCHAR2(128)       128       Y
+   BENEFICIARYFIRST                   VARCHAR2(128)       128       Y
+   BENEFICIARYREFERENCE               VARCHAR2(128)       128       Y
+   PRESENTMENTREFERENCE               VARCHAR2(128)       128       Y
+   CHEQUEREFERENCE                    VARCHAR2(128)       128       Y
+   DEPOSITSLIPREFERENCE               VARCHAR2(128)       128       Y
+   CREDITSLIPREFERENCE                VARCHAR2(128)       128       Y
+   COMMENTAIRE                        VARCHAR2(250)       250       Y
+   CREATIONDATE                       VARCHAR2(128)       128       Y
+   ID_CHARGEMENT_GESTION              NUMBER              22        Y
+   RIBCOMPLET                         VARCHAR2(128)       128       Y
+   NOMSOCIETE                         VARCHAR2(128)       128       Y
+   LIBELLEMODEREGLEMENT               VARCHAR2(128)       128       Y
+   DATECOMPTAORIG                     VARCHAR2(128)       128       Y
+
+7. TABLE: TA_RN_MODE_REGLEMENT
+   Lignes: 27 | Analysee: 14/01/2026
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_MODE_REGLEMENT                  NUMBER              22        N
+   CODE_MODE_REGLEMENT                VARCHAR2(12)        12        N
+   LIBELLE                            VARCHAR2(64)        64        Y
+
+8. TABLE: TA_RN_PERIMETRE_BANQUE
+   Lignes: 303 | Analysee: 03/04/2024
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_PERIMETRE_BANQUE                NUMBER              22        N
+   ID_COMPTE_BANCAIRE                 NUMBER              22        N
+   ID_DEVISE                          NUMBER              22        N
+   FLAG_ACTIF                         CHAR(1)             1         N
+
+9. TABLE: TA_RN_PRODUIT
+   Lignes: 25 | Analysee: 14/01/2026
+   ----------------------------------------------------------------------------
+   COLONNE                            TYPE                TAILLE    NULL?
+   ----------------------------------------------------------------------------
+   ID_PRODUIT                         NUMBER              22        N
+   CODE_PRODUIT                       VARCHAR2(13)        13        Y
+   LIBELLE                            VARCHAR2(50)        50        Y
+
+================================================================================
+POINTS IMPORTANTS:
+================================================================================
+1. TA_RN_COMPTE_BANCAIRE n'a PAS de colonne RIB ni FLAG_ACTIF
+2. TA_RN_GESTION_JC n'a que 3 colonnes (pas de FLAG_ACTIF)
+3. Jointure: TA_RN_COMPTE_BANCAIRE → TA_RN_PERIMETRE_BANQUE → TA_RN_BANQUE_ACCURATE → TA_RN_COMPTE_ACCURATE
+4. FLAG_ACTIF existe dans: TA_RN_COMPTE_ACCURATE, TA_RN_PERIMETRE_BANQUE
+================================================================================

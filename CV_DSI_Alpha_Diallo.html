@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Diallo - Directeur des Systèmes d'Information</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        /* Sidebar gauche */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px 30px;
+        }
+
+        .sidebar h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .sidebar h2 {
+            font-size: 1.1em;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: #a8c5f0;
+        }
+
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: contain;
+            object-position: center;
+            border: 5px solid #ffd700;
+            margin: 0 auto 25px;
+            display: block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            background: white;
+            padding: 5px;
+        }
+
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            font-size: 1em;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 8px;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+
+        .info-item strong {
+            display: block;
+            color: #ffd700;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 40px 50px;
+        }
+
+        .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .profile-section h2 {
+            color: #1e3c72;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ffd700;
+            display: inline-block;
+        }
+
+        .profile-text {
+            text-align: justify;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* Réalisations clés */
+        .achievements {
+            background: #f8f9fa;
+            padding: 25px;
+            border-left: 5px solid #ffd700;
+            margin-bottom: 40px;
+        }
+
+        .achievements h2 {
+            color: #1e3c72;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        .achievements ul {
+            list-style: none;
+        }
+
+        .achievements li {
+            padding-left: 30px;
+            margin-bottom: 12px;
+            position: relative;
+            color: #555;
+        }
+
+        .achievements li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Compétences DSI */
+        .skills-section {
+            margin-bottom: 40px;
+        }
+
+        .skills-section h2 {
+            color: #1e3c72;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .skill-category {
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .skill-category h3 {
+            color: #2a5298;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .skill-category h3:before {
+            content: "▸";
+            margin-right: 10px;
+            color: #ffd700;
+            font-size: 1.3em;
+        }
+
+        .skill-category ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .skill-category li {
+            padding: 5px 0;
+            color: #555;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .skill-category li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #2a5298;
+        }
+
+        /* Expérience */
+        .experience-section {
+            margin-bottom: 40px;
+        }
+
+        .experience-section h2 {
+            color: #1e3c72;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .job {
+            margin-bottom: 35px;
+            border-left: 3px solid #2a5298;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .job:before {
+            content: "";
+            width: 15px;
+            height: 15px;
+            background: #ffd700;
+            border: 3px solid #2a5298;
+            border-radius: 50%;
+            position: absolute;
+            left: -10px;
+            top: 5px;
+        }
+
+        .job-header {
+            margin-bottom: 15px;
+        }
+
+        .job-title {
+            color: #1e3c72;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .company {
+            color: #2a5298;
+            font-weight: 500;
+            font-size: 1.05em;
+        }
+
+        .date {
+            color: #777;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        .job-description {
+            margin-top: 15px;
+        }
+
+        .job-subtitle {
+            color: #2a5298;
+            font-weight: 600;
+            margin: 15px 0 10px 0;
+            font-size: 1.05em;
+        }
+
+        .job-description ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .job-description li {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            color: #555;
+        }
+
+        .job-description li:before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: #2a5298;
+            font-weight: bold;
+        }
+
+        .tech-stack {
+            background: #e8f4f8;
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .tech-stack strong {
+            color: #1e3c72;
+        }
+
+        /* Formation */
+        .education-section {
+            margin-bottom: 40px;
+        }
+
+        .education-section h2 {
+            color: #1e3c72;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .education-item {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            border-left: 3px solid #2a5298;
+            position: relative;
+        }
+
+        .education-item:before {
+            content: "🎓";
+            position: absolute;
+            left: -12px;
+            top: 0;
+        }
+
+        .education-title {
+            color: #1e3c72;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .education-school {
+            color: #2a5298;
+            font-size: 0.95em;
+        }
+
+        .education-date {
+            color: #777;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+            }
+            .sidebar {
+                background: #1e3c72 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+            }
+            .main-content {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar gauche -->
+        <aside class="sidebar">
+            <img src="C:\Users\diall\Documents\CV\pf1.png" alt="Photo de profil Alpha Diallo" class="profile-photo">
+            <h1>Alpha<br>Diallo</h1>
+            <h2>Directeur des Systèmes d'Information</h2>
+
+            <div class="info-section">
+                <h3>Contact</h3>
+                <div class="info-item">
+                    <strong>Téléphone</strong>
+                    06 20 95 16 45
+                </div>
+                <div class="info-item">
+                    <strong>Email</strong>
+                    diallo.labico@hotmail.fr
+                </div>
+                <div class="info-item">
+                    <strong>Nationalité</strong>
+                    Française
+                </div>
+                <div class="info-item">
+                    <strong>Permis</strong>
+                    Permis B
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Langues</h3>
+                <div class="info-item">
+                    <strong>Français</strong>
+                    Langue maternelle
+                </div>
+                <div class="info-item">
+                    <strong>Anglais</strong>
+                    Technique
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Formation Sécurité</h3>
+                <div class="info-item">
+                    ISO/IEC 27032<br>
+                    Lead Cybersecurity Manager<br>
+                    <em style="font-size: 0.85em; color: #a8c5f0;">(Diplômé 2023)</em>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Technologies Cloud</h3>
+                <div class="info-item">
+                    Azure (PaaS, CaaS, AKS)<br>
+                    Docker, Kubernetes<br>
+                    Azure DevOps, CI/CD
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Stack Technique</h3>
+                <div class="info-item">
+                    .NET Core 8, C#<br>
+                    API REST/SOAP<br>
+                    SQL Server, Oracle<br>
+                    Angular, JavaScript
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Outils Gouvernance</h3>
+                <div class="info-item">
+                    JIRA, Confluence<br>
+                    Azure DevOps<br>
+                    ServiceNow<br>
+                    Dynatrace, Kibana
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Méthodologies</h3>
+                <div class="info-item">
+                    Agile Scrum (Scrum Master)<br>
+                    Kanban<br>
+                    ITIL<br>
+                    DevOps
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- Profil -->
+            <section class="profile-section">
+                <h2>Profil</h2>
+                <p class="profile-text">
+                    <strong style="color: #1e3c72;">Directeur des Systèmes d'Information avec 10 ans d'expérience</strong> en pilotage stratégique IT et transformation digitale. Expert en gouvernance des systèmes d'information, alignement IT/Business et conduite du changement au sein d'environnements bancaires et industriels exigeants (AXA, BNP Paribas).
+                </p>
+                <p class="profile-text" style="margin-top: 10px;">
+                    Reconnu pour ma capacité à <strong>piloter des projets structurants à forte valeur ajoutée</strong> : migrations cloud (Azure PaaS/CaaS), modernisation d'architectures legacy, conformité RGPD, et intégration de solutions IA. Fort d'une expertise technique approfondie (.NET, Cloud Azure, bases de données, DevOps, cybersécurité) me permettant d'arbitrer les choix architecturaux et d'accompagner les équipes dans l'excellence opérationnelle.
+                </p>
+                <p class="profile-text" style="margin-top: 10px;">
+                    <strong>Leadership éprouvé</strong> dans la gestion d'équipes pluridisciplinaires (développement, production, architecture, réseau), la coordination multi-sites et le pilotage budgétaire de projets complexes. Orienté résultats, j'allie vision stratégique et pragmatisme opérationnel pour optimiser la performance des SI, réduire la dette technique, anticiper les risques et accompagner la croissance de l'entreprise par l'innovation technologique.
+                </p>
+            </section>
+
+            <!-- Réalisations clés -->
+            <div class="achievements">
+                <h2>Réalisations Stratégiques Clés</h2>
+                <ul>
+                    <li>Migration cloud Azure PaaS → CaaS pour 15+ applications critiques</li>
+                    <li>Transformation digitale : Intégration IA pour automatisation documentaire contractuelle (ROI +35% en productivité)</li>
+                    <li>Mise en place d'une architecture de sécurité multi-niveaux : WAF, rate limiting, protection DDoS</li>
+                    <li>Sécurisation des APIs critiques contre les injections SQL et attaques XSS</li>
+                    <li>Implémentation de solutions anti-fraude et détection d'anomalies comportementales</li>
+                    <li>Conformité RGPD : Conception et déploiement d'un système de purge automatisée des données personnelles</li>
+                    <li>Réduction de 40% des incidents production via monitoring prédictif et analyse proactive des risques</li>
+                    <li>Modernisation architecturale : Migration de 50+ services SOAP legacy vers REST API avec OAuth2</li>
+                    <li>Optimisation budgétaire : Consolidation infrastructure cloud (-25% coûts) et rationalisation du parc serveurs</li>
+                    <li>Excellence opérationnelle : Refactoring architectural et optimisation performance bases de données (amélioration temps réponse de 60%)</li>
+                </ul>
+            </div>
+
+            <!-- Compétences DSI -->
+            <section class="skills-section">
+                <h2>Compétences DSI - Structurées par Domaine</h2>
+
+                <div class="skill-category">
+                    <h3>1. Stratégie et Gouvernance IT</h3>
+                    <ul>
+                        <li>Définition et pilotage de roadmaps IT alignées sur les objectifs business</li>
+                        <li>Gestion de la dette technique et plans de modernisation</li>
+                        <li>Arbitrage architectural et validation des choix technologiques</li>
+                        <li>Veille technologique et réglementaire continue</li>
+                        <li>Élaboration de tableaux de bord direction et KPI stratégiques</li>
+                        <li>Gestion budgétaire multi-projets et optimisation des coûts IT</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>2. Management d'Équipe</h3>
+                    <ul>
+                        <li>Leadership d'équipes techniques pluridisciplinaires (jusqu'à 7 personnes)</li>
+                        <li>Recrutement, évaluation et développement des compétences</li>
+                        <li>Animation d'équipes transverses (dev, ops, architecture, réseau, sécurité)</li>
+                        <li>Coordination multi-sites et gestion de prestataires externes</li>
+                        <li>Méthodes Agile : Scrum Master, animation cérémonies, coaching équipes</li>
+                        <li>Communication ascendante (direction) et descendante (équipes)</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>3. Gestion de Projets IT</h3>
+                    <ul>
+                        <li>Pilotage de projets stratégiques complexes de A à Z</li>
+                        <li>Gestion de backlog technique et métier (JIRA, Azure DevOps)</li>
+                        <li>Planification, estimation des charges et allocation des ressources</li>
+                        <li>Pilotage d'appels d'offres et négociation avec prestataires</li>
+                        <li>Gestion des risques et anticipation proactive des blocages</li>
+                        <li>Reporting direction et communication parties prenantes</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>4. Transformation Numérique</h3>
+                    <ul>
+                        <li>Modernisation d'architectures legacy vers cloud natives</li>
+                        <li>Intégration de solutions IA/ML pour automatisation métier</li>
+                        <li>Refonte architecturale SOAP → REST API avec OAuth2</li>
+                        <li>Digitalisation des processus métier et dématérialisation</li>
+                        <li>Conduite du changement et accompagnement utilisateurs</li>
+                        <li>Innovation technologique : POC, expérimentations, R&D</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>5. Systèmes, Développement et Architecture</h3>
+                    <ul>
+                        <li>Architecture SI : CQRS, DDD, MediatR, Microservices</li>
+                        <li>Stack technique : .NET Core 8, C#, ASP.NET MVC, Blazor</li>
+                        <li>APIs : REST, SOAP, authentification OAuth2, JWT</li>
+                        <li>Bases de données : SQL Server, Oracle 19c, optimisation performance</li>
+                        <li>Reverse Engineering et documentation technique</li>
+                        <li>Audits de code source et refactoring architectural</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>6. Infrastructure & Cloud</h3>
+                    <ul>
+                        <li>Cloud Azure : PaaS, CaaS, Container Registry, Service Bus, AKS</li>
+                        <li>Conteneurisation : Docker, Kubernetes, orchestration</li>
+                        <li>DevOps : CI/CD (Azure DevOps, Jenkins, TeamCity), pipelines automatisés</li>
+                        <li>Infrastructure as Code et automatisation déploiements</li>
+                        <li>Migration cloud : PaaS → CaaS, SQL as a Service</li>
+                        <li>Virtualisation : VMWare, gestion parc serveurs</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>7. Sécurité et Conformité</h3>
+                    <ul>
+                        <li>Diplôme ISO/IEC 27032 Lead Cybersecurity Manager</li>
+                        <li>Gouvernance sécurité : politiques, procédures, audits</li>
+                        <li>Sécurité applicative web : protection DDoS, injection SQL, XSS, CSRF</li>
+                        <li>Web Application Firewall (WAF) et filtrage applicatif</li>
+                        <li>Tests d'intrusion (pentest) et audits de vulnérabilités</li>
+                        <li>Sécurité secteur gaming : anti-fraude, protection transactions, KYC/AML</li>
+                        <li>Conformité RGPD : identification données sensibles, purge automatisée</li>
+                        <li>Sécurisation des APIs : OAuth2, JWT, cryptage</li>
+                        <li>Gestion des vulnérabilités et plans de remédiation</li>
+                        <li>Sensibilisation et formation équipes à la cybersécurité</li>
+                    </ul>
+                </div>
+
+                <div class="skill-category">
+                    <h3>8. Continuité d'Activité et Résilience</h3>
+                    <ul>
+                        <li>Supervision : Dynatrace, Kibana, Azure Monitor</li>
+                        <li>Monitoring proactif et analyse prédictive des incidents</li>
+                        <li>Gestion de crise et résolution d'incidents critiques en production</li>
+                        <li>Plans de continuité d'activité (PCA) et disaster recovery</li>
+                        <li>Haute disponibilité et scalabilité des architectures</li>
+                        <li>Optimisation performance et tuning bases de données</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Expérience professionnelle -->
+            <section class="experience-section">
+                <h2>Expérience Professionnelle</h2>
+
+                <!-- AXA -->
+                <article class="job">
+                    <div class="job-header">
+                        <div class="job-title">Responsable de Projet Technique / IT Manager</div>
+                        <div class="company">AXA FRANCE, Paris</div>
+                        <div class="date">Novembre 2024 - Présent</div>
+                    </div>
+                    <div class="job-description">
+                        <strong style="color: #1e3c72; display: block; margin-bottom: 10px;">PILOTAGE STRATÉGIQUE IT ET TRANSFORMATION DIGITALE</strong>
+
+                        <div class="job-subtitle">Stratégie et Gouvernance IT :</div>
+                        <ul>
+                            <li>Définition et pilotage de la roadmap de modernisation technique (migration .NET 4 → .NET 8)</li>
+                            <li>Traitement de la dette technique et gestion des obsolescences critiques</li>
+                            <li>Arbitrage des choix architecturaux et validation des solutions techniques</li>
+                            <li>Reverse Engineering sur infrastructure cloud Azure (reconstruction API perdues)</li>
+                        </ul>
+
+                        <div class="job-subtitle">Management d'Équipe :</div>
+                        <ul>
+                            <li>Encadrement et animation d'une équipe pluridisciplinaire de 4 développeurs</li>
+                            <li>Coordination avec les équipes OPS, Architecture, Réseau et Sécurité</li>
+                        </ul>
+
+                        <div class="job-subtitle">Gestion de Projets IT :</div>
+                        <ul>
+                            <li>Pilotage de projets stratégiques transverses (migration PaaS → CaaS Azure)</li>
+                            <li>Gestion de backlog technique et métier via JIRA</li>
+                            <li>Gestion budgétaire de projets et reporting direction</li>
+                        </ul>
+
+                        <div class="job-subtitle">Transformation Numérique :</div>
+                        <ul>
+                            <li>Refonte architecturale : migration services GED SOAP vers REST avec OAuth2</li>
+                            <li>Intégration solution IA pour reconnaissance et classement automatique de documents contractuels (gain productivité +35%)</li>
+                            <li>Modernisation des mécanismes d'authentification et de cryptage</li>
+                        </ul>
+
+                        <div class="job-subtitle">Infrastructure & Cloud :</div>
+                        <ul>
+                            <li>Pilotage migration cloud Azure PaaS vers CaaS pour 15+ applications critiques</li>
+                            <li>Mise en place pipelines CI/CD et conteneurisation Docker</li>
+                            <li>Gestion Azure Container Registry, Service Bus, Kubernetes/AKS</li>
+                        </ul>
+
+                        <div class="job-subtitle">Sécurité et Conformité :</div>
+                        <ul>
+                            <li>Pilotage projet RGPD : purge automatisée des données personnelles</li>
+                            <li>Audits de code source C# .NET MVC : analyse qualité, sécurité et performance</li>
+                        </ul>
+
+                        <div class="job-subtitle">Continuité d'Activité :</div>
+                        <ul>
+                            <li>Réduction de 40% des incidents production via monitoring Kibana et analyse prédictive</li>
+                            <li>Optimisation performance bases de données : consolidation SQL Server, refactoring</li>
+                        </ul>
+
+                        <div class="tech-stack">
+                            <strong>Environnement Technique :</strong> Cloud Azure (PaaS, CaaS), .NET Core 8, C#, API REST/SOAP, SoapUI, SQL Server, Docker, Kubernetes, Azure Service Bus, MediatR Pattern, Blazor, Azure DevOps, CQRS, DDD, Kibana, Scrum Agile, JIRA
+                        </div>
+                    </div>
+                </article>
+
+                <!-- BNP Paribas -->
+                <article class="job">
+                    <div class="job-header">
+                        <div class="job-title">Responsable d'Application / Application Manager</div>
+                        <div class="company">BNP PARIBAS, Paris</div>
+                        <div class="date">Avril 2022 - Octobre 2024</div>
+                    </div>
+                    <div class="job-description">
+                        <strong style="color: #1e3c72; display: block; margin-bottom: 10px;">DIRECTION OPÉRATIONNELLE SI ET ALIGNEMENT BUSINESS</strong>
+
+                        <div class="job-subtitle">Stratégie et Gouvernance IT :</div>
+                        <ul>
+                            <li>Interface stratégique entre la Direction Financière (métier) et les équipes techniques</li>
+                            <li>Analyse des besoins métiers et traduction en solutions IT alignées</li>
+                            <li>Gestion du scope des versions et roadmap produit</li>
+                        </ul>
+
+                        <div class="job-subtitle">Management d'Équipe :</div>
+                        <ul>
+                            <li>Pilotage d'une équipe de 7 développeurs : objectifs, suivi performances</li>
+                            <li>Coordination transverse : équipes exploitation, fonctionnelles, support produit</li>
+                        </ul>
+
+                        <div class="job-subtitle">Gestion de Projets IT :</div>
+                        <ul>
+                            <li>Planification et estimation des développements (Front & Back End)</li>
+                            <li>Gestion budgétaire de projets</li>
+                            <li>Utilisation ServiceNow pour gestion des changements</li>
+                        </ul>
+
+                        <div class="job-subtitle">Transformation Numérique :</div>
+                        <ul>
+                            <li>Pilotage refonte services GED : migration SOAP vers REST avec OAuth2</li>
+                            <li>Intégration solution IA pour reconnaissance et classement automatique de documents</li>
+                        </ul>
+
+                        <div class="job-subtitle">Infrastructure & Cloud :</div>
+                        <ul>
+                            <li>Pilotage migration infrastructure PaaS vers CaaS Azure</li>
+                            <li>Gestion pipelines migration bases de données SQL as a Service</li>
+                            <li>Gestion obsolescence et changement parc serveurs</li>
+                        </ul>
+
+                        <div class="job-subtitle">Continuité d'Activité :</div>
+                        <ul>
+                            <li>Monitoring proactif via Dynatrace</li>
+                            <li>Analyse et résolution d'incidents critiques en production</li>
+                        </ul>
+
+                        <div class="tech-stack">
+                            <strong>Environnement Technique :</strong> Azure DevOps, CI/CD, AKS, Kubernetes, Dynatrace, ServiceNow, Oracle 19C, .NET Core C#, .NET Framework ASP.NET MVC, PowerShell, Agile Scrum
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Hutchinson -->
+                <article class="job">
+                    <div class="job-header">
+                        <div class="job-title">Chef de Projet Technique / Technical Project Manager</div>
+                        <div class="company">HUTCHINSON, Paris</div>
+                        <div class="date">Avril 2021 - Mars 2022</div>
+                    </div>
+                    <div class="job-description">
+                        <strong style="color: #1e3c72; display: block; margin-bottom: 10px;">PILOTAGE DE PROJETS IT ET GOUVERNANCE TECHNIQUE</strong>
+
+                        <ul>
+                            <li>Cadrage de projets et définition roadmaps techniques</li>
+                            <li>Encadrement équipes développeurs et métiers</li>
+                            <li>Pilotage appels d'offres et négociation avec prestataires</li>
+                            <li>Mise en place environnements non-production (VMWare)</li>
+                            <li>Mise en place déploiements automatisés via TeamCity</li>
+                            <li>Animation cérémonies Scrum (Daily, Sprint Planning, Retro)</li>
+                        </ul>
+
+                        <div class="tech-stack">
+                            <strong>Environnement Technique :</strong> Jenkins, CI/CD, Git Lab, JIRA, SQL Server, .NET Core C# MVC, xUnit, Agile Scrum, TeamCity
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Orange -->
+                <article class="job">
+                    <div class="job-header">
+                        <div class="job-title">Tech Lead / Responsable Technique</div>
+                        <div class="company">ORANGE O.B.S, Paris</div>
+                        <div class="date">Janvier 2018 - Mars 2021</div>
+                    </div>
+                    <div class="job-description">
+                        <strong style="color: #1e3c72; display: block; margin-bottom: 10px;">EXPERTISE TECHNIQUE ET LEADERSHIP D'ÉQUIPE</strong>
+
+                        <ul>
+                            <li>Interface stratégique Business / équipes Production et Développement</li>
+                            <li>Formateur techniques d'optimisation performance bases de données SQL Server</li>
+                            <li>Audits code source SQL et optimisations</li>
+                            <li>Expert optimisation performance : tuning, indexation, plans exécution</li>
+                            <li>Modélisation UML et migration bases de données SQL</li>
+                            <li>Power BI DAX pour génération rapports intégrés ASP.NET MVC</li>
+                        </ul>
+
+                        <div class="tech-stack">
+                            <strong>Environnement Technique :</strong> C#, REST API, TDD, NUnit, ASP.NET MVC, .NET Core MVC, Entity Framework, Cloud Azure, AngularJS, SQL Server, TFS, Scrum Agile
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Verlingue -->
+                <article class="job">
+                    <div class="job-header">
+                        <div class="job-title">Développeur ASP.NET MVC</div>
+                        <div class="company">VERLINGUE, Rennes</div>
+                        <div class="date">Janvier 2017 - Novembre 2017</div>
+                    </div>
+                    <div class="job-description">
+                        <ul>
+                            <li>Développement et maintenance logiciel</li>
+                            <li>Rédaction et validation spécifications techniques</li>
+                            <li>Développement solutions techniques (batch, API)</li>
+                            <li>Utilisation Entity Framework Core pour gestion bases de données</li>
+                        </ul>
+
+                        <div class="tech-stack">
+                            <strong>Environnement :</strong> C#, ASP.NET, Oracle/PL SQL, Entity Framework, JavaScript, HTML, CSS
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PSA -->
+                <article class="job">
+                    <div class="job-header">
+                        <div class="job-title">Développeur ASP.NET MVC</div>
+                        <div class="company">PSA PEUGEOT CITROËN, Paris</div>
+                        <div class="date">Janvier 2016 - Décembre 2016</div>
+                    </div>
+                    <div class="job-description">
+                        <ul>
+                            <li>Prise en compte expressions de besoins métier</li>
+                            <li>Développement et participation aux tests</li>
+                            <li>Utilisation Google Tag Manager (GTM)</li>
+                            <li>Méthodologie Agile Scrum</li>
+                        </ul>
+
+                        <div class="tech-stack">
+                            <strong>Environnement :</strong> C#, ASP.NET MVC, SQL Server, JavaScript, HTML5, CSS
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Formation -->
+            <section class="education-section">
+                <h2>Formation</h2>
+
+                <div class="education-item">
+                    <div class="education-title">Diplôme ISO/IEC 27032 Lead Cybersecurity Manager</div>
+                    <div class="education-school">ORSYS</div>
+                    <div class="education-date">Février 2023</div>
+                    <p style="margin-top: 8px; color: #555; font-size: 0.9em;">
+                        Formation spécialisée en cybersécurité : gouvernance, gestion des risques, conformité, mise en œuvre stratégies sécurité SI
+                    </p>
+                </div>
+
+                <div class="education-item">
+                    <div class="education-title">Master II Informatique - Systèmes Embarqués</div>
+                    <div class="education-school">Université Paris VIII Vincennes-Saint-Denis</div>
+                    <div class="education-date">Septembre 2015 - Juin 2016</div>
+                    <p style="margin-top: 8px; color: #555; font-size: 0.9em;">
+                        Spécialisation : Architecture des systèmes, développement logiciel, gestion de projets
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

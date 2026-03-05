@@ -1,0 +1,181 @@
+##############################################
+# Fonction principale : Parse-Pain
+# - Lit un fichier PAIN (001 ou 008)
+# - Extrait les transactions
+# - Génère un CSV par bloc PmtInf
+##############################################
+function Parse-Pain {
+
+    param(
+        # Chemin complet du fichier XML PAIN
+        [string]$FilePath,
+
+        # Dossier de sortie des fichiers CSV
+        [string]$OutputDir,
+
+        # Namespace XML PAIN (pain.001 ou pain.008)
+        [string]$Namespace
+    )
+
+    ##############################################
+    # Création du dossier de sortie s'il n'existe pas
+    ##############################################
+    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+    ##############################################
+    # Chargement du XML
+    ##############################################
+    $xml = New-Object System.Xml.XmlDocument
+    $xml.Load($FilePath)
+
+    ##############################################
+    # Gestion du namespace XML
+    ##############################################
+    $nsmgr = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+    $nsmgr.AddNamespace("ns", $Namespace)
+
+    ##############################################
+    # Compteurs globaux
+    ##############################################
+    $total_pmtinf = 0
+    $total_transactions = 0
+
+    ##############################################
+    # Détection du type PAIN
+    ##############################################
+    if ($Namespace -like "*pain.001*") {
+        # PAIN.001 → Initiation de paiement
+        $initNode = "CstmrCdtTrfInitn"
+        $txTag   = "CdtTrfTxInf"
+    }
+    elseif ($Namespace -like "*pain.008*") {
+        # PAIN.008 → Prélèvements
+        $initNode = "CstmrDrctDbtInitn"
+        $txTag   = "DrctDbtTxInf"
+    }
+    else {
+        Write-Host "Namespace non supporté"
+        return
+    }
+
+    ##############################################
+    # Récupération du nœud racine PAIN
+    ##############################################
+    $root = $xml.SelectSingleNode("//ns:$initNode", $nsmgr)
+    if (-not $root) { return }
+
+    ##############################################
+    # Récupération des blocs PmtInf
+    ##############################################
+    $payment_infos = $root.SelectNodes(".//ns:PmtInf", $nsmgr)
+
+    foreach ($payment_info in $payment_infos) {
+
+        ##############################################
+        # Infos du bloc PmtInf
+        ##############################################
+        $pmtinf_id = Get-NodeText $payment_info "ns:PmtInfId" $nsmgr "UNKNOWN"
+        $pmtmtd   = Get-NodeText $payment_info "ns:PmtMtd" $nsmgr ""
+        $nb_of_txs = Get-NodeText $payment_info "ns:NbOfTxs" $nsmgr "0"
+        $ctrl_sum  = Get-NodeText $payment_info "ns:CtrlSum" $nsmgr "0"
+
+        $transactions = @()
+        $total_pmtinf++
+
+        ##############################################
+        # Récupération des transactions
+        ##############################################
+        $tx_nodes = $payment_info.SelectNodes(".//ns:$txTag", $nsmgr)
+
+        foreach ($tx in $tx_nodes) {
+
+            ##############################################
+            # Référence de transaction
+            ##############################################
+            $end_to_end_id = Get-NodeText $tx "ns:PmtId/ns:EndToEndId" $nsmgr ""
+
+            ##############################################
+            # Montant et devise
+            ##############################################
+            $amount_node = $tx.SelectSingleNode(".//ns:InstdAmt", $nsmgr)
+            if ($amount_node) {
+                $amount = $amount_node.InnerText -replace '\.', ','
+                $currency = $amount_node.GetAttribute("Ccy")
+            } else {
+                $amount = ""
+                $currency = "EUR"
+            }
+
+            ##############################################
+            # Débiteur
+            ##############################################
+            $debtor_name = Get-NodeText $tx "ns:Dbtr/ns:Nm" $nsmgr ""
+            $debtor_iban = Get-NodeText $tx "ns:DbtrAcct/ns:Id/ns:IBAN" $nsmgr ""
+
+            ##############################################
+            # Créancier
+            ##############################################
+            $creditor_name = Get-NodeText $tx "ns:Cdtr/ns:Nm" $nsmgr ""
+            $creditor_iban = Get-NodeText $tx "ns:CdtrAcct/ns:Id/ns:IBAN" $nsmgr ""
+
+            ##############################################
+            # Référence de remise
+            ##############################################
+            $remittance_info = Get-NodeText $tx "ns:RmtInf/ns:Ustrd" $nsmgr ""
+
+            ##############################################
+            # Construction de la ligne CSV
+            ##############################################
+            $transactions += [pscustomobject]@{
+                PmtInfId              = $pmtinf_id
+                "Référence Paiement"  = $end_to_end_id
+                Montant               = $amount
+                Devise                = $currency
+                Débiteur              = $debtor_name
+                "IBAN Débiteur"       = $debtor_iban
+                Créancier             = $creditor_name
+                "IBAN Créancier"      = $creditor_iban
+                "Référence Remise"    = $remittance_info
+            }
+        }
+
+        ##############################################
+        # Export CSV pour ce PmtInf
+        ##############################################
+        $total_transactions += $transactions.Count
+
+        if ($transactions.Count -gt 0) {
+            $output_file = Join-Path $OutputDir "$pmtinf_id-$pmtmtd-$nb_of_txs-$ctrl_sum.csv"
+            $transactions | Export-Csv -Path $output_file -NoTypeInformation -Encoding Default -Delimiter ";"
+            Write-Host "Fichier généré : $output_file"
+        }
+    }
+
+    ##############################################
+    # Logs finaux
+    ##############################################
+    Write-Host "File path : $FilePath"
+    Write-Host "Log nb total pmtinf : $total_pmtinf"
+    Write-Host "Log nb transaction : $total_transactions"
+}
+
+##############################################
+# Fonction utilitaire :
+# - Retourne le texte d’un nœud XML
+# - Retourne une valeur par défaut si absent
+##############################################
+function Get-NodeText {
+    param(
+        $Node,
+        [string]$Path,
+        $NsMgr,
+        [string]$Default = ""
+    )
+
+    $n = $Node.SelectSingleNode($Path, $NsMgr)
+    if ($n) {
+        return $n.InnerText.Trim()
+    } else {
+        return $Default
+    }
+}

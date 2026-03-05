@@ -1,0 +1,75 @@
+================================================================================
+RÉSUMÉ - Transaction 2817 EUR Non Visible dans BR_DATA
+================================================================================
+
+🎯 ROOT CAUSE IDENTIFIÉE
+
+Une règle de CUMUL ACTIF (ALL+VO) existe pour le compte 342 (BBNP83292-EUR)
+dans la table TA_RN_CUMUL_MR.
+
+Cette règle provoque la CUMULATION de toutes les transactions VO au lieu
+d'un export en détail.
+
+================================================================================
+PREUVE
+================================================================================
+
+La transaction 2817 EUR fait partie de 23 TRANSACTIONS VO cumulées en
+UNE SEULE ligne dans BR_DATA :
+
+{noformat}
+Date       : 17/10/2025
+Montant    : 226838.78 EUR
+Commentaire: "Ecriture cumul quotidien"
+Composition: SOMME de 23 transactions VO (dont 2817 EUR)
+{noformat}
+
+VÉRIFICATION :
+{code:sql}
+-- Compte 342 : 1 règle de cumul ALL+VO ❌ → Export en CUMUL
+-- Compte 394 : 0 règle de cumul       ✅ → Export en DÉTAIL
+{code}
+
+================================================================================
+IMPACT
+================================================================================
+
+✅ La transaction 2817 EUR est BIEN traitée
+✅ Elle est BIEN dans TA_RN_IMPORT_GESTION et TA_RN_EXPORT
+❌ MAIS exportée en CUMUL (pas individuellement)
+❌ Elle n'apparaît PAS seule dans BR_DATA
+
+================================================================================
+SOLUTION RECOMMANDÉE
+================================================================================
+
+SUPPRIMER la règle de cumul ALL+VO pour le compte 342 :
+
+{code:sql}
+DELETE FROM TA_RN_CUMUL_MR
+WHERE ID_COMPTE_BANCAIRE_SYSTEME = 352
+  AND ID_PRODUIT = (SELECT ID_PRODUIT FROM TA_RN_PRODUIT WHERE CODE_PRODUIT = 'ALL')
+  AND ID_MODE_REGLEMENT = (SELECT ID_MODE_REGLEMENT FROM TA_RN_MODE_REGLEMENT WHERE CODE_MODE_REGLEMENT = 'VO');
+COMMIT;
+{code}
+
+RÉSULTAT APRÈS MODIFICATION :
+✅ Toutes les transactions VO apparaîtront individuellement dans BR_DATA
+✅ Même comportement que le compte 394
+
+================================================================================
+VALIDATION MÉTIER REQUISE
+================================================================================
+
+❓ Le compte BBNP83292-EUR doit-il exporter les transactions VO :
+   [ ] EN DÉTAIL (recommandé - une ligne par transaction)
+   [ ] EN CUMUL (actuel - une ligne par jour avec la somme)
+
+Merci de valider pour que nous puissions procéder.
+
+================================================================================
+
+Documentation complète disponible dans :
+  BNNP_SQL/COMMENTAIRE_JIRA_TRANSACTION_2817.txt (version détaillée)
+  BNNP_SQL/ROOT_CAUSE_ANALYSIS.md
+  BNNP_SQL/SOLUTION_OPTIONS.md

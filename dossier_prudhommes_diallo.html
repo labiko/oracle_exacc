@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dossier Prud'hommes - DIALLO vs AUDENSIEL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .header .date {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .section-title .icon {
+            font-size: 1.3em;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #27ae60, #f39c12, #e74c3c);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 20px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 4px solid #3498db;
+            border-radius: 50%;
+        }
+
+        .timeline-item.danger {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .timeline-item.danger::before {
+            border-color: #e74c3c;
+        }
+
+        .timeline-item.warning {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .timeline-item.warning::before {
+            border-color: #f39c12;
+        }
+
+        .timeline-date {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .timeline-content {
+            margin-top: 8px;
+            color: #555;
+        }
+
+        /* Alert boxes */
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+            color: white;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+            color: white;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .alert h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e8f4f8;
+        }
+
+        /* Arguments */
+        .argument-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .argument-card h4 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .argument-card .quote {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 8px;
+            font-style: italic;
+            border-left: 4px solid rgba(255,255,255,0.5);
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid #3498db;
+        }
+
+        .checklist li .check {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .checklist li.checked .check {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+
+        /* Key phrase */
+        .key-phrase {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .key-phrase::before {
+            content: '"';
+            font-size: 3em;
+            color: #e74c3c;
+            line-height: 0;
+            vertical-align: middle;
+        }
+
+        /* Amount highlight */
+        .amount {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .total-row {
+            background: #27ae60 !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        .total-row td {
+            border-bottom: none;
+        }
+
+        /* Legal articles */
+        .legal-ref {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin: 2px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                break-inside: avoid;
+            }
+
+            .header {
+                background: #c0392b !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .alert, .argument-card, .key-phrase {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+        }
+
+        .fraud-box {
+            background: repeating-linear-gradient(
+                45deg,
+                #fdf2f2,
+                #fdf2f2 10px,
+                #fff 10px,
+                #fff 20px
+            );
+            border: 3px solid #e74c3c;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .fraud-box h4 {
+            color: #c0392b;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: yellow;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+
+        .vs-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .company-compare {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .company-box {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .company-box.old {
+            background: #27ae60;
+            color: white;
+        }
+
+        .company-box.new {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .arrow-box {
+            font-size: 2em;
+            color: #e74c3c;
+        }
+
+        .strength-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .strength-high {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .strength-medium {
+            background: #f39c12;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>DOSSIER CONSEIL DE PRUD'HOMMES</h1>
+            <div class="subtitle">
+                Mamadou Alpha DIALLO <span class="vs-badge">VS</span> AUDENSIEL (ASSURANCES + CONSEIL)
+            </div>
+            <div class="date">AUDIENCE : 3 FEVRIER 2026</div>
+        </div>
+
+        <!-- DISCOURS D'INTRODUCTION - À LIRE EN PREMIER -->
+        <div class="section" style="border: 4px solid #e74c3c; background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);">
+            <div class="section-title" style="color: #c0392b;">
+                <span class="icon">🎤</span> DISCOURS D'INTRODUCTION - À LIRE QUAND ON ME DONNE LA PAROLE
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 10px; border-left: 5px solid #e74c3c; font-size: 1.1em; line-height: 1.8;">
+                <p style="font-style: italic; color: #666; margin-bottom: 15px;">Quand le juge vous donne la parole, lisez ce texte :</p>
+
+                <p><strong>"Monsieur/Madame le Président, Mesdames et Messieurs les Conseillers,</strong></p>
+
+                <p><strong>Je suis Mamadou Alpha DIALLO. J'ai travaillé pour AUDENSIEL ASSURANCES du 31 octobre 2024 au 27 juin 2025 en CDI, puis on m'a fait travailler 12 jours SANS CONTRAT.</strong></p>
+
+                <p><strong>Voici les faits :</strong></p>
+
+                <ol style="margin-left: 20px; margin-bottom: 15px;">
+                    <li>Mon CDI a été rompu <strong>3 jours avant la fin de ma période d'essai</strong> de 8 mois</li>
+                    <li>On m'a proposé un CDD avec une <strong>AUTRE société</strong> : AUDENSIEL CONSEIL (numéro SIREN différent)</li>
+                    <li><strong>J'ai REFUSÉ de signer ce CDD</strong> malgré leur pression</li>
+                    <li>Malgré mon refus, ils m'ont <strong>fait travailler 12 jours SANS AUCUN CONTRAT</strong></li>
+                </ol>
+
+                <p><strong>J'ai analysé mon contrat CDI. AUCUNE CLAUSE ne permet à AUDENSIEL ASSURANCES de me transférer vers AUDENSIEL CONSEIL, de transformer mon CDI en CDD, ou de me rétrograder. Ces modifications substantielles du contrat de travail nécessitaient mon accord écrit conformément à l'article L.1222-6 du Code du Travail (toute modification d'un élément essentiel du contrat requiert l'accord exprès du salarié, notifié par écrit). Je n'ai jamais donné cet accord.</strong></p>
+
+                <p><strong>Je demande que ce licenciement déguisé soit requalifié et que je sois indemnisé pour les préjudices subis. Le détail de mes demandes figure dans mon dossier."</strong></p>
+            </div>
+
+            <div class="alert alert-warning" style="margin-top: 15px;">
+                <h3>💡 Conseil</h3>
+                <p>Parle calmement et clairement. Regarde le juge. Après cette introduction, attends les questions.</p>
+            </div>
+        </div>
+
+        <!-- DÉTAIL DES MONTANTS - Si on me demande le détail -->
+        <div class="section" style="border: 4px solid #27ae60; background: linear-gradient(135deg, #f0fff4 0%, #e8f8f5 100%);">
+            <div class="section-title" style="color: #1e8449;">
+                <span class="icon">💰</span> SI ON ME DEMANDE LE DÉTAIL DES 24 166 €
+            </div>
+
+            <div class="alert alert-info">
+                <h3>📊 Base de calcul</h3>
+                <p><strong>Salaire mensuel brut :</strong> 58 000 € ÷ 12 = <strong>4 833 €</strong></p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Demande</th>
+                        <th>Fondement</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. Licenciement sans cause réelle</strong></td>
+                        <td>Art. L.1235-3 (Barème Macron)</td>
+                        <td class="amount">4 833 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Délai de prévenance non respecté</strong></td>
+                        <td>Art. L.1221-25 (1 mois requis)</td>
+                        <td class="amount">4 833 €</td>
+                    </tr>
+                    <tr style="background: #fdf2f2;">
+                        <td><strong>3. Transfert frauduleux</strong></td>
+                        <td>Art. L.8241-1 (autre SIREN)</td>
+                        <td class="amount">5 000 €</td>
+                    </tr>
+                    <tr style="background: #fdf2f2;">
+                        <td><strong>4. Travail sans contrat</strong></td>
+                        <td>Art. L.1221-1 (12 jours)</td>
+                        <td class="amount">3 000 €</td>
+                    </tr>
+                    <tr style="background: #fdf2f2;">
+                        <td><strong>5. Rétrogradation</strong></td>
+                        <td>Art. L.1222-6 (2.3→2.1)</td>
+                        <td class="amount">2 500 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>6. Préjudice moral</strong></td>
+                        <td>Art. 1240 C.Civ</td>
+                        <td class="amount">3 000 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>7. Article 700 (frais)</strong></td>
+                        <td>Art. 700 CPC</td>
+                        <td class="amount">1 000 €</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="2"><strong>TOTAL</strong></td>
+                        <td class="amount" style="color: white; font-size: 1.3em;">24 166 €</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Identité -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">👤</span> Informations Demandeur
+            </div>
+            <table>
+                <tr>
+                    <td><strong>Nom</strong></td>
+                    <td>Mamadou Alpha DIALLO</td>
+                </tr>
+                <tr>
+                    <td><strong>Adresse</strong></td>
+                    <td>206 rue de Séville, 77550 Moissy-Cramayel</td>
+                </tr>
+                <tr>
+                    <td><strong>Téléphone</strong></td>
+                    <td>06 20 95 16 45</td>
+                </tr>
+                <tr>
+                    <td><strong>Email</strong></td>
+                    <td>diallo.labico@hotmail.fr</td>
+                </tr>
+                <tr>
+                    <td><strong>Employeur CDI</strong></td>
+                    <td>AUDENSIEL <strong>ASSURANCES</strong> (SIREN 879 158 046)</td>
+                </tr>
+                <tr>
+                    <td><strong>Employeur CDD</strong></td>
+                    <td>AUDENSIEL <strong>CONSEIL</strong> (SIREN 831 794 821)</td>
+                </tr>
+                <tr>
+                    <td><strong>Client final</strong></td>
+                    <td>AXA</td>
+                </tr>
+                <tr>
+                    <td><strong>Poste</strong></td>
+                    <td>Consultant IT (mission chez AXA)</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- NOUVELLE SECTION: Transfert frauduleux -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">🔴</span> FRAUDE MAJEURE : TRANSFERT ENTRE SOCIETES
+            </div>
+
+            <div class="alert alert-danger">
+                <h3>⚠️ ILS M'ONT TRANSFÉRÉ VERS UNE AUTRE SOCIÉTÉ + RÉTROGRADÉ</h3>
+                <p>Mon CDI était avec AUDENSIEL ASSURANCES. Ils l'ont rompu pour me proposer un CDD avec une AUTRE entité juridique : AUDENSIEL CONSEIL. <strong>ILS M'ONT MIS LA PRESSION POUR SIGNER MAIS J'AI REFUSÉ</strong>. Malgré mon refus, ils m'ont fait travailler du 30 juin au 11 juillet <strong>SANS AUCUN CONTRAT SIGNÉ</strong> !</p>
+            </div>
+
+            <div class="company-compare">
+                <div class="company-box old">
+                    <h3>CDI</h3>
+                    <p><strong>AUDENSIEL ASSURANCES</strong></p>
+                    <p>SIREN: 879 158 046</p>
+                    <hr style="margin: 10px 0; border-color: rgba(255,255,255,0.3);">
+                    <p>Position: <strong>2.3</strong></p>
+                    <p>Coefficient: <strong>150</strong></p>
+                </div>
+                <div class="arrow-box">→</div>
+                <div class="company-box new">
+                    <h3>CDD</h3>
+                    <p><strong>AUDENSIEL CONSEIL</strong></p>
+                    <p>SIREN: 831 794 821</p>
+                    <hr style="margin: 10px 0; border-color: rgba(255,255,255,0.3);">
+                    <p>Position: <strong>2.1</strong> ⬇️</p>
+                    <p>Coefficient: <strong>115</strong> ⬇️</p>
+                </div>
+            </div>
+
+            <div class="fraud-box">
+                <h4>🎯 CE QUE CELA PROUVE</h4>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>Transfert sans consentement</strong> vers une autre entité juridique</li>
+                    <li><strong>Rétrogradation imposée</strong> : Position 2.3 → 2.1 / Coefficient 150 → 115</li>
+                    <li><strong>Prêt de main d'œuvre illicite</strong> potentiel (Article L.8241-1)</li>
+                    <li><strong>Fraude aux droits du salarié</strong> pour éviter les protections du CDI</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Résumé de la fraude -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">🚨</span> RÉSUMÉ DE LA FRAUDE
+            </div>
+
+            <div class="alert alert-danger">
+                <h3>⚠️ CE QU'AUDENSIEL A FAIT</h3>
+                <p>Rupture du CDI <strong>3 JOURS AVANT</strong> la fin de la période d'essai, puis transfert vers une autre société (CONSEIL au lieu d'ASSURANCES) avec un CDD et une rétrogradation de poste.</p>
+            </div>
+
+            <div class="fraud-box">
+                <h4>🎯 INTENTION FRAUDULEUSE MANIFESTE</h4>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Période d'essai de 8 mois se terminant vers le <span class="highlight">30/06/2025</span></li>
+                    <li>Rupture CDI le <span class="highlight">27/06/2025</span> (3 jours avant !)</li>
+                    <li>Proposition de CDD avec une <span class="highlight">AUTRE SOCIÉTÉ</span></li>
+                    <li><span class="highlight">⛔ ILS M'ONT MIS LA PRESSION MAIS J'AI REFUSÉ DE SIGNER</span></li>
+                    <li><span class="highlight">TRAVAIL SANS CONTRAT</span> du 30/06 au 11/07 malgré mon refus</li>
+                    <li><span class="highlight">RÉTROGRADATION</span> proposée de Position 2.3 à 2.1</li>
+                    <li>Objectif : éviter les indemnités de licenciement</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chronologie -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">📅</span> CHRONOLOGIE DES FAITS
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">31 Octobre 2024</div>
+                    <div class="timeline-content">
+                        <strong>Signature du CDI</strong> avec AUDENSIEL <strong>ASSURANCES</strong><br>
+                        Position 2.3, Coefficient 150<br>
+                        Mission chez le client AXA<br>
+                        <em>Période d'essai : 4 mois renouvelable (8 mois max)</em>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">28 Février 2025</div>
+                    <div class="timeline-content">
+                        <strong>Fin période d'essai initiale</strong> (4 mois)<br>
+                        Renouvellement de la période d'essai (+4 mois)
+                    </div>
+                </div>
+
+                <div class="timeline-item danger">
+                    <div class="timeline-date">27 Juin 2025</div>
+                    <div class="timeline-content">
+                        <strong>🚨 RUPTURE DU CDI</strong> - 3 jours avant fin période d'essai<br>
+                        Aucun entretien préalable, aucune lettre de licenciement<br>
+                        <strong>Proposition d'un CDD</strong> avec AUDENSIEL <strong>CONSEIL</strong> (autre société !)<br>
+                        <span class="highlight">⛔ ILS M'ONT MIS LA PRESSION MAIS J'AI REFUSÉ DE SIGNER</span><br>
+                        Rétrogradation proposée : Position 2.1, Coefficient 115
+                    </div>
+                </div>
+
+                <div class="timeline-item danger">
+                    <div class="timeline-date">30 Juin - 11 Juillet 2025</div>
+                    <div class="timeline-content">
+                        <strong>🚨 TRAVAIL SANS AUCUN CONTRAT SIGNÉ</strong><br>
+                        Malgré mon refus de signer le CDD, AUDENSIEL m'a fait travailler<br>
+                        <span class="highlight">Aucun contrat en vigueur pendant 12 jours</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item warning">
+                    <div class="timeline-date">~30 Juin 2025</div>
+                    <div class="timeline-content">
+                        <strong>Date théorique de fin de période d'essai</strong><br>
+                        ⚠️ Je n'ai jamais pu valider cette date car CDI rompu avant
+                    </div>
+                </div>
+
+                <div class="timeline-item danger">
+                    <div class="timeline-date">11 Juillet 2025</div>
+                    <div class="timeline-content">
+                        <strong>Fin de mission chez AXA</strong><br>
+                        Dernier jour de travail effectif<br>
+                        Astreintes de juin et juillet NON payées
+                    </div>
+                </div>
+
+                <div class="timeline-item warning">
+                    <div class="timeline-date">02 Juillet 2025</div>
+                    <div class="timeline-content">
+                        <strong>Paiement partiel salaire juin</strong> : 3 727,58 €<br>
+                        (au lieu de 4 927,95 € - reste payé en août)
+                    </div>
+                </div>
+
+                <div class="timeline-item warning">
+                    <div class="timeline-date">01 Août 2025</div>
+                    <div class="timeline-content">
+                        <strong>Paiement salaire CDD</strong> : 2 214,06 € (AUDENSIEL CONSEIL)<br>
+                        ⚠️ Avec 3 semaines de retard (prévu le 11/07)
+                    </div>
+                </div>
+
+                <div class="timeline-item warning">
+                    <div class="timeline-date">11 Août 2025</div>
+                    <div class="timeline-content">
+                        <strong>Paiement complément salaire juin</strong> : 1 200,37 €<br>
+                        ⚠️ Salaire juin payé en 2 fois avec retard
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Violations -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">⚖️</span> VIOLATIONS DU CODE DU TRAVAIL
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Infraction</th>
+                        <th>Article</th>
+                        <th>Force</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Transformation CDI → CDD</strong><br><small>INTERDIT par la loi</small></td>
+                        <td><span class="legal-ref">L.1243-1</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transfert vers autre société</strong><br><small>SIREN différent sans consentement</small></td>
+                        <td><span class="legal-ref">L.8241-1</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rétrogradation imposée</strong><br><small>Position 2.3→2.1, Coef 150→115</small></td>
+                        <td><span class="legal-ref">L.1222-6</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fraude à la période d'essai</strong><br><small>Rupture 3 jours avant la fin</small></td>
+                        <td><span class="legal-ref">L.1221-25</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rupture CDI sans procédure</strong><br><small>Aucun entretien préalable, aucune lettre</small></td>
+                        <td><span class="legal-ref">L.1232-2</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Travail sans contrat signé</strong><br><small>J'ai refusé de signer, ils m'ont fait travailler 12 jours</small></td>
+                        <td><span class="legal-ref">L.1221-1</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Motif CDD fictif</strong><br><small>"Surcroît d'activité" = faux</small></td>
+                        <td><span class="legal-ref">L.1242-2</span></td>
+                        <td><span class="strength-indicator strength-high">TRÈS FORT</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Astreintes non rémunérées</strong><br><small>Juin et juillet 2025</small></td>
+                        <td><span class="legal-ref">L.3121-9</span></td>
+                        <td><span class="strength-indicator strength-medium">À PROUVER</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Paiements tardifs</strong><br><small>Salaires payés en retard</small></td>
+                        <td><span class="legal-ref">L.3241-1</span></td>
+                        <td><span class="strength-indicator strength-medium">MOYEN</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Arguments -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">🎯</span> ARGUMENTS PRINCIPAUX (par ordre de force)
+            </div>
+
+            <div class="argument-card">
+                <h4>1️⃣ SUR LE TRANSFERT FRAUDULEUX ENTRE SOCIÉTÉS</h4>
+                <div class="quote">
+                    "Mon CDI était avec AUDENSIEL ASSURANCES (SIREN 879 158 046). Lorsqu'ils ont voulu mettre fin à mon contrat, ils m'ont proposé un CDD avec une AUTRE entité juridique : AUDENSIEL CONSEIL (SIREN 831 794 821). <strong>ILS M'ONT MIS LA PRESSION POUR SIGNER MAIS J'AI REFUSÉ</strong>. Malgré mon refus, ils m'ont fait travailler du 30 juin au 11 juillet <strong>SANS AUCUN CONTRAT SIGNÉ</strong>. Ce transfert forcé vers une société différente constitue un prêt de main d'œuvre illicite."
+                </div>
+            </div>
+
+            <div class="argument-card">
+                <h4>2️⃣ SUR LA RÉTROGRADATION IMPOSÉE</h4>
+                <div class="quote">
+                    "En plus du transfert, ils m'ont RÉTROGRADÉ : je suis passé de la position 2.3 (coefficient 150) à la position 2.1 (coefficient 115). C'est une modification substantielle du contrat de travail imposée sans mon accord, ce qui est illégal."
+                </div>
+            </div>
+
+            <div class="argument-card">
+                <h4>3️⃣ SUR LA FRAUDE À LA PÉRIODE D'ESSAI</h4>
+                <div class="quote">
+                    "Audensiel a rompu mon CDI le 27 juin 2025, soit 3 jours avant la fin de ma période d'essai de 8 mois. Ce n'est pas une coïncidence. L'employeur a délibérément voulu m'empêcher de valider ma période d'essai pour pouvoir se séparer de moi sans justification ni indemnités."
+                </div>
+            </div>
+
+            <div class="argument-card">
+                <h4>4️⃣ SUR L'ABSENCE TOTALE DE PROCÉDURE</h4>
+                <div class="quote">
+                    "Aucune procédure légale n'a été respectée : pas de convocation à un entretien préalable, pas de lettre de licenciement motivée. La rupture m'a été annoncée par téléphone, puis on m'a fait signer un CDD le même jour. C'est un licenciement déguisé."
+                </div>
+            </div>
+
+            <div class="argument-card">
+                <h4>5️⃣ SUR LE MOTIF FICTIF DU CDD</h4>
+                <div class="quote">
+                    "Le CDD mentionne un 'accroissement temporaire d'activité' comme motif. C'est faux : je faisais exactement le même travail chez AXA. Le seul but était de me maintenir jusqu'à la fin de la mission client, puis de me faire disparaître sans droits."
+                </div>
+            </div>
+        </div>
+
+        <!-- Phrase choc -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">💬</span> PHRASE CLÉ POUR LE JUGE
+            </div>
+
+            <div class="key-phrase">
+                Audensiel m'a utilisé pendant 8 mois, puis a rompu mon CDI <strong>3 jours avant la fin de ma période d'essai</strong>. Ils ont voulu me transférer vers une autre société (CONSEIL au lieu d'ASSURANCES) avec un CDD. <strong>ILS M'ONT MIS LA PRESSION MAIS J'AI REFUSÉ DE SIGNER</strong>. Malgré mon refus, ils m'ont <strong>fait travailler 12 JOURS SANS CONTRAT</strong>. C'est une <strong>fraude caractérisée</strong>.
+            </div>
+        </div>
+
+        <!-- Questions pour l'employeur -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">❓</span> QUESTIONS À POSER À L'EMPLOYEUR
+            </div>
+
+            <div class="alert alert-info">
+                <h3>Questions que le juge peut poser (ou que vous pouvez suggérer)</h3>
+            </div>
+
+            <ol style="margin-left: 20px; line-height: 2.2;">
+                <li><strong>"Pourquoi avoir rompu le CDI 3 jours avant la fin de la période d'essai ?"</strong></li>
+                <li><strong>"Pourquoi avoir transféré le salarié vers AUDENSIEL CONSEIL au lieu de le garder chez AUDENSIEL ASSURANCES ?"</strong></li>
+                <li><strong>"Le salarié a refusé de signer le CDD. Pourquoi l'avoir fait travailler 12 jours SANS CONTRAT ?"</strong></li>
+                <li><strong>"Pourquoi avoir proposé une rétrogradation de la position 2.3 à 2.1 ?"</strong></li>
+                <li><strong>"Où est la lettre de convocation à entretien préalable ?"</strong></li>
+                <li><strong>"Où est la lettre de licenciement motivée ?"</strong></li>
+                <li><strong>"Pouvez-vous produire un contrat CDD signé par le salarié ?"</strong> (Réponse : NON, il n'existe pas !)</li>
+                <li><strong>"Pourquoi les astreintes de juin et juillet n'ont-elles pas été payées ?"</strong></li>
+            </ol>
+        </div>
+
+        <!-- RÉPONSES AUX ARGUMENTS DE L'EMPLOYEUR -->
+        <div class="section" style="border: 4px solid #9b59b6; background: linear-gradient(135deg, #f5eef8 0%, #ebdef0 100%);">
+            <div class="section-title" style="color: #7d3c98;">
+                <span class="icon">🛡️</span> RÉPONSES AUX ARGUMENTS DE L'EMPLOYEUR
+            </div>
+
+            <div class="alert alert-warning">
+                <h3>⚠️ Si AUDENSIEL utilise ces arguments, voici comment répondre</h3>
+            </div>
+
+            <!-- Argument 1 -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #c0392b; margin-bottom: 10px;">❌ S'ils disent : "On avait le droit de rompre le CDI pendant la période d'essai"</h4>
+                <div style="background: #e8f8f5; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1e8449;">✅ VOTRE RÉPONSE :</strong>
+                    <p style="margin-top: 10px;">"C'est vrai, mais l'article <strong>L.1221-25</strong> du Code du Travail impose un <strong>délai de prévenance d'1 mois</strong> pour une ancienneté de plus de 3 mois. Vous ne l'avez pas respecté. De plus, mettre fin à la période d'essai ne vous autorise pas à me <strong>transférer vers une autre société</strong> ni à me <strong>faire travailler sans contrat</strong>."</p>
+                </div>
+            </div>
+
+            <!-- Argument 2 -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #c0392b; margin-bottom: 10px;">❌ S'ils disent : "Le contrat dit que les fonctions peuvent varier selon les projets"</h4>
+                <p style="font-style: italic; color: #666; margin-bottom: 10px;">Extrait Article 2 : "Les attributions du salarié sont susceptibles de varier selon la nature, l'étendue, la technicité des projets"</p>
+                <div style="background: #e8f8f5; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1e8449;">✅ VOTRE RÉPONSE :</strong>
+                    <p style="margin-top: 10px;">"Cette clause concerne la variation des <strong>TÂCHES</strong> au sein de la même entreprise, pas le <strong>transfert vers une autre société juridique</strong> (SIREN différent), ni la <strong>transformation d'un CDI en CDD</strong>, ni une <strong>rétrogradation de position</strong>. Ces modifications sont substantielles et nécessitaient mon accord écrit."</p>
+                </div>
+            </div>
+
+            <!-- Argument 3 -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #c0392b; margin-bottom: 10px;">❌ S'ils disent : "Le contrat prévoit une clause de mobilité géographique"</h4>
+                <p style="font-style: italic; color: #666; margin-bottom: 10px;">Extrait Article 5 : "Le lieu de travail précisé ci-dessus pourrait être amené à évoluer"</p>
+                <div style="background: #e8f8f5; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1e8449;">✅ VOTRE RÉPONSE :</strong>
+                    <p style="margin-top: 10px;">"Cette clause concerne le <strong>LIEU</strong> de travail (ex: Paris → Lyon), pas le changement d'<strong>EMPLOYEUR</strong>. AUDENSIEL ASSURANCES (SIREN 879 158 046) et AUDENSIEL CONSEIL (SIREN 831 794 821) sont deux sociétés <strong>juridiquement distinctes</strong>. Cette clause ne permet pas de me transférer vers une autre entité juridique."</p>
+                </div>
+            </div>
+
+            <!-- Argument 4 -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #c0392b; margin-bottom: 10px;">❌ S'ils disent : "Le contrat dit qu'il accepte les missions sans modification du contrat"</h4>
+                <p style="font-style: italic; color: #666; margin-bottom: 10px;">Extrait Article 5 : "Le salarié pourra être amené à effectuer des missions [...] qu'il accepte d'ores et déjà sans pouvoir se prévaloir d'une modification"</p>
+                <div style="background: #e8f8f5; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1e8449;">✅ VOTRE RÉPONSE :</strong>
+                    <p style="margin-top: 10px;">"Cette clause concerne des <strong>missions CHEZ LES CLIENTS</strong> pour le compte d'AUDENSIEL ASSURANCES. Elle ne permet pas de me transférer vers une <strong>autre société du groupe</strong>, de <strong>rompre mon CDI pour un CDD</strong>, ou de me <strong>rétrograder</strong>. Ces modifications restent substantielles et illégales sans mon accord."</p>
+                </div>
+            </div>
+
+            <!-- Argument 5 -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #c0392b; margin-bottom: 10px;">❌ S'ils disent : "La convention SYNTEC permet..."</h4>
+                <div style="background: #e8f8f5; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1e8449;">✅ VOTRE RÉPONSE :</strong>
+                    <p style="margin-top: 10px;">"La convention SYNTEC ne permet pas le <strong>prêt de main d'œuvre illicite</strong> entre sociétés, ni la <strong>modification unilatérale du type de contrat</strong> (CDI→CDD), ni la <strong>rétrogradation sans accord</strong> du salarié. Ces pratiques restent interdites par le Code du Travail, quelle que soit la convention collective."</p>
+                </div>
+            </div>
+
+            <!-- Phrase clé -->
+            <div style="background: linear-gradient(135deg, #1e8449 0%, #27ae60 100%); color: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin-bottom: 10px;">🎯 PHRASE CLÉ À RETENIR</h4>
+                <p style="font-size: 1.1em; line-height: 1.6;">"Mon contrat CDI avec AUDENSIEL ASSURANCES prévoit de la flexibilité sur les <strong>TÂCHES</strong> et le <strong>LIEU</strong> de travail, mais <strong>AUCUNE clause ne permet</strong> de me transférer vers une autre société, de transformer mon CDI en CDD, ou de me rétrograder. Ces modifications substantielles nécessitaient mon accord écrit que <strong>je n'ai jamais donné</strong>."</p>
+            </div>
+        </div>
+
+        <!-- Checklist documents -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">📁</span> DOCUMENTS À PRÉSENTER
+            </div>
+
+            <ul class="checklist">
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Contrat CDI</strong> (31/10/2024) - AUDENSIEL ASSURANCES</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Contrat CDD JAMAIS SIGNÉ</strong> (30/06-11/07/2025) - AUDENSIEL CONSEIL (J'AI REFUSÉ !)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Bulletin de paie Juin 2025</strong> (montre Position 2.3, Coef 150)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Bulletin de paie Juillet 2025</strong> (montre Position 2.1, Coef 115 = rétrogradation)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Certificat de travail CDI</strong> (AUDENSIEL ASSURANCES)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Certificat de travail CDD</strong> (AUDENSIEL CONSEIL = société différente !)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Relevés bancaires</strong> (prouvent les paiements tardifs)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Attestations France Travail</strong> (les deux)</span>
+                </li>
+                <li onclick="this.classList.toggle('checked')">
+                    <span class="check">✓</span>
+                    <span><strong>Preuves des astreintes</strong> (emails, planning, tickets...)</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Demandes chiffrées -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">💰</span> DEMANDES CHIFFRÉES PRÉCISES
+            </div>
+
+            <div class="alert alert-info">
+                <h3>📊 Base de calcul</h3>
+                <p><strong>Salaire annuel brut :</strong> 58 000 €</p>
+                <p><strong>Salaire mensuel brut :</strong> 58 000 € ÷ 12 = <strong>4 833,33 €</strong></p>
+                <p><strong>Salaire mensuel net :</strong> ~4 000 € (constaté sur bulletins)</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Demande</th>
+                        <th>Fondement juridique</th>
+                        <th>Calcul</th>
+                        <th>Montant demandé</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. Licenciement sans cause réelle et sérieuse</strong></td>
+                        <td>Art. L.1235-3<br><small>Barème Macron : max 1 mois si &lt; 1 an</small></td>
+                        <td>1 mois de salaire brut</td>
+                        <td class="amount">4 833 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Indemnité délai de prévenance</strong></td>
+                        <td>Art. L.1221-25<br><small>1 mois requis si &gt; 3 mois ancienneté</small></td>
+                        <td>1 mois de salaire brut</td>
+                        <td class="amount">4 833 €</td>
+                    </tr>
+                    <tr style="background: #fdf2f2;">
+                        <td><strong>3. Transfert frauduleux entre sociétés</strong></td>
+                        <td>Art. L.8241-1<br><small>Prêt de main d'œuvre illicite</small></td>
+                        <td>Préjudice : transfert vers autre société sans consentement</td>
+                        <td class="amount">5 000 €</td>
+                    </tr>
+                    <tr style="background: #fdf2f2;">
+                        <td><strong>4. Travail sans contrat signé</strong></td>
+                        <td>Art. L.1221-1<br><small>Présomption CDI</small></td>
+                        <td>12 jours travaillés SANS CONTRAT malgré mon refus de signer</td>
+                        <td class="amount">3 000 €</td>
+                    </tr>
+                    <tr style="background: #fdf2f2;">
+                        <td><strong>5. Rétrogradation imposée</strong></td>
+                        <td>Art. L.1222-6<br><small>Modification contrat sans accord</small></td>
+                        <td>Position 2.3→2.1, Coef 150→115</td>
+                        <td class="amount">2 500 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>6. Préjudice moral</strong></td>
+                        <td>Art. 1240 Code Civil<br><small>Manœuvres frauduleuses, coercition</small></td>
+                        <td>Fraude + pression + travail forcé</td>
+                        <td class="amount">3 000 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>7. Astreintes non rémunérées</strong></td>
+                        <td>Art. L.3121-9<br><small>Juin + Juillet 2025</small></td>
+                        <td>À chiffrer selon planning</td>
+                        <td class="amount">À justifier</td>
+                    </tr>
+                    <tr>
+                        <td><strong>8. Article 700 (frais de procédure)</strong></td>
+                        <td>Art. 700 CPC</td>
+                        <td>Frais engagés pour défendre mes droits</td>
+                        <td class="amount">1 000 €</td>
+                    </tr>
+                    <tr>
+                        <td><strong>9. Documents rectifiés</strong></td>
+                        <td>Sous astreinte de 50€/jour de retard</td>
+                        <td>Certificats, attestations France Travail</td>
+                        <td>Astreinte</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="3"><strong>TOTAL DEMANDÉ (hors astreintes travail)</strong></td>
+                        <td class="amount" style="color: white; font-size: 1.4em;">24 166 €</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="background: #e8f8f5; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #27ae60;">
+                <h4 style="color: #1e8449; margin-bottom: 10px;">💡 Justification des montants</h4>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Points 1 et 2 (9 666 €) :</strong> Basés sur 1 mois de salaire brut chacun - montants légaux</li>
+                    <li><strong>Point 3 (5 000 €) :</strong> Transfert frauduleux vers une autre société (SIREN différent)</li>
+                    <li><strong>Point 4 (3 000 €) :</strong> J'ai refusé de signer le CDD, ils m'ont fait travailler 12 jours SANS CONTRAT</li>
+                    <li><strong>Point 5 (2 500 €) :</strong> La rétrogradation Position 2.3→2.1 représente une perte de statut</li>
+                    <li><strong>Point 6 (3 000 €) :</strong> Préjudice moral : fraude + pression pour signer + travail sans contrat</li>
+                    <li><strong>Point 8 (1 000 €) :</strong> Standard pour les procédures prud'homales</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-danger" style="margin-top: 20px;">
+                <h3>⚠️ Rappel pour l'audience</h3>
+                <p>Demande le montant <strong>TOTAL de 24 166 €</strong>. J'ai REFUSÉ de signer le CDD malgré leur pression, et ils m'ont fait travailler 12 jours SANS CONTRAT. <strong>AUDENSIEL ne peut PAS produire de contrat signé car il n'existe pas !</strong></p>
+            </div>
+        </div>
+
+        <!-- DÉTAIL DES ARTICLES DE LOI -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">📜</span> DÉTAIL DES ARTICLES DU CODE DU TRAVAIL
+            </div>
+
+            <!-- Article L.1235-3 -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #c0392b; margin-bottom: 10px;">
+                    <span class="legal-ref">L.1235-3</span> Barème Macron - Licenciement sans cause réelle et sérieuse
+                </h4>
+                <blockquote style="font-style: italic; background: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    "Si le licenciement d'un salarié survient pour une cause qui n'est pas réelle et sérieuse, le juge peut proposer la réintégration du salarié dans l'entreprise. Si l'une ou l'autre des parties refuse cette réintégration, le juge octroie au salarié une <strong>indemnité à la charge de l'employeur</strong>, dont le montant est compris entre les montants minimaux et maximaux fixés dans le tableau."
+                </blockquote>
+                <table style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Ancienneté</th>
+                            <th>Indemnité minimale</th>
+                            <th>Indemnité maximale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0 an (incomplet)</td>
+                            <td>-</td>
+                            <td>1 mois</td>
+                        </tr>
+                        <tr style="background: #fef9e7;">
+                            <td><strong>Ton cas : ~8 mois</strong></td>
+                            <td><strong>-</strong></td>
+                            <td><strong>1 mois de salaire</strong></td>
+                        </tr>
+                        <tr>
+                            <td>1 an</td>
+                            <td>1 mois</td>
+                            <td>2 mois</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    <strong>Jurisprudence 2025</strong> : Même un salarié avec moins d'1 an peut obtenir jusqu'à 1 mois (Cass. soc., 29 janv. 2025, n° 23-17.006)
+                </p>
+            </div>
+
+            <!-- Article L.1232-2 -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #3498db;">
+                <h4 style="color: #2980b9; margin-bottom: 10px;">
+                    <span class="legal-ref">L.1232-2</span> Procédure de licenciement - Entretien préalable
+                </h4>
+                <blockquote style="font-style: italic; background: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    "L'employeur qui envisage de licencier un salarié le convoque, <strong>avant toute décision</strong>, à un <strong>entretien préalable</strong>. La convocation est effectuée par lettre recommandée ou par lettre remise en main propre contre décharge."
+                </blockquote>
+                <div class="alert alert-danger" style="margin-top: 10px;">
+                    <strong>⚠️ Ton cas :</strong> Aucun entretien préalable n'a eu lieu. La rupture a été annoncée par téléphone. C'est une violation caractérisée de la procédure.
+                </div>
+            </div>
+
+            <!-- Article L.1221-25 -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #f39c12;">
+                <h4 style="color: #d68910; margin-bottom: 10px;">
+                    <span class="legal-ref">L.1221-25</span> Période d'essai - Délai de prévenance
+                </h4>
+                <blockquote style="font-style: italic; background: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    "Lorsqu'il est mis fin par l'employeur au contrat en cours ou au terme de la période d'essai, le salarié est prévenu dans un délai qui ne peut être inférieur à :<br>
+                    • 24 heures en deçà de 8 jours de présence<br>
+                    • 48 heures entre 8 jours et 1 mois de présence<br>
+                    • 2 semaines après 1 mois de présence<br>
+                    • <strong>1 mois après 3 mois de présence</strong>"
+                </blockquote>
+                <div class="alert alert-danger" style="margin-top: 10px;">
+                    <strong>⚠️ Ton cas :</strong> Avec 8 mois de présence, un délai de prévenance de <strong>1 MOIS</strong> était requis. Il n'a pas été respecté.
+                </div>
+            </div>
+
+            <!-- Article L.8241-1 -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #9b59b6;">
+                <h4 style="color: #8e44ad; margin-bottom: 10px;">
+                    <span class="legal-ref">L.8241-1</span> Prêt de main d'œuvre illicite
+                </h4>
+                <blockquote style="font-style: italic; background: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    "<strong>Toute opération à but lucratif ayant pour objet exclusif le prêt de main-d'œuvre est interdite.</strong>"
+                </blockquote>
+                <p style="margin: 10px 0;"><strong>Sanctions pénales (Art. L.8243-1) :</strong></p>
+                <ul style="margin-left: 20px;">
+                    <li>2 ans d'emprisonnement</li>
+                    <li>30 000 € d'amende</li>
+                    <li>Pour personnes morales : jusqu'à <strong>150 000 €</strong></li>
+                </ul>
+                <div class="alert alert-danger" style="margin-top: 10px;">
+                    <strong>⚠️ Ton cas :</strong> Le transfert d'AUDENSIEL ASSURANCES vers AUDENSIEL CONSEIL (deux SIREN différents) sans ton consentement éclairé pourrait constituer un prêt de main d'œuvre illicite.
+                </div>
+            </div>
+
+            <!-- Article L.1243-1 -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #1abc9c;">
+                <h4 style="color: #16a085; margin-bottom: 10px;">
+                    <span class="legal-ref">L.1243-1</span> Rupture anticipée du CDD
+                </h4>
+                <blockquote style="font-style: italic; background: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    "Le contrat de travail à durée déterminée ne peut être rompu avant l'échéance du terme qu'en cas de :<br>
+                    • Accord des parties<br>
+                    • Faute grave<br>
+                    • Force majeure<br>
+                    • Inaptitude constatée par le médecin du travail"
+                </blockquote>
+                <div class="alert alert-warning" style="margin-top: 10px;">
+                    <strong>Important :</strong> Un CDD ne peut PAS être utilisé pour remplacer un CDI rompu sur le même poste. Le motif "accroissement temporaire d'activité" doit être réel et justifié.
+                </div>
+            </div>
+
+            <!-- Article L.1222-6 -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #e67e22;">
+                <h4 style="color: #d35400; margin-bottom: 10px;">
+                    <span class="legal-ref">L.1222-6</span> Modification du contrat de travail
+                </h4>
+                <blockquote style="font-style: italic; background: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    "Lorsque l'employeur envisage la modification d'un élément essentiel du contrat de travail [...], il en fait la proposition au salarié par <strong>lettre recommandée avec avis de réception</strong>."
+                </blockquote>
+                <div class="alert alert-danger" style="margin-top: 10px;">
+                    <strong>⚠️ Ton cas :</strong> La rétrogradation (Position 2.3 → 2.1, Coefficient 150 → 115) est une modification substantielle du contrat imposée sans ton accord écrit. C'est illégal.
+                </div>
+            </div>
+
+            <!-- Tableau récapitulatif -->
+            <h4 style="margin-top: 30px; margin-bottom: 15px;">📋 Tableau récapitulatif pour l'audience</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Demande</th>
+                        <th>Article</th>
+                        <th>Ce que dit la loi</th>
+                        <th>Ton cas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Licenciement abusif</td>
+                        <td><span class="legal-ref">L.1235-3</span></td>
+                        <td>1-2 mois de salaire</td>
+                        <td>~5 000 €</td>
+                    </tr>
+                    <tr>
+                        <td>Non-respect procédure</td>
+                        <td><span class="legal-ref">L.1232-2</span></td>
+                        <td>Entretien préalable obligatoire</td>
+                        <td>❌ Aucun entretien</td>
+                    </tr>
+                    <tr>
+                        <td>Délai de prévenance</td>
+                        <td><span class="legal-ref">L.1221-25</span></td>
+                        <td>1 mois si > 3 mois ancienneté</td>
+                        <td>❌ Non respecté</td>
+                    </tr>
+                    <tr>
+                        <td>Transfert illicite</td>
+                        <td><span class="legal-ref">L.8241-1</span></td>
+                        <td>Prêt de main d'œuvre interdit</td>
+                        <td>❌ 2 sociétés différentes</td>
+                    </tr>
+                    <tr>
+                        <td>Rétrogradation</td>
+                        <td><span class="legal-ref">L.1222-6</span></td>
+                        <td>Accord du salarié requis</td>
+                        <td>❌ Imposée sans accord</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 20px; font-size: 0.85em; color: #666;">
+                <strong>Sources :</strong>
+                <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036762052" target="_blank">Légifrance L.1235-3</a> |
+                <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000029946319" target="_blank">Légifrance L.1243-1</a> |
+                <a href="https://travail-emploi.gouv.fr/le-pret-illicite-de-main-doeuvre" target="_blank">Ministère du Travail</a>
+            </p>
+        </div>
+
+        <!-- Ce qu'il ne faut PAS dire -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">⛔</span> CE QU'IL NE FAUT PAS DIRE
+            </div>
+
+            <div class="alert alert-warning">
+                <h3>Attention aux points faibles</h3>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>❌ Ne dis PAS</th>
+                        <th>✅ Dis plutôt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>"Je n'ai pas reçu mon salaire de juin"</td>
+                        <td>"Le salaire de juin a été payé en retard, en deux versements"</td>
+                    </tr>
+                    <tr>
+                        <td>"Je n'ai pas reçu mon salaire du CDD"</td>
+                        <td>"Le salaire du CDD a été payé avec 3 semaines de retard"</td>
+                    </tr>
+                    <tr>
+                        <td>"Ils m'ont volé de l'argent"</td>
+                        <td>"Les paiements ont été irréguliers, démontrant la désorganisation"</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="alert alert-success" style="margin-top: 20px;">
+                <h3>✅ Concentre-toi sur les arguments IMBATTABLES</h3>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Le transfert entre deux sociétés différentes (SIREN différents)</li>
+                    <li>La rétrogradation (Position 2.3 → 2.1)</li>
+                    <li>Le timing (3 jours avant fin période d'essai)</li>
+                    <li>L'absence de procédure de licenciement</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Conclusion -->
+        <div class="section">
+            <div class="section-title">
+                <span class="icon">✅</span> CONCLUSION / DEMANDES FINALES
+            </div>
+
+            <div class="alert alert-success">
+                <h3>Je demande au Conseil de Prud'hommes de :</h3>
+            </div>
+
+            <ol style="margin-left: 20px; line-height: 2.2; font-size: 1.05em;">
+                <li><strong>Requalifier</strong> la rupture du CDI en <strong>licenciement sans cause réelle et sérieuse</strong></li>
+                <li><strong>Constater</strong> le transfert frauduleux entre AUDENSIEL ASSURANCES et AUDENSIEL CONSEIL</li>
+                <li><strong>Constater</strong> la rétrogradation imposée (Position 2.3 → 2.1)</li>
+                <li><strong>Condamner</strong> solidairement AUDENSIEL ASSURANCES et AUDENSIEL CONSEIL au paiement de :
+                    <ul style="margin-left: 30px; margin-top: 5px;">
+                        <li>L'indemnité pour licenciement sans cause réelle et sérieuse</li>
+                        <li>L'indemnité compensatrice de préavis</li>
+                        <li>Les dommages-intérêts pour transfert frauduleux</li>
+                        <li>Les dommages-intérêts pour rétrogradation imposée</li>
+                        <li>Les dommages-intérêts pour préjudice moral</li>
+                        <li>Les astreintes non rémunérées de juin et juillet 2025</li>
+                    </ul>
+                </li>
+                <li><strong>Ordonner</strong> la remise des documents de fin de contrat rectifiés sous astreinte</li>
+                <li><strong>Condamner</strong> les défendeurs aux dépens et aux frais de procédure</li>
+            </ol>
+        </div>
+
+        <!-- Footer -->
+        <div class="section" style="text-align: center; background: #2c3e50; color: white;">
+            <p style="margin-bottom: 10px;"><strong>BON COURAGE POUR L'AUDIENCE !</strong></p>
+            <p style="opacity: 0.8;">Document mis à jour le 2 février 2026</p>
+            <p style="margin-top: 15px; font-size: 0.9em;">
+                💪 Ton dossier est SOLIDE. Reste calme, factuel et appuie-toi sur tes documents.<br>
+                Les preuves du transfert frauduleux et de la rétrogradation sont IRRÉFUTABLES.
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // Auto-save checklist state
+        document.querySelectorAll('.checklist li').forEach((item, index) => {
+            // Load saved state
+            if (localStorage.getItem(`check_v2_${index}`) === 'true') {
+                item.classList.add('checked');
+            }
+
+            // Save on click
+            item.addEventListener('click', () => {
+                localStorage.setItem(`check_v2_${index}`, item.classList.contains('checked'));
+            });
+        });
+    </script>
+</body>
+</html>

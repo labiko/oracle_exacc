@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIRA Timeline - BBNP75804-EUR-CTL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header .ticket-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #7b2cbf, #e040fb);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .header .compte-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: inline-block;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .header .compte-info code {
+            color: #00d4ff;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #00d4ff, #7b2cbf, #e040fb);
+            border-radius: 2px;
+        }
+
+        /* Timeline Item */
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateX(5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        /* Timeline Dot */
+        .timeline-item::before {
+            content: attr(data-step);
+            position: absolute;
+            left: -50px;
+            top: 25px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Step Header */
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-delete {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+
+        .badge-update {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #000;
+        }
+
+        .badge-insert {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: #000;
+        }
+
+        .badge-techlead {
+            background: rgba(123, 44, 191, 0.3);
+            border: 1px solid #7b2cbf;
+            color: #e040fb;
+        }
+
+        /* Description */
+        .step-description {
+            color: #b0b0b0;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border-left: 3px solid #7b2cbf;
+        }
+
+        /* SQL Code Block */
+        .sql-container {
+            position: relative;
+            margin-top: 15px;
+        }
+
+        .sql-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2d2d2d;
+            padding: 10px 15px;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 1px solid #444;
+        }
+
+        .sql-header span {
+            color: #00d4ff;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #7b2cbf, #e040fb);
+            border: none;
+            color: #fff;
+            padding: 6px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(224, 64, 251, 0.5);
+        }
+
+        .sql-code {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* SQL Syntax Highlighting */
+        .sql-keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .sql-function {
+            color: #dcdcaa;
+        }
+
+        .sql-string {
+            color: #ce9178;
+        }
+
+        .sql-comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .sql-table {
+            color: #4ec9b0;
+        }
+
+        .sql-column {
+            color: #9cdcfe;
+        }
+
+        .sql-operator {
+            color: #d4d4d4;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-box .icon {
+            font-size: 1.5rem;
+        }
+
+        .warning-box p {
+            color: #ffc107;
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .footer .timestamp {
+            color: #00d4ff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .timeline {
+                padding-left: 30px;
+            }
+            .timeline-item::before {
+                left: -35px;
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="ticket-badge">JIRA TICKET - Configuration Compte</div>
+            <h1>Migration BBNP75804-EUR-CTL</h1>
+            <div class="compte-info">
+                Compte cible : <code>BBNP75804-EUR-CTL</code> &rarr; <code>BBNP75804-EUR</code>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline">
+
+            <!-- STEP 1 -->
+            <div class="timeline-item" data-step="1">
+                <div class="step-header">
+                    <span class="step-title">Suppression des balises</span>
+                    <span class="badge badge-delete">DELETE</span>
+                    <span class="badge badge-techlead">TechLead</span>
+                </div>
+                <div class="step-description">
+                    Suppression de <strong>toutes les balises</strong> pour tous les fichiers a recevoir sur le compte <code>BBNP75804-EUR-CTL</code>
+                    <br><em>(Banque, GESTION et COMPTA)</em>
+                </div>
+                <div class="sql-container">
+                    <div class="sql-header">
+                        <span>SQL - Oracle</span>
+                        <button class="copy-btn" onclick="copySQL(this)">Copier</button>
+                    </div>
+                    <pre class="sql-code"><span class="sql-keyword">DELETE FROM</span> <span class="sql-table">TA_RN_BALISE_PAR_COMPTE</span>
+<span class="sql-keyword">WHERE</span> <span class="sql-column">ID_COMPTE_ACCURATE</span> <span class="sql-keyword">IN</span> (
+    <span class="sql-keyword">SELECT</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>.<span class="sql-column">ID_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">WHERE</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>.<span class="sql-column">NUM_COMPTE_ACCURATE</span> <span class="sql-keyword">IN</span> (<span class="sql-string">'BBNP75804-EUR-CTL'</span>)
+);</pre>
+                </div>
+                <div class="warning-box">
+                    <span class="icon">&#9888;</span>
+                    <p><strong>Attention :</strong> Cette operation supprime TOUTES les balises (Banque, Gestion, Compta) du compte.</p>
+                </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="timeline-item" data-step="2">
+                <div class="step-header">
+                    <span class="step-title">Bascule du compte Gestion</span>
+                    <span class="badge badge-update">UPDATE</span>
+                    <span class="badge badge-techlead">TechLead</span>
+                </div>
+                <div class="step-description">
+                    Bascule du compte Gestion de <code>BBNP75804-EUR-CTL</code> vers <code>BBNP75804-EUR</code>
+                </div>
+                <div class="sql-container">
+                    <div class="sql-header">
+                        <span>SQL - Oracle</span>
+                        <button class="copy-btn" onclick="copySQL(this)">Copier</button>
+                    </div>
+                    <pre class="sql-code"><span class="sql-keyword">UPDATE</span> <span class="sql-table">TA_RN_GESTION_ACCURATE</span>
+<span class="sql-keyword">SET</span> <span class="sql-column">ID_COMPTE_ACCURATE</span> = (
+    <span class="sql-keyword">SELECT</span> <span class="sql-column">ID_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">WHERE</span> <span class="sql-column">NUM_COMPTE_ACCURATE</span> = <span class="sql-string">'BBNP75804-EUR'</span>
+)
+<span class="sql-keyword">WHERE</span> <span class="sql-column">ID_COMPTE_ACCURATE</span> = (
+    <span class="sql-keyword">SELECT</span> <span class="sql-column">ID_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">WHERE</span> <span class="sql-column">NUM_COMPTE_ACCURATE</span> = <span class="sql-string">'BBNP75804-EUR-CTL'</span>
+);</pre>
+                </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="timeline-item" data-step="3">
+                <div class="step-header">
+                    <span class="step-title">Ajout des balises Gestion (ExtraitReglement)</span>
+                    <span class="badge badge-insert">INSERT</span>
+                    <span class="badge badge-techlead">TechLead</span>
+                </div>
+                <div class="step-description">
+                    Ajout des balises de reconnaissance pour la partie <strong>Gestion (ExtraitReglement)</strong> pour le compte <code>BBNP75804-EUR</code>
+                    <br><em>Modele de reference : <code>BBNP40692-EUR</code></em>
+                </div>
+                <div class="sql-container">
+                    <div class="sql-header">
+                        <span>SQL - Oracle</span>
+                        <button class="copy-btn" onclick="copySQL(this)">Copier</button>
+                    </div>
+                    <pre class="sql-code"><span class="sql-keyword">INSERT INTO</span> <span class="sql-table">TA_RN_BALISE_PAR_COMPTE</span> (
+    <span class="sql-column">ID_COMPTE_ACCURATE</span>,
+    <span class="sql-column">NUM_COL_FEEDER</span>,
+    <span class="sql-column">ID_BALISE</span>,
+    <span class="sql-column">INDICATEUR_MANUEL_AUTO</span>
+)
+<span class="sql-keyword">SELECT</span>
+    (<span class="sql-keyword">SELECT</span> <span class="sql-column">ID_COMPTE_ACCURATE</span>
+     <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>
+     <span class="sql-keyword">WHERE</span> <span class="sql-column">NUM_COMPTE_ACCURATE</span> = <span class="sql-string">'BBNP75804-EUR'</span>) <span class="sql-keyword">AS</span> <span class="sql-column">ID_COMPTE_ACCURATE</span>,
+    <span class="sql-column">BalRef</span>.<span class="sql-column">NUM_COL_FEEDER</span>,
+    <span class="sql-column">BalRef</span>.<span class="sql-column">ID_BALISE</span>,
+    <span class="sql-column">BalRef</span>.<span class="sql-column">INDICATEUR_MANUEL_AUTO</span>
+<span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_BALISE_PAR_COMPTE</span> <span class="sql-column">BalRef</span>
+<span class="sql-keyword">LEFT JOIN</span> <span class="sql-table">TA_RN_BALISE_PAR_COMPTE</span> <span class="sql-column">Balise1</span>
+    <span class="sql-keyword">ON</span> <span class="sql-column">Balise1</span>.<span class="sql-column">NUM_COL_FEEDER</span> = <span class="sql-column">BalRef</span>.<span class="sql-column">NUM_COL_FEEDER</span>
+    <span class="sql-keyword">AND</span> <span class="sql-column">Balise1</span>.<span class="sql-column">ID_BALISE</span> = <span class="sql-column">BalRef</span>.<span class="sql-column">ID_BALISE</span>
+    <span class="sql-keyword">AND</span> <span class="sql-column">Balise1</span>.<span class="sql-column">INDICATEUR_MANUEL_AUTO</span> = <span class="sql-column">BalRef</span>.<span class="sql-column">INDICATEUR_MANUEL_AUTO</span>
+    <span class="sql-keyword">AND</span> <span class="sql-column">Balise1</span>.<span class="sql-column">ID_COMPTE_ACCURATE</span> <span class="sql-keyword">IN</span> (
+        <span class="sql-keyword">SELECT</span> <span class="sql-column">ID_COMPTE_ACCURATE</span>
+        <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>
+        <span class="sql-keyword">WHERE</span> <span class="sql-column">NUM_COMPTE_ACCURATE</span> = <span class="sql-string">'BBNP75804-EUR'</span>
+    )
+<span class="sql-keyword">WHERE</span> <span class="sql-column">BalRef</span>.<span class="sql-column">ID_COMPTE_ACCURATE</span> <span class="sql-keyword">IN</span> (
+    <span class="sql-keyword">SELECT</span> <span class="sql-column">ID_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_COMPTE_ACCURATE</span>
+    <span class="sql-keyword">WHERE</span> <span class="sql-column">NUM_COMPTE_ACCURATE</span> = <span class="sql-string">'BBNP40692-EUR'</span>
+)
+<span class="sql-keyword">AND</span> <span class="sql-column">BalRef</span>.<span class="sql-column">ID_BALISE</span> <span class="sql-keyword">IN</span> (
+    <span class="sql-keyword">SELECT</span> <span class="sql-column">ID_BALISE</span>
+    <span class="sql-keyword">FROM</span> <span class="sql-table">TA_RN_BALISE</span>
+    <span class="sql-keyword">WHERE</span> <span class="sql-column">Type_BALISE</span> = <span class="sql-string">'GEST'</span>
+)
+<span class="sql-comment">-- Condition pour n'avoir que les nouvelles balises</span>
+<span class="sql-keyword">AND</span> <span class="sql-column">Balise1</span>.<span class="sql-column">NUM_COL_FEEDER</span> <span class="sql-keyword">IS NULL</span>
+<span class="sql-keyword">ORDER BY</span> <span class="sql-column">BalRef</span>.<span class="sql-column">NUM_COL_FEEDER</span>;</pre>
+                </div>
+                <div class="warning-box">
+                    <span class="icon">&#128269;</span>
+                    <p><strong>Note :</strong> La condition <code>Balise1.NUM_COL_FEEDER IS NULL</code> garantit l'insertion uniquement des nouvelles balises.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Document genere le <span class="timestamp" id="timestamp"></span></p>
+            <p>TechLead - Equipe DBA</p>
+        </div>
+    </div>
+
+    <script>
+        // Set timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString('fr-FR');
+
+        // Copy SQL function
+        function copySQL(btn) {
+            const sqlCode = btn.closest('.sql-container').querySelector('.sql-code');
+            const text = sqlCode.innerText;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'Copie !';
+                btn.style.background = 'linear-gradient(135deg, #11998e, #38ef7d)';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #7b2cbf, #e040fb)';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

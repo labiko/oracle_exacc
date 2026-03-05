@@ -1,0 +1,223 @@
+-- ============================================================
+-- Requete Base des Attendus Gestion (BAATGS) - VERSION OPTIMISEE
+-- Sql_id original : 7prpuy907rpz2
+-- Date : 18/02/2026
+-- Parametres : DATE_ARRETE = 28/02/2026, TYPE = RB
+-- Optimisations :
+--   1. CTE pour eviter les sous-requetes correlees
+--   2. UNION ALL au lieu de UNION (statuts exclusifs)
+--   3. Jointures explicites (ANSI SQL)
+--   4. Calculs factorises
+-- ============================================================
+
+WITH
+-- Date d'arrete (une seule fois)
+params AS (
+    SELECT TO_DATE('28/02/2026', 'DD/MM/RRRR') AS date_arrete FROM DUAL
+),
+
+-- Hierarchie des comptes avec LEVEL_02 et LEVEL_03
+compte_hierarchie AS (
+    SELECT
+        H.ACCOUNT_ID,
+        H.LEVEL_02_ACCOUNT_ID,
+        H.LEVEL_03_ACCOUNT_ID,
+        B2.ACCT_NUM AS SERVICE,
+        B3.ACCT_NUM AS TYPE_CODE,
+        RPAD(B3.ACCT_NUM, LENGTH(B3.ACCT_NUM)-2) AS TYPE_RAPRO_CODE,
+        DECODE(RPAD(B3.ACCT_NUM, LENGTH(B3.ACCT_NUM)-2),
+            'RB', 'Rapprochement Bancaire',
+            'RC', 'Rapprochement de Controle',
+            'JC', 'Justification de compte',
+            'CL', 'Compte de liaison') AS TYPE_RAPRO
+    FROM BRR_ACCOUNT_HIERARCHIES H
+    JOIN BS_ACCTS B2 ON B2.ACCT_ID = H.LEVEL_02_ACCOUNT_ID
+    JOIN BS_ACCTS B3 ON B3.ACCT_ID = H.LEVEL_03_ACCOUNT_ID
+    WHERE B2.ACCT_NUM = 'GESTION'
+      AND RPAD(B3.ACCT_NUM, LENGTH(B3.ACCT_NUM)-2) = 'RB'
+),
+
+-- Transactions filtrees avec calculs precalcules
+transactions_base AS (
+    SELECT /*+ USE_HASH(T A H) */
+        T.RECORD_ID,
+        T.ACCOUNT_ID,
+        T.TRANSACTION_DATE,
+        T.NARRATIVE,
+        T.AMOUNT,
+        T.PAYMENT_OR_RECEIPT,
+        T.SIDE,
+        T.NUMERIC_TWO,
+        T.FLAG_C,
+        T.STATE,
+        T.UPDATE_TIME,
+        T.RECONCILIATION_REFERENCE,
+        T.CHARACTER_SIXTEEN,
+        T.LAST_NOTE_TEXT,
+        T.DATE_LAST_NOTE_ADDED,
+        T.PAYMENT_OR_RECEIPT || T.SIDE AS PAY_SIDE,
+        P.date_arrete,
+        P.date_arrete - T.TRANSACTION_DATE AS ANCIENNETE_J,
+        MONTHS_BETWEEN(P.date_arrete, T.TRANSACTION_DATE) AS ANCIENNETE_M
+    FROM BRR_TRANSACTIONS T
+    CROSS JOIN params P
+    WHERE T.TRANSACTION_DATE <= P.date_arrete
+      AND T.STATE IN ('OUTSTANDING', 'RECONCILED')
+),
+
+-- DC_MAX pour les RECONCILED
+dc_max_calc AS (
+    SELECT
+        RECONCILIATION_REFERENCE,
+        ACCOUNT_ID,
+        MAX(TRANSACTION_DATE) AS DC_MAX
+    FROM BRR_TRANSACTIONS
+    WHERE STATE = 'RECONCILED'
+    GROUP BY RECONCILIATION_REFERENCE, ACCOUNT_ID
+),
+
+-- Jointure principale
+donnees_completes AS (
+    SELECT
+        '28/02/2026' AS DATE_ARRETE,
+        CH.TYPE_RAPRO,
+        CH.SERVICE,
+        (SELECT ACCT_NAME FROM BS_ACCTS WHERE ACCT_ID = A.ACCT_GROUP) AS SOCIETE,
+        CM.COMPTE_BANCAIRE,
+        A.ACCT_NAME AS LIBELLE_COMPTE,
+        A.ACCT_CURRENCY AS DEVISE,
+        TO_CHAR(T.TRANSACTION_DATE, 'DD/MM/RRRR') AS DATE_OPERATION_SUSPENS,
+        T.NARRATIVE AS LIBELLE_SUSPENS,
+        -- DEBIT
+        DECODE(T.PAY_SIDE, 'PAYMENTSTATEMENT', T.AMOUNT, 'RECEIPTCASHBOOK', T.AMOUNT) AS DEBIT,
+        -- CREDIT
+        DECODE(T.PAY_SIDE, 'RECEIPTSTATEMENT', T.AMOUNT, 'PAYMENTCASHBOOK', T.AMOUNT) AS CREDIT,
+        -- SENS_ATTENDU
+        DECODE(T.NUMERIC_TWO, 0,
+            DECODE(T.PAY_SIDE, 'PAYMENTCASHBOOK', 'ABD', 'PAYMENTSTATEMENT', 'ACC', 'RECEIPTCASHBOOK', 'ABC', 'RECEIPTSTATEMENT', 'ACD'),
+            'A' || T.FLAG_C || DECODE(T.PAY_SIDE, 'PAYMENTCASHBOOK', 'D', 'PAYMENTSTATEMENT', 'C', 'RECEIPTCASHBOOK', 'C', 'RECEIPTSTATEMENT', 'D')
+        ) AS SENS_ATTENDU,
+        DECODE(T.SIDE, 'STATEMENT', 'B', 'CASHBOOK', 'C') AS COTE_SUSPENS,
+        T.ANCIENNETE_J,
+        T.ANCIENNETE_M,
+        -- BORNE_ANCIENNETE (jointure)
+        BACA.LIBELLE_ANCIENNETE AS BORNE_ANCIENNETE,
+        -- PILIER_MONTANT_DEBIT
+        CASE WHEN T.PAY_SIDE IN ('PAYMENTSTATEMENT', 'RECEIPTCASHBOOK') THEN PIMO.LIBELLE_PILIER END AS PILIER_MONTANT_DEBIT,
+        -- PILIER_MONTANT_CREDIT
+        CASE WHEN T.PAY_SIDE IN ('RECEIPTSTATEMENT', 'PAYMENTCASHBOOK') THEN PIMO.LIBELLE_PILIER END AS PILIER_MONTANT_CREDIT,
+        CM.METHODE AS METHODE_PROVISION,
+        MEPR.TAUX,
+        0 AS MONTANT_PROVISION,
+        T.STATE AS STATUT,
+        -- DATE_APUREMENT (seulement pour RECONCILED)
+        CASE WHEN T.STATE = 'RECONCILED' THEN TO_DATE(T.UPDATE_TIME, 'DD/MM/RRRR') END AS DATE_APUREMENT,
+        -- DC_MAX (seulement pour RECONCILED)
+        CASE WHEN T.STATE = 'RECONCILED' THEN DCM.DC_MAX END AS DC_MAX,
+        SUBSTR(T.CHARACTER_SIXTEEN, 1, 5) AS PRIORITE,
+        T.LAST_NOTE_TEXT AS COMMENTAIRE,
+        T.NUMERIC_TWO AS NETTING,
+        -- DELTA
+        COALESCE(
+            DECODE(T.PAY_SIDE, 'PAYMENTSTATEMENT', T.AMOUNT, 'RECEIPTCASHBOOK', T.AMOUNT),
+            DECODE(T.PAY_SIDE, 'RECEIPTSTATEMENT', T.AMOUNT, 'PAYMENTCASHBOOK', T.AMOUNT)
+        ) AS DELTA,
+        DECODE(T.PAY_SIDE, 'PAYMENTCASHBOOK', 'D', 'PAYMENTSTATEMENT', 'C', 'RECEIPTCASHBOOK', 'C', 'RECEIPTSTATEMENT', 'D') AS SENS_DELTA,
+        '' AS NUMERO_FICHE,
+        '' AS DERNIER_STATUT,
+        T.RECORD_ID AS ID_ECRITURE,
+        CASE T.DATE_LAST_NOTE_ADDED
+            WHEN TO_DATE('01/01/1980', 'DD/MM/RRRR') THEN NULL
+            ELSE TO_CHAR(T.DATE_LAST_NOTE_ADDED, 'DD/MM/RRRR')
+        END AS ANNOTE_LE,
+        T.date_arrete AS P_DATE_ARRETE
+    FROM transactions_base T
+    -- Jointure compte
+    JOIN BS_ACCTS A ON A.ACCT_ID = T.ACCOUNT_ID
+    -- Jointure hierarchie (filtre RB + GESTION)
+    JOIN compte_hierarchie CH ON CH.ACCOUNT_ID = T.ACCOUNT_ID
+    -- Jointure methode compte
+    JOIN BA_COMPTE_METHODE CM ON CM.ACCOUNT_ID = A.ACCT_ID
+    -- Jointure anciennete
+    LEFT JOIN BA_CATEG_ANCIENNETE BACA
+        ON T.ANCIENNETE_M >= BACA.BORNE_INF
+        AND T.ANCIENNETE_M < BACA.BORNE_SUP
+    -- Jointure piliers montants
+    LEFT JOIN BA_PILIERS_MONTANTS PIMO
+        ON T.AMOUNT >= PIMO.BORNE_INF
+        AND T.AMOUNT < PIMO.BORNE_SUP
+    -- Jointure methode provision
+    LEFT JOIN BA_METHODE_PROVISION MEPR
+        ON MEPR.METHODE = CM.METHODE
+        AND T.ANCIENNETE_M >= MEPR.BORNE_INF
+        AND T.ANCIENNETE_M < MEPR.BORNE_SUP
+    -- Jointure DC_MAX (pour RECONCILED)
+    LEFT JOIN dc_max_calc DCM
+        ON DCM.RECONCILIATION_REFERENCE = T.RECONCILIATION_REFERENCE
+        AND DCM.ACCOUNT_ID = T.ACCOUNT_ID
+        AND T.STATE = 'RECONCILED'
+)
+
+-- Requete finale avec filtre OUTSTANDING + RECONCILED
+SELECT DISTINCT
+    DATE_ARRETE,
+    TYPE_RAPRO,
+    SERVICE,
+    SOCIETE,
+    COMPTE_BANCAIRE,
+    LIBELLE_COMPTE,
+    DEVISE,
+    DATE_OPERATION_SUSPENS,
+    LIBELLE_SUSPENS,
+    DEBIT,
+    CREDIT,
+    SENS_ATTENDU,
+    COTE_SUSPENS,
+    ANCIENNETE_J,
+    ANCIENNETE_M,
+    BORNE_ANCIENNETE,
+    PILIER_MONTANT_DEBIT,
+    PILIER_MONTANT_CREDIT,
+    METHODE_PROVISION,
+    TAUX,
+    MONTANT_PROVISION,
+    STATUT,
+    DATE_APUREMENT,
+    DC_MAX,
+    PRIORITE,
+    COMMENTAIRE,
+    NETTING,
+    DELTA,
+    SENS_DELTA,
+    NUMERO_FICHE,
+    DERNIER_STATUT,
+    ID_ECRITURE,
+    ANNOTE_LE
+FROM donnees_completes
+WHERE
+    -- OUTSTANDING : pas de condition supplementaire
+    (STATUT = 'OUTSTANDING')
+    OR
+    -- RECONCILED : DC_MAX >= date_arrete
+    (STATUT = 'RECONCILED' AND DC_MAX >= P_DATE_ARRETE)
+ORDER BY SERVICE, SOCIETE, COMPTE_BANCAIRE, DATE_OPERATION_SUSPENS, NETTING;
+
+
+-- ============================================================
+-- INDEX RECOMMANDES SUR BR_DATA (table source de BRR_TRANSACTIONS)
+-- ============================================================
+-- La vue BRR_TRANSACTIONS utilise :
+--   state = 3 -> 'OUTSTANDING'
+--   state = 4 -> 'RECONCILED'
+--   cs_flag IN ('C','S')
+
+-- Verifier les index existants sur BR_DATA
+SELECT INDEX_NAME, COLUMN_NAME, COLUMN_POSITION
+FROM ALL_IND_COLUMNS
+WHERE TABLE_NAME = 'BR_DATA'
+ORDER BY INDEX_NAME, COLUMN_POSITION;
+
+-- Index recommandes (a creer si absents) :
+-- CREATE INDEX IDX_BR_DATA_DATE_STATE ON BR_DATA(TRANS_DATE, STATE);
+-- CREATE INDEX IDX_BR_DATA_ACCT_STATE ON BR_DATA(ACCT_ID, STATE);
+-- CREATE INDEX IDX_BR_DATA_REC_GROUP ON BR_DATA(REC_GROUP, ACCT_ID);

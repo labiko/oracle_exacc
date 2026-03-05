@@ -1,0 +1,125 @@
+Objet : [RÉSOLU] Transaction 2817 EUR non visible dans BR_DATA - Root Cause Identifiée
+
+Bonjour,
+
+Suite à votre demande concernant la transaction de 2817 EUR (PAYMENT_REF: 55841990) du 17/10/2025 qui n'apparaît pas individuellement dans BANKREC.BR_DATA, nous avons identifié la cause racine.
+
+═══════════════════════════════════════════════════════════════════════════
+ROOT CAUSE
+═══════════════════════════════════════════════════════════════════════════
+
+Le compte BBNP83292-EUR (compte accurate 342) possède une règle de CUMUL ACTIF pour les virements ordinaires (VO).
+
+Cette règle provoque la CUMULATION de toutes les transactions VO en une seule ligne quotidienne au lieu d'un export en détail.
+
+═══════════════════════════════════════════════════════════════════════════
+PREUVE
+═══════════════════════════════════════════════════════════════════════════
+
+La transaction 2817 EUR fait partie d'un LOT de 23 TRANSACTIONS VO du 17/10/2025 qui ont été cumulées en UNE SEULE ligne dans BR_DATA :
+
+  Compte       : BBNP83292-EUR
+  Date         : 17/10/2025
+  Montant cumul: 226838.78 EUR
+  Commentaire  : "Ecriture cumul quotidien"
+  Composition  : SOMME de 23 transactions VO
+
+DÉTAIL DU CUMUL (extrait des transactions les plus importantes) :
+  - 63345.11 EUR (Client: 614915689)
+  - 52366.60 EUR (Client: 50584239)
+  - 23594.42 EUR (Client: 90141615)
+  - 20579.93 EUR (Client: 55223070)
+  - 18918.93 EUR (Client: 927521954)
+  ...
+  - 2817.00 EUR (Client: 90141615) ← Votre transaction
+  ...
+  - 138.93 EUR (Client: 696520226)
+
+  TOTAL : 226838.78 EUR ✓ (cohérent avec BR_DATA)
+
+═══════════════════════════════════════════════════════════════════════════
+COMPARAISON AVEC LE COMPTE QUI FONCTIONNE
+═══════════════════════════════════════════════════════════════════════════
+
+Compte 394 (BNPP05492-EUR) - Transaction 22.36 EUR :
+  ✓ Aucune règle de cumul
+  ✓ Export en DÉTAIL
+  ✓ Apparaît individuellement dans BR_DATA
+
+Compte 342 (BBNP83292-EUR) - Transaction 2817 EUR :
+  ✗ Règle de cumul ALL+VO active
+  ✗ Export en CUMUL
+  ✗ N'apparaît PAS individuellement dans BR_DATA
+
+═══════════════════════════════════════════════════════════════════════════
+IMPACT ACTUEL
+═══════════════════════════════════════════════════════════════════════════
+
+Pour le compte BBNP83292-EUR :
+  ✓ La transaction 2817 EUR est BIEN traitée par le système
+  ✓ Elle est BIEN importée et exportée
+  ✗ MAIS exportée en CUMUL avec 22 autres transactions
+  ✗ Impossible de tracer individuellement la transaction dans BR_DATA
+
+═══════════════════════════════════════════════════════════════════════════
+SOLUTION PROPOSÉE
+═══════════════════════════════════════════════════════════════════════════
+
+Pour que les transactions VO du compte 342 apparaissent EN DÉTAIL comme pour le compte 394, nous proposons de SUPPRIMER la règle de cumul.
+
+IMPACT APRÈS MODIFICATION :
+  ✓ Toutes les transactions VO apparaîtront individuellement dans BR_DATA
+  ✓ Traçabilité complète de chaque opération
+  ✓ Comportement identique au compte 394
+  ⚠ Augmentation du volume de lignes (23 lignes au lieu de 1 pour le 17/10/2025)
+
+RÉVERSIBILITÉ :
+  ✓ La règle peut être recréée si nécessaire
+
+═══════════════════════════════════════════════════════════════════════════
+VALIDATION REQUISE
+═══════════════════════════════════════════════════════════════════════════
+
+Avant de procéder à la modification, nous avons besoin de votre validation sur les points suivants :
+
+1. Le compte BBNP83292-EUR doit-il exporter les virements VO :
+   [ ] EN DÉTAIL (recommandé - chaque transaction individuellement)
+   [ ] EN CUMUL (actuel - une ligne par jour avec la somme totale)
+
+2. Cette règle de cumul est-elle :
+   [ ] Une erreur de paramétrage (à supprimer)
+   [ ] Un paramétrage fonctionnel voulu (à conserver)
+
+3. Quel est l'impact métier du cumul actuel ?
+   [ ] Problématique (besoin de traçabilité individuelle)
+   [ ] Acceptable (le cumul quotidien suffit)
+
+═══════════════════════════════════════════════════════════════════════════
+PROCHAINES ÉTAPES
+═══════════════════════════════════════════════════════════════════════════
+
+1. ✓ Root cause identifiée et documentée
+2. ⏳ ATTENTE de votre validation sur l'option à privilégier
+3. ⏳ Test sur environnement de qualification
+4. ⏳ Déploiement en production après validation
+5. ⏳ Vérification post-déploiement
+
+═══════════════════════════════════════════════════════════════════════════
+
+CONCLUSION :
+
+Le système fonctionne CORRECTEMENT selon le paramétrage actuel (cumul ALL+VO).
+Pour avoir les transactions VO en DÉTAIL, il faut modifier ce paramétrage après votre validation.
+
+Une documentation complète (analyse détaillée, scripts SQL, options de solution) est disponible et peut être fournie sur demande.
+
+Merci de nous faire part de votre choix pour que nous puissions procéder.
+
+Cordialement,
+
+[VOTRE NOM]
+[VOTRE FONCTION]
+[VOTRE ÉQUIPE]
+
+---
+P.S. : Pour toute question ou besoin de précisions, n'hésitez pas à nous contacter.

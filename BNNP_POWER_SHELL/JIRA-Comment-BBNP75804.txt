@@ -1,0 +1,106 @@
+h2. {color:#0052cc}Migration BBNP75804-EUR-CTL{color}
+
+{panel:title=Compte cible|borderStyle=solid|borderColor=#0052cc|bgColor=#f4f5f7}
+*BBNP75804-EUR-CTL* -> *BBNP75804-EUR*
+{panel}
+
+----
+
+h3. {color:#de350b}ETAPE 1 : Suppression des balises{color} {status:colour=Red|title=DELETE}
+
+{panel:bgColor=#ffebe6|borderColor=#de350b}
+(!) *Attention :* Suppression de TOUTES les balises (Banque, GESTION et COMPTA)
+{panel}
+
+||Action||Supprimer toutes les balises du compte BBNP75804-EUR-CTL||
+||Responsable|| {status:colour=Purple|title=TechLead} ||
+
+{code:sql|title=SQL - DELETE}
+DELETE FROM TA_RN_BALISE_PAR_COMPTE
+WHERE ID_COMPTE_ACCURATE IN (
+    SELECT TA_RN_COMPTE_ACCURATE.ID_COMPTE_ACCURATE
+    FROM TA_RN_COMPTE_ACCURATE
+    WHERE TA_RN_COMPTE_ACCURATE.NUM_COMPTE_ACCURATE IN ('BBNP75804-EUR-CTL')
+);
+{code}
+
+----
+
+h3. {color:#ff991f}ETAPE 2 : Bascule du compte Gestion{color} {status:colour=Yellow|title=UPDATE}
+
+||Action||Basculer le compte Gestion de BBNP75804-EUR-CTL vers BBNP75804-EUR||
+||Responsable|| {status:colour=Purple|title=TechLead} ||
+
+{code:sql|title=SQL - UPDATE}
+UPDATE TA_RN_GESTION_ACCURATE
+SET ID_COMPTE_ACCURATE = (
+    SELECT ID_COMPTE_ACCURATE
+    FROM TA_RN_COMPTE_ACCURATE
+    WHERE NUM_COMPTE_ACCURATE = 'BBNP75804-EUR'
+)
+WHERE ID_COMPTE_ACCURATE = (
+    SELECT ID_COMPTE_ACCURATE
+    FROM TA_RN_COMPTE_ACCURATE
+    WHERE NUM_COMPTE_ACCURATE = 'BBNP75804-EUR-CTL'
+);
+{code}
+
+----
+
+h3. {color:#36b37e}ETAPE 3 : Ajout des balises Gestion{color} {status:colour=Green|title=INSERT}
+
+||Action||Ajouter les balises Gestion (ExtraitReglement) pour BBNP75804-EUR||
+||Modele de reference||BBNP40692-EUR||
+||Responsable|| {status:colour=Purple|title=TechLead} ||
+
+{code:sql|title=SQL - INSERT}
+INSERT INTO TA_RN_BALISE_PAR_COMPTE (
+    ID_COMPTE_ACCURATE,
+    NUM_COL_FEEDER,
+    ID_BALISE,
+    INDICATEUR_MANUEL_AUTO
+)
+SELECT
+    (SELECT ID_COMPTE_ACCURATE
+     FROM TA_RN_COMPTE_ACCURATE
+     WHERE NUM_COMPTE_ACCURATE = 'BBNP75804-EUR') AS ID_COMPTE_ACCURATE,
+    BalRef.NUM_COL_FEEDER,
+    BalRef.ID_BALISE,
+    BalRef.INDICATEUR_MANUEL_AUTO
+FROM TA_RN_BALISE_PAR_COMPTE BalRef
+LEFT JOIN TA_RN_BALISE_PAR_COMPTE Balise1
+    ON Balise1.NUM_COL_FEEDER = BalRef.NUM_COL_FEEDER
+    AND Balise1.ID_BALISE = BalRef.ID_BALISE
+    AND Balise1.INDICATEUR_MANUEL_AUTO = BalRef.INDICATEUR_MANUEL_AUTO
+    AND Balise1.ID_COMPTE_ACCURATE IN (
+        SELECT ID_COMPTE_ACCURATE
+        FROM TA_RN_COMPTE_ACCURATE
+        WHERE NUM_COMPTE_ACCURATE = 'BBNP75804-EUR'
+    )
+WHERE BalRef.ID_COMPTE_ACCURATE IN (
+    SELECT ID_COMPTE_ACCURATE
+    FROM TA_RN_COMPTE_ACCURATE
+    WHERE NUM_COMPTE_ACCURATE = 'BBNP40692-EUR'
+)
+AND BalRef.ID_BALISE IN (
+    SELECT ID_BALISE
+    FROM TA_RN_BALISE
+    WHERE Type_BALISE = 'GEST'
+)
+-- Condition pour n'avoir que les nouvelles balises
+AND Balise1.NUM_COL_FEEDER IS NULL
+ORDER BY BalRef.NUM_COL_FEEDER;
+{code}
+
+{panel:bgColor=#e3fcef|borderColor=#36b37e}
+(i) *Note :* La condition {{Balise1.NUM_COL_FEEDER IS NULL}} garantit l'insertion uniquement des nouvelles balises.
+{panel}
+
+----
+
+h3. Recapitulatif
+
+||#||Etape||Type||Responsable||
+|1|Suppression balises|{status:colour=Red|title=DELETE}|{status:colour=Purple|title=TechLead}|
+|2|Bascule compte Gestion|{status:colour=Yellow|title=UPDATE}|{status:colour=Purple|title=TechLead}|
+|3|Ajout balises Gestion|{status:colour=Green|title=INSERT}|{status:colour=Purple|title=TechLead}|
