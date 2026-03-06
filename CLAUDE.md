@@ -192,6 +192,35 @@ PR_RN_IMPORT_COMPTA
 
 **Point cle** : `'OUT_APPLI'` n'est PAS un DIRECTORY Oracle mais un nom logique traduit par F_GET_DIR.
 
+### Packages Instrumentés avec SP_LOG_FICHIER (05/03/2026)
+
+**Infrastructure déployée** :
+- `DEPLOY_LOG_FICHIERS.sql` - Table LOG_FICHIERS_PACKAGES + Procédure SP_LOG_FICHIER
+
+**Packages instrumentés** :
+
+| Package | Fichier WITH_LOG | Nb Logs | Procédures tracées |
+|---------|------------------|---------|-------------------|
+| PKG_BR_RECONCILIATION_SIGNOFF | `PKG_BR_RECONCILIATION_SIGNOFF_WITH_LOG.sql` | 1 | PR_PURGE_SIGNOFF |
+| PKG_BR_PURGE | `PKG_BR_PURGE_WITH_LOG.sql` | 10 | PR_PURGE_AUDIT_RECORDS, PR_PURGE_AUDIT_RECORDS_CA (x2), PR_PURGE_DATA_RECORDS, PR_PURGE_NOTE_GROUP_HOLDINGS, PR_PURGE_NOTE_GROUP, PR_PURGE_HOLDING_NOTES, PR_PURGE_CHECKPOINT_AUDITS, PR_PURGE_CHECKPOINTS, PR_PURGE_DATA_EXTRA_RECORDS |
+| PKG_DTC | `PKG_DTC_WITH_LOG.sql` | 3 | F_LIRE_FIC_PARAM, F_CHARGER_GENFICHIER, F_LIRE_FIC_INFO |
+| PKG_TEC_FICHIERS | `PKG_TEC_FICHIERS_WITH_LOG.sql` | 35+ | Toutes fonctions fichiers |
+| PKG_LOG | `PKG_LOG_WITH_LOG.sql` | - | Fonctions log |
+
+**Ordre de déploiement** :
+```sql
+1. @DEPLOY_LOG_FICHIERS.sql      -- Infrastructure
+2. @PKG_*_WITH_LOG.sql           -- Packages instrumentés
+```
+
+**Requête analyse CODE MORT vs CODE VIVANT** :
+```sql
+SELECT PACKAGE_NAME, FUNCTION_NAME, COUNT(*) AS NB_APPELS
+FROM LOG_FICHIERS_PACKAGES
+GROUP BY PACKAGE_NAME, FUNCTION_NAME
+ORDER BY NB_APPELS DESC;
+```
+
 ### Pour reprendre ce contexte
 > "On continue sur la migration ExaCC / UTL_FILE"
 > "On parle de l'analyse PKG_TEC_FICHIERS"
@@ -355,6 +384,38 @@ d4a0977 Ajout 3 DB Links dans Remédiation PARNA (PROD/RECETTE/DEV)
 | **Z** (patch) | Correction bug, amélioration mineure |
 
 **Version actuelle : v1.0.7**
+
+---
+
+## Vérification des Scripts SQL avec Logs
+
+**RÈGLE OBLIGATOIRE** : À chaque création d'un fichier `*_WITH_LOG.sql`, lancer un **agent de vérification** pour valider :
+
+1. ✅ Toutes les procédures/fonctions sont présentes
+2. ✅ Le code métier n'a pas été modifié
+3. ✅ Seuls des appels `SP_LOG_FICHIER` ont été ajoutés
+4. ✅ Aucune ligne de code supprimée ou modifiée
+
+**Prompt agent** :
+```
+Compare ces deux fichiers SQL et vérifie qu'il n'y a AUCUNE régression - uniquement des ajouts de logs SP_LOG_FICHIER :
+
+1. ORIGINAL: [chemin_fichier_original.sql]
+2. WITH_LOG: [chemin_fichier_with_log.sql]
+
+Vérifie :
+- Toutes les procédures/fonctions sont présentes
+- Le code métier n'a pas été modifié
+- Seuls des appels SP_LOG_FICHIER ont été ajoutés
+- Aucune ligne de code supprimée ou modifiée
+
+Retourne un rapport avec :
+- ✅ VALIDÉ ou ❌ RÉGRESSION DÉTECTÉE
+- Liste des différences trouvées
+- Nombre de SP_LOG_FICHIER ajoutés
+```
+
+**Objectif** : Garantir que l'instrumentation pour la migration ExaCC n'introduit aucune régression fonctionnelle.
 
 ---
 

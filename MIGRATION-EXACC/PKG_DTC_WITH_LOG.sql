@@ -3578,7 +3578,12 @@ IS
 BEGIN
 
      -- LOG MIGRATION EXACC : Tracer appel UTL_FILE
-     SP_LOG_FICHIER('PKG_DTC', 'F_LIRE_FIC_PARAM', s_NomFicParam, 'UTL_FILE.GET_LINE + FCLOSE');
+     SP_LOG_FICHIER(
+         p_package_name      => 'PKG_DTC',
+         p_function_name     => 'F_LIRE_FIC_PARAM',
+         p_file_name         => s_NomFicParam,
+         p_contenu_apercu    => 'UTL_FILE.GET_LINE + FCLOSE'
+     );
 
      s_ValParam := NULL;
 
@@ -4296,7 +4301,12 @@ IS
 BEGIN
 
      -- LOG MIGRATION EXACC : Tracer appel UTL_FILE
-     SP_LOG_FICHIER('PKG_DTC', 'F_CHARGER_GENFICHIER', s_FileName, 'UTL_FILE.GET_LINE + FCLOSE');
+     SP_LOG_FICHIER(
+         p_package_name      => 'PKG_DTC',
+         p_function_name     => 'F_CHARGER_GENFICHIER',
+         p_file_name         => s_FileName,
+         p_contenu_apercu    => 'UTL_FILE.GET_LINE + FCLOSE'
+     );
 
      -- Ouverture du fichier en entree
     <<OuvrirFichierCRE>>
@@ -6224,7 +6234,12 @@ BEGIN
      END IF;
 
      -- LOG MIGRATION EXACC : Tracer appel UTL_FILE
-     SP_LOG_FICHIER('PKG_DTC', 'F_LIRE_FIC_INFO', s_FileName || '.info', 'UTL_FILE.GET_LINE + FCLOSE');
+     SP_LOG_FICHIER(
+         p_package_name      => 'PKG_DTC',
+         p_function_name     => 'F_LIRE_FIC_INFO',
+         p_file_name         => s_FileName || '.info',
+         p_contenu_apercu    => 'UTL_FILE.GET_LINE + FCLOSE'
+     );
 
      -- Ouverture du fichier INFO
     BEGIN
