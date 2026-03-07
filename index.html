@@ -1096,9 +1096,10 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.0.8</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.1.1</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
+        <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier</a></li>
         <li><a href="#dtc670" onclick="showTab('dtc670', this)">⚡ Optimisation DTC670-DTC671</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
         <li><a href="#captures" onclick="showTab('captures', this)">📷 Captures</a></li>
@@ -9310,6 +9311,456 @@ ORDER BY NB_ACCES DESC;</pre>
 
 </div>
 <!-- ==================== FIN ONGLET INSTRUMENTATION ==================== -->
+
+<!-- ==================== ONGLET ROLLBACK FICHIER ==================== -->
+<div id="rollback-fichier" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; margin-top: 20px;">
+        <h2>🔄 Guide : Identifier et Corriger les Rollbacks de Fichiers</h2>
+        <p style="margin: 15px 0;"><strong>Objectif :</strong> Identifier les chargements de fichiers annules (rollback) qui causent des ecarts dans la Balance Carree</p>
+        <p style="color: #e65100;"><strong>Date : 07/03/2026</strong></p>
+    </section>
+
+    <!-- CONTEXTE -->
+    <section>
+        <h2>📋 Contexte du Probleme</h2>
+        <p>Lorsqu'un fichier est charge puis <strong>annule (rollback)</strong>, il peut arriver que :</p>
+        <ul style="margin: 15px 0; padding-left: 25px;">
+            <li>Les <strong>records</strong> du fichier soient supprimes de BR_DATA</li>
+            <li>Mais le <strong>solde</strong> ne soit pas reinitialise correctement</li>
+            <li>Resultat : <strong>ecart dans la Balance Carree</strong></li>
+        </ul>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Symptome typique :</strong> La Balance Carree affiche un ecart (ex: 2,66€) qui ne correspond a aucune transaction visible dans BR_DATA.
+            </div>
+        </div>
+    </section>
+
+    <!-- TABLES CLES -->
+    <section>
+        <h2>🗃️ Tables Cles a Connaitre</h2>
+        <table>
+            <tr>
+                <th>Table</th>
+                <th>Role</th>
+                <th>Colonnes Importantes</th>
+            </tr>
+            <tr>
+                <td><strong>BR_AUDIT</strong></td>
+                <td>Historique de TOUTES les operations</td>
+                <td>acct_id, record_id, load_id, type, bfr_state, aft_state, bfr_amt, aft_amt, timestamp</td>
+            </tr>
+            <tr>
+                <td><strong>BR_DATA</strong></td>
+                <td>Donnees actuelles des records</td>
+                <td>acct_id, record_id, load_id, state, amount, cs_flag</td>
+            </tr>
+            <tr>
+                <td><strong>BRD_EU_JC_ITEMS</strong></td>
+                <td>Balance Carree (JC)</td>
+                <td>period_JC, acct_id, record_id, amount</td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- TYPES BR_AUDIT -->
+    <section>
+        <h2>🔢 Types d'Operations dans BR_AUDIT</h2>
+        <table>
+            <tr>
+                <th>TYPE</th>
+                <th>Signification</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><strong>0</strong></td>
+                <td>STATE_CHANGE</td>
+                <td>Changement d'etat (ex: 3→4 = reconciliation)</td>
+            </tr>
+            <tr>
+                <td><strong>1</strong></td>
+                <td>LOAD</td>
+                <td>Chargement de fichier (import)</td>
+            </tr>
+            <tr>
+                <td><strong>5</strong></td>
+                <td>BALANCE</td>
+                <td>Mise a jour du solde</td>
+            </tr>
+            <tr>
+                <td><strong>15</strong></td>
+                <td>BALANCE_UPDATE</td>
+                <td>Mise a jour cumulative du solde (bfr_amt → aft_amt)</td>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td><strong style="color: #e65100;">18</strong></td>
+                <td><strong style="color: #e65100;">DEBUT_ROLLBACK</strong></td>
+                <td><strong style="color: #e65100;">Initialisation du rollback (precede TYPE=16)</strong></td>
+            </tr>
+            <tr style="background: #ffebee;">
+                <td><strong style="color: #c62828;">16</strong></td>
+                <td><strong style="color: #c62828;">EXEC_ROLLBACK</strong></td>
+                <td><strong style="color: #c62828;">Execution du rollback (suppression effective)</strong></td>
+            </tr>
+        </table>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🚨</span>
+            <div>
+                <strong>TYPE=18 puis TYPE=16 = ROLLBACK FICHIER</strong><br>
+                Ces deux types vont toujours ensemble avec le meme <strong>WHICHONE</strong> (identifiant du chargement).<br>
+                TYPE=18 initie le rollback, TYPE=16 l'execute.
+            </div>
+        </div>
+    </section>
+
+    <!-- METHODOLOGIE -->
+    <section>
+        <h2>🔍 Methodologie de Diagnostic</h2>
+
+        <h3>Etape 1 : Identifier la date du probleme</h3>
+        <p>Demander a l'utilisateur ou verifier les logs pour connaitre la date approximative du rollback.</p>
+
+        <h3>Etape 2 : Lister les operations de la journee</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Operations du jour pour un compte</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer ACCT_ID et DATE selon le cas
+SELECT
+    acct_id,
+    audit_id,
+    type,
+    CASE type
+        WHEN 0 THEN 'STATE_CHANGE'
+        WHEN 1 THEN 'LOAD'
+        WHEN 5 THEN 'BALANCE'
+        WHEN 15 THEN 'BALANCE_UPDATE'
+        WHEN 16 THEN '*** EXEC_ROLLBACK ***'
+        WHEN 18 THEN 'DEBUT_ROLLBACK'
+        ELSE 'TYPE_' || type
+    END as type_desc,
+    WHICHONE as CHARGEMENT_ID,
+    cs_flag,
+    bfr_state,
+    aft_state,
+    bfr_amt,
+    aft_amt,
+    TO_CHAR(timestamp, 'HH24:MI:SS') as heure
+FROM BR_AUDIT
+WHERE acct_id = 1906  -- Remplacer par le compte concerne
+  AND TRUNC(timestamp) = TO_DATE('2026-02-25', 'YYYY-MM-DD')  -- Date du rollback
+ORDER BY timestamp;</pre>
+        </div>
+
+        <h3>Etape 3 : Identifier le LOAD_ID rollbacke</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Trouver les rollbacks (TYPE=16)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Liste des fichiers rollbackes (TYPE=18 initie, TYPE=16 execute)
+SELECT
+    audit_id,
+    type,
+    WHICHONE as CHARGEMENT_ID,
+    TO_CHAR(timestamp, 'DD/MM/YYYY HH24:MI:SS') as date_rollback
+FROM BR_AUDIT
+WHERE acct_id = 1906
+  AND type IN (16, 18)  -- 18=DEBUT_ROLLBACK, 16=EXECUTION_ROLLBACK
+  AND TRUNC(timestamp) = TO_DATE('2026-02-25', 'YYYY-MM-DD')
+ORDER BY timestamp;</pre>
+        </div>
+
+        <h3>Etape 4 : Analyser l'impact sur le solde (TYPE=15)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Evolution du solde le jour du rollback</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Voir les mises a jour de solde (TYPE=15)
+SELECT
+    audit_id,
+    cs_flag,
+    WHICHONE as CHARGEMENT_ID,
+    bfr_amt as SOLDE_AVANT,
+    aft_amt as SOLDE_APRES,
+    (aft_amt - bfr_amt) as DIFFERENCE,
+    TO_CHAR(timestamp, 'HH24:MI:SS') as heure
+FROM BR_AUDIT
+WHERE acct_id = 1906
+  AND type = 15  -- BALANCE_UPDATE
+  AND TRUNC(timestamp) = TO_DATE('2026-02-25', 'YYYY-MM-DD')
+ORDER BY timestamp;</pre>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Astuce :</strong> La DIFFERENCE dans TYPE=15 correspond souvent exactement a l'ecart de la Balance Carree !<br>
+                Dans notre exemple : bfr_amt=2,55 → aft_amt=5,21 = <strong>+2,66€</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXEMPLE CONCRET -->
+    <section style="background: #f3e5f5; border-left: 4px solid #9c27b0;">
+        <h2>📊 Exemple Concret : Compte 1906 (25/02/2026)</h2>
+
+        <h3>Chronologie des evenements</h3>
+        <p><strong>Colonne cle :</strong> WHICHONE = identifiant du chargement dans BR_AUDIT</p>
+        <table>
+            <tr>
+                <th>Heure</th>
+                <th>TYPE</th>
+                <th>Action</th>
+                <th>WHICHONE</th>
+                <th>Solde AVANT</th>
+                <th>Solde APRES</th>
+            </tr>
+            <tr>
+                <td>04:05:37</td>
+                <td>1</td>
+                <td>LOAD fichier</td>
+                <td>346199</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td>04:05:37</td>
+                <td>18</td>
+                <td>DEBUT_ROLLBACK</td>
+                <td>346199</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr style="background: #ffcdd2;">
+                <td>04:05:52</td>
+                <td><strong>16</strong></td>
+                <td><strong>EXEC_ROLLBACK</strong></td>
+                <td>346199</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>15:57:11</td>
+                <td>1</td>
+                <td>LOAD fichier</td>
+                <td>346241</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>15:57:11</td>
+                <td>15</td>
+                <td>Balance S</td>
+                <td>346241</td>
+                <td><strong>-0,11€</strong></td>
+                <td><strong>2,55€</strong></td>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td>15:57:11</td>
+                <td>18</td>
+                <td>DEBUT_ROLLBACK</td>
+                <td>346241</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr style="background: #ffcdd2;">
+                <td>15:58:24</td>
+                <td><strong>16</strong></td>
+                <td><strong>EXEC_ROLLBACK</strong></td>
+                <td>346241</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>22:39:56</td>
+                <td>1</td>
+                <td>LOAD fichier</td>
+                <td>346285</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr style="background: #fff9c4;">
+                <td>22:39:56</td>
+                <td>15</td>
+                <td>Balance S</td>
+                <td>346285</td>
+                <td><strong>2,55€</strong></td>
+                <td><strong>5,21€</strong></td>
+            </tr>
+        </table>
+
+        <h3>Probleme identifie</h3>
+        <div class="alert alert-danger">
+            <span class="alert-icon">🔴</span>
+            <div>
+                <p>Le <strong>LOAD_ID 346241</strong> a ete <strong>rollbacke</strong> (TYPE=16 a 15:58:24), mais :</p>
+                <ul style="margin-top: 10px;">
+                    <li>Le solde n'a PAS ete reinitialise a -0,11€</li>
+                    <li>Il est reste a 2,55€</li>
+                    <li>Le load suivant (346285) a ajoute 2,66€ sur cette base erronee</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>Ecart resultant : 2,66€</strong> (exactement la difference de la Balance Carree)</p>
+            </div>
+        </div>
+
+        <h3>Records orphelins trouves dans BR_DATA</h3>
+        <p>En executant la requete de verification sur le load_id 346241 :</p>
+        <table>
+            <tr>
+                <th>record_id</th>
+                <th>state</th>
+                <th>amount</th>
+                <th>cs_flag</th>
+            </tr>
+            <tr>
+                <td>878</td>
+                <td>3 (SUSPENS)</td>
+                <td>248 800,25</td>
+                <td>S (Statement)</td>
+            </tr>
+            <tr>
+                <td>879</td>
+                <td>3 (SUSPENS)</td>
+                <td>248 802,91</td>
+                <td>S (Statement)</td>
+            </tr>
+        </table>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Confirmation :</strong> 248 802,91 - 248 800,25 = <strong>2,66€</strong><br>
+                Ces 2 records appartiennent au load rollbacke mais sont toujours presents dans BR_DATA.<br>
+                <strong>Solution :</strong> DELETE FROM BR_DATA WHERE acct_id = 1906 AND load_id = 346241;
+            </div>
+        </div>
+    </section>
+
+    <!-- CORRECTION -->
+    <section>
+        <h2>🔧 Scripts de Correction</h2>
+
+        <h3>Verifier si des records du load rollbacke existent encore</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Verification avant suppression</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer LOAD_ID par celui identifie
+SELECT record_id, state, amount, cs_flag, trans_date, load_id
+FROM BR_DATA
+WHERE acct_id = 1906
+  AND load_id = 346241;  -- LOAD_ID rollbacke
+
+-- Compter les records
+SELECT COUNT(*) as nb_records, SUM(amount) as total_amount
+FROM BR_DATA
+WHERE acct_id = 1906
+  AND load_id = 346241;</pre>
+        </div>
+
+        <h3>Supprimer les records du mauvais chargement</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Suppression (A EXECUTER AVEC PRUDENCE)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- ATTENTION : Verifier d'abord avec le SELECT ci-dessus !
+DELETE FROM BR_DATA
+WHERE acct_id = 1906
+  AND load_id = 346241;  -- LOAD_ID rollbacke
+
+-- Verification
+SELECT 'Records supprimes' AS statut,
+       (SELECT COUNT(*) FROM BR_DATA WHERE acct_id = 1906 AND load_id = 346241) as nb_restant;
+
+COMMIT;</pre>
+        </div>
+
+        <h3>Relancer le calcul de la Balance Carree</h3>
+        <p>Une fois les records supprimes, relancer le script automatique de calcul de la Balance Carree. Les soldes devraient etre corrects.</p>
+    </section>
+
+    <!-- RESUME RAPIDE -->
+    <section style="background: #e8f5e9; border-left: 4px solid #4caf50;">
+        <h2>✅ Resume : Checklist Rapide</h2>
+        <ol style="margin: 15px 0; padding-left: 25px; line-height: 2;">
+            <li><strong>Symptome</strong> : Ecart inexplique dans la Balance Carree</li>
+            <li><strong>Obtenir la date</strong> du rollback (demander a l'utilisateur)</li>
+            <li><strong>Chercher TYPE=16</strong> dans BR_AUDIT pour cette date</li>
+            <li><strong>Noter le LOAD_ID</strong> du fichier rollbacke</li>
+            <li><strong>Verifier TYPE=15</strong> pour voir l'impact sur le solde</li>
+            <li><strong>Verifier BR_DATA</strong> si des records de ce LOAD_ID existent encore</li>
+            <li><strong>Supprimer les records</strong> orphelins si necessaire</li>
+            <li><strong>Relancer le calcul</strong> de la Balance Carree</li>
+        </ol>
+    </section>
+
+    <!-- REQUETE GENERIQUE -->
+    <section>
+        <h2>📝 Requete Generique de Diagnostic</h2>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Diagnostic complet pour un compte et une date</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- ============================================================
+-- DIAGNOSTIC ROLLBACK FICHIER
+-- Remplacer :acct_id et :date_rollback
+-- ============================================================
+
+-- 1. Tous les rollbacks (TYPE=18 + TYPE=16) pour ce compte cette date
+SELECT 'ROLLBACKS DETECTES' as section,
+       type,
+       WHICHONE as CHARGEMENT_ID,
+       TO_CHAR(timestamp, 'HH24:MI:SS') as heure
+FROM BR_AUDIT
+WHERE acct_id = :acct_id
+  AND type IN (16, 18)
+  AND TRUNC(timestamp) = TO_DATE(:date_rollback, 'YYYY-MM-DD')
+ORDER BY timestamp;
+
+-- 2. Evolution du solde (TYPE=15)
+SELECT 'EVOLUTION SOLDE' as section,
+       cs_flag,
+       WHICHONE as CHARGEMENT_ID,
+       bfr_amt as AVANT,
+       aft_amt as APRES,
+       (aft_amt - bfr_amt) as ECART,
+       TO_CHAR(timestamp, 'HH24:MI:SS') as heure
+FROM BR_AUDIT
+WHERE acct_id = :acct_id
+  AND type = 15
+  AND TRUNC(timestamp) = TO_DATE(:date_rollback, 'YYYY-MM-DD')
+ORDER BY timestamp;
+
+-- 3. Records orphelins a supprimer (WHICHONE de BR_AUDIT = load_id de BR_DATA)
+SELECT 'RECORDS ORPHELINS' as section,
+       d.load_id,
+       COUNT(*) as nb_records,
+       SUM(d.amount) as total_amount
+FROM BR_DATA d
+WHERE d.acct_id = :acct_id
+  AND d.load_id IN (
+      SELECT WHICHONE
+      FROM BR_AUDIT
+      WHERE acct_id = :acct_id
+        AND type = 16
+        AND TRUNC(timestamp) = TO_DATE(:date_rollback, 'YYYY-MM-DD')
+  )
+GROUP BY d.load_id;</pre>
+        </div>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET ROLLBACK FICHIER ==================== -->
 
 <!-- ==================== ONGLET OPTIMISATION DTC670-DTC671 ==================== -->
 <div id="dtc670" class="tab-content">

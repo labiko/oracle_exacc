@@ -2,7 +2,7 @@
 
 Ce fichier permet à Claude de retrouver le contexte des différents projets.
 
-**Derniere mise a jour : 23/02/2026**
+**Derniere mise a jour : 07/03/2026**
 
 ---
 
@@ -76,6 +76,37 @@ SOLUTION: DELETE FROM TA_RN_CUMUL_MR WHERE ID_COMPTE_BANCAIRE_SYSTEME = <ID_CBS>
 ### Pour reprendre ce contexte
 > "On continue sur l'investigation de la transaction 2817 EUR"
 > "Transaction manquante dans BR_DATA" (nouveau probleme similaire)
+
+### Probleme Type : Ecart Balance Carree apres Rollback Fichier (NOUVEAU 07/03/2026)
+
+**Documentation complete** : Onglet "Rollback Fichier" dans `index.html`
+
+```
+SYMPTOME: Ecart inexplique dans la Balance Carree (ex: 2,66€)
+CAUSE: Un fichier a ete charge puis rollbacke, mais le solde n'a pas ete reinitialise
+
+TABLES CLES:
+- BR_AUDIT : Historique des operations (colonne WHICHONE = ID du chargement)
+- BR_DATA  : Donnees actuelles (colonne load_id = ID du chargement)
+- BRD_EU_JC_ITEMS : Balance Carree
+
+TYPES BR_AUDIT:
+- TYPE=0  : Changement d'etat (3→4 reconciliation)
+- TYPE=1  : LOAD (chargement fichier)
+- TYPE=15 : BALANCE_UPDATE (bfr_amt → aft_amt)
+- TYPE=18 : DEBUT_ROLLBACK (initialisation du rollback)
+- TYPE=16 : EXEC_ROLLBACK (execution du rollback)
+
+DIAGNOSTIC:
+1. Obtenir la date du rollback
+2. SELECT type, WHICHONE FROM BR_AUDIT WHERE acct_id=X AND type IN (16,18) AND TRUNC(timestamp)=DATE;
+3. Noter le WHICHONE (= load_id dans BR_DATA)
+4. Verifier TYPE=15 pour voir l'impact sur le solde
+5. DELETE FROM BR_DATA WHERE acct_id=X AND load_id=WHICHONE_ROLLBACKE;
+6. Relancer calcul Balance Carree
+```
+
+**Exemple resolu** : Voir `BNNP_SQL/TRACE_BALANCE_CARREE_1906.md` pour tous les details
 
 ---
 
@@ -383,7 +414,7 @@ d4a0977 Ajout 3 DB Links dans Remédiation PARNA (PROD/RECETTE/DEV)
 | **Y** (mineur) | Nouvelle fonctionnalité |
 | **Z** (patch) | Correction bug, amélioration mineure |
 
-**Version actuelle : v1.0.7**
+**Version actuelle : v1.1.1**
 
 ---
 
