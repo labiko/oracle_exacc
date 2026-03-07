@@ -1096,7 +1096,7 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.1.1</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.1.3</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
         <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier</a></li>
@@ -9633,11 +9633,23 @@ ORDER BY timestamp;</pre>
             </tr>
         </table>
 
+        <p><strong>Total des 2 records :</strong> 497 603,16 €</p>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Pourquoi 497 603€ causent un ecart de 2,66€ ?</strong><br><br>
+                Dans un systeme de reconciliation bancaire, l'effet NET sur le solde = difference entre les montants :<br>
+                <code>248 802,91 - 248 800,25 = <strong>+2,66€</strong></code><br><br>
+                Les 2 records representent des operations opposees (debit/credit) dont l'effet NET est de +2,66€.
+            </div>
+        </div>
+
         <div class="alert alert-success">
             <span class="alert-icon">✅</span>
             <div>
-                <strong>Confirmation :</strong> 248 802,91 - 248 800,25 = <strong>2,66€</strong><br>
-                Ces 2 records appartiennent au load rollbacke mais sont toujours presents dans BR_DATA.<br>
+                <strong>Confirmation :</strong> L'effet NET de +2,66€ = exactement l'ecart de la Balance Carree<br>
+                Ces 2 records appartiennent au load rollbacke (346241) mais sont restes dans BR_DATA.<br>
                 <strong>Solution :</strong> DELETE FROM BR_DATA WHERE acct_id = 1906 AND load_id = 346241;
             </div>
         </div>
@@ -9682,6 +9694,30 @@ SELECT 'Records supprimes' AS statut,
        (SELECT COUNT(*) FROM BR_DATA WHERE acct_id = 1906 AND load_id = 346241) as nb_restant;
 
 COMMIT;</pre>
+        </div>
+
+        <h3>Script de retour arriere (si besoin)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Restauration des records supprimes</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- ============================================================
+-- SCRIPT RETOUR ARRIERE - A executer UNIQUEMENT si besoin
+-- ============================================================
+
+INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id)
+VALUES (878, 1906, 3, 248800.25, 'S', TO_DATE('2026-02-25', 'YYYY-MM-DD'), 346241);
+
+INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id)
+VALUES (879, 1906, 3, 248802.91, 'S', TO_DATE('2026-02-25', 'YYYY-MM-DD'), 346241);
+
+COMMIT;
+
+-- Verification
+SELECT record_id, state, amount, cs_flag, trans_date, load_id
+FROM BR_DATA
+WHERE acct_id = 1906 AND load_id = 346241;</pre>
         </div>
 
         <h3>Relancer le calcul de la Balance Carree</h3>

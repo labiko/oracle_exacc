@@ -91,22 +91,52 @@ Quand le load 346285 (22h39) est arrive, il a trouve un solde de depart errone (
 ## 5. Records orphelins trouves dans BR_DATA
 
 ```sql
-SELECT record_id, state, amount, cs_flag
+SELECT record_id, state, amount, cs_flag, trans_date, load_id
 FROM BR_DATA
 WHERE acct_id = 1906 AND load_id = 346241;
 ```
 
-| record_id | state | amount | cs_flag |
-|-----------|-------|--------|---------|
-| 878 | 3 (SUSPENS) | 248 800,25 | S |
-| 879 | 3 (SUSPENS) | 248 802,91 | S |
+| record_id | state | amount | cs_flag | trans_date | load_id |
+|-----------|-------|--------|---------|------------|---------|
+| 878 | 3 (SUSPENS) | 248 800,25 | S | 25/02/26 | 346241 |
+| 879 | 3 (SUSPENS) | 248 802,91 | S | 25/02/26 | 346241 |
 
-**Calcul : 248 802,91 - 248 800,25 = 2,66€** (= ecart Balance Carree)
+```sql
+-- Compter les records
+SELECT COUNT(*) as nb_records, SUM(amount) as total_amount
+FROM BR_DATA
+WHERE acct_id = 1906 AND load_id = 346241;
+```
+
+| nb_records | total_amount |
+|------------|--------------|
+| 2 | 497 603,16 |
+
+### Explication du calcul de l'ecart
+
+**Pourquoi 2 records de 497 603,16€ au total causent un ecart de 2,66€ ?**
+
+Dans un systeme de reconciliation bancaire :
+- Les montants peuvent representer des debits et credits
+- L'effet NET sur le solde = difference entre les montants
+
+```
+Record 879 : 248 802,91 € (credit ou montant positif)
+Record 878 : 248 800,25 € (debit ou montant negatif en contrepartie)
+─────────────────────────────────────────────────────────────────
+Effet NET : 248 802,91 - 248 800,25 = +2,66 €
+```
+
+**C'est exactement l'ecart de la Balance Carree !**
+
+Ces 2 records appartiennent au load rollbacke (346241) mais sont restes dans BR_DATA.
+Leur effet NET de +2,66€ cause l'ecart dans la Balance Carree.
 
 ---
 
 ## 6. Solution
 
+### Script de suppression
 ```sql
 DELETE FROM BR_DATA
 WHERE acct_id = 1906
@@ -116,6 +146,27 @@ COMMIT;
 ```
 
 Puis relancer le calcul de la Balance Carree.
+
+### Script de retour arriere (si besoin de restaurer)
+```sql
+-- ============================================================
+-- SCRIPT RETOUR ARRIERE - Compte 1906, Load 346241
+-- A executer UNIQUEMENT si besoin de restaurer les records
+-- ============================================================
+
+INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id)
+VALUES (878, 1906, 3, 248800.25, 'S', TO_DATE('2026-02-25', 'YYYY-MM-DD'), 346241);
+
+INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id)
+VALUES (879, 1906, 3, 248802.91, 'S', TO_DATE('2026-02-25', 'YYYY-MM-DD'), 346241);
+
+COMMIT;
+
+-- Verification
+SELECT record_id, state, amount, cs_flag, trans_date, load_id
+FROM BR_DATA
+WHERE acct_id = 1906 AND load_id = 346241;
+```
 
 ---
 
