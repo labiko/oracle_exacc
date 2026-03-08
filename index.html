@@ -1096,7 +1096,7 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.2.0</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.2.1</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
         <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier (Générique)</a></li>
@@ -9320,6 +9320,86 @@ ORDER BY NB_ACCES DESC;</pre>
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
         <p style="color: #1565c0;"><strong>Version : 1.0 - 08/03/2026</strong></p>
+    </section>
+
+    <!-- ETAPE 0 : DECOUVERTE -->
+    <section style="background: #fff8e1; border-left: 4px solid #ffc107;">
+        <h2>🔎 Etape 0 : Decouverte Automatique (Tous Comptes)</h2>
+        <p>Trouver <strong>automatiquement</strong> tous les comptes avec des rollbacks qui ont encore des records orphelins dans BR_DATA :</p>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Lister TOUS les rollbacks avec records orphelins</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Trouve tous les comptes avec des records orphelins apres rollback
+-- Aucun parametre a remplacer !
+SELECT
+    a.acct_id,
+    acc.acct_name,
+    a.WHICHONE as LOAD_ID_ROLLBACKE,
+    TRUNC(a.timestamp) as DATE_ROLLBACK,
+    TO_CHAR(a.timestamp, 'HH24:MI:SS') as HEURE,
+    d.nb_records as NB_RECORDS_ORPHELINS,
+    d.total_amount as TOTAL_AMOUNT
+FROM BR_AUDIT a
+JOIN (
+    -- Sous-requete : compter les records par load_id
+    SELECT acct_id, load_id, COUNT(*) as nb_records, SUM(amount) as total_amount
+    FROM BR_DATA
+    GROUP BY acct_id, load_id
+) d ON d.acct_id = a.acct_id AND d.load_id = a.WHICHONE
+LEFT JOIN BS_ACCTS acc ON acc.acct_id = a.acct_id
+WHERE a.type = 16  -- EXEC_ROLLBACK
+ORDER BY a.timestamp DESC;</pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Resultat :</strong> Liste tous les comptes ou un rollback a ete fait MAIS des records existent encore dans BR_DATA.<br>
+                Utilisez les valeurs ACCT_ID, LOAD_ID et DATE_ROLLBACK pour les etapes suivantes.
+            </div>
+        </div>
+
+        <h3>Variante : Rollbacks des 30 derniers jours</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Rollbacks recents avec orphelins</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Rollbacks des 30 derniers jours avec records orphelins
+SELECT
+    a.acct_id,
+    a.WHICHONE as LOAD_ID,
+    TRUNC(a.timestamp) as DATE_ROLLBACK,
+    COUNT(d.record_id) as NB_ORPHELINS,
+    SUM(d.amount) as TOTAL
+FROM BR_AUDIT a
+JOIN BR_DATA d ON d.acct_id = a.acct_id AND d.load_id = a.WHICHONE
+WHERE a.type = 16
+  AND a.timestamp >= SYSDATE - 30
+GROUP BY a.acct_id, a.WHICHONE, TRUNC(a.timestamp)
+ORDER BY DATE_ROLLBACK DESC, a.acct_id;</pre>
+        </div>
+
+        <h3>Variante : Verifier un compte specifique (toutes dates)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Tous les rollbacks d'un compte</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID uniquement
+SELECT
+    a.WHICHONE as LOAD_ID,
+    TRUNC(a.timestamp) as DATE_ROLLBACK,
+    TO_CHAR(a.timestamp, 'HH24:MI:SS') as HEURE,
+    (SELECT COUNT(*) FROM BR_DATA d WHERE d.acct_id = a.acct_id AND d.load_id = a.WHICHONE) as NB_ORPHELINS
+FROM BR_AUDIT a
+WHERE a.acct_id = :ACCT_ID
+  AND a.type = 16
+ORDER BY a.timestamp DESC;</pre>
+        </div>
     </section>
 
     <!-- PARAMETRES -->
