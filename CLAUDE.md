@@ -2,7 +2,7 @@
 
 Ce fichier permet à Claude de retrouver le contexte des différents projets.
 
-**Derniere mise a jour : 07/03/2026**
+**Derniere mise a jour : 08/03/2026**
 
 ---
 
@@ -58,6 +58,13 @@ COMMIT;
 |--------|-------|
 | `BNNP_SQL/DIAGNOSTIC_RAPIDE.sql` | Diagnostic par RIB - detecte si CUMUL actif |
 | `BNNP_SQL/LISTE_COMPTES_AVEC_CUMUL.sql` | Liste tous les comptes avec colonne [CUMUL]/[DETAIL] + scripts suppression/rollback |
+| `BNNP_SQL/Analyse_Compte_1906.sql` | Analyse complete d'un compte (BR_DATA, BR_AUDIT, rollbacks) |
+| `BNNP_SQL/Traitement_Balance_Carre_Apres_Le_04.sql` | Script INSERT pour BRD_EU_JC_ITEMS |
+
+### Fichiers de Trace (IMPORTANT - Lire pour contexte)
+| Fichier | Contenu |
+|---------|---------|
+| `BNNP_SQL/TRACE_BALANCE_CARREE_1906.md` | **Trace complete** investigation Balance Carree compte 1906, ecart 2,66€, load_id 346241, records 878/879 |
 
 ### Probleme Type : Transaction absente de BR_DATA
 ```
