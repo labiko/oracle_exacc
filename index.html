@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 1.1 - 08/03/2026</strong> - Date rollback automatique</p>
+        <p style="color: #1565c0;"><strong>Version : 1.2 - 08/03/2026</strong> - Etape 1bis: Ecart NET par load</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9492,6 +9492,74 @@ ORDER BY timestamp;</pre>
             <span class="alert-icon">💡</span>
             <div>
                 <strong>Note :</strong> TYPE=18 (debut) et TYPE=16 (execution) vont toujours ensemble avec le meme WHICHONE (= LOAD_ID)
+            </div>
+        </div>
+    </section>
+
+    <!-- ETAPE 1 BIS -->
+    <section style="background: #fff3e0; border-left: 4px solid #ff9800;">
+        <h2>🎯 Etape 1 bis : Identifier le Load Responsable de l'Ecart</h2>
+        <p>Quand il y a <strong>plusieurs rollbacks</strong>, cette requete calcule l'ecart NET de chaque load pour trouver celui qui correspond a l'ecart de la Balance Carree :</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Ecart NET par load (identifier le coupable)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID uniquement
+-- Calcule l'ecart NET de CHAQUE load orphelin
+SELECT
+    load_id,
+    COUNT(*) as NB_RECORDS,
+    SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) as TOTAL_COTE_C,
+    SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END) as TOTAL_COTE_S,
+    ABS(SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) -
+        SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END)) as ECART_NET,
+    MAX(trans_date) as DATE_TRANS
+FROM BR_DATA d
+WHERE d.acct_id = :ACCT_ID
+  AND d.load_id IN (
+      SELECT DISTINCT a.WHICHONE
+      FROM BR_AUDIT a
+      WHERE a.acct_id = :ACCT_ID AND a.type = 16
+  )
+GROUP BY load_id
+ORDER BY ECART_NET DESC;</pre>
+        </div>
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Resultat :</strong> Le load avec l'ECART_NET correspondant a l'ecart de la Balance Carree est le coupable !<br>
+                Exemple : Si Balance Carree = 207.995,00 €, cherchez le load avec ECART_NET = 207995
+            </div>
+        </div>
+
+        <h3>Variante : Total cumule de TOUS les orphelins</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Ecart total cumule</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID
+-- Si l'ecart est la SOMME de plusieurs loads
+SELECT
+    'TOTAL' as INFO,
+    COUNT(*) as NB_RECORDS_TOTAL,
+    SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) as TOTAL_C,
+    SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END) as TOTAL_S,
+    ABS(SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) -
+        SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END)) as ECART_CUMULE
+FROM BR_DATA d
+WHERE d.acct_id = :ACCT_ID
+  AND d.load_id IN (
+      SELECT DISTINCT a.WHICHONE
+      FROM BR_AUDIT a
+      WHERE a.acct_id = :ACCT_ID AND a.type = 16
+  );</pre>
+        </div>
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Attention :</strong> L'ecart peut etre cause par UN SEUL load ou par la SOMME de plusieurs loads !
             </div>
         </div>
     </section>
