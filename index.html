@@ -9661,7 +9661,7 @@ ORDER BY load_id, record_id;</pre>
             </div>
             <pre>-- Remplacer :ACCT_ID et les LOAD_ID
 SELECT
-    load_id,
+    TO_CHAR(load_id) as load_id,
     COUNT(*) as NB_RECORDS,
     SUM(amount) as TOTAL_AMOUNT,
     SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) as TOTAL_C,
