@@ -1096,10 +1096,11 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.1.3</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.2.0</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
-        <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier</a></li>
+        <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier (Générique)</a></li>
+        <li><a href="#rollback-fichier-2.66" onclick="showTab('rollback-fichier-2.66', this)">🔄 Rollback Fichier_Ecart_2.66</a></li>
         <li><a href="#dtc670" onclick="showTab('dtc670', this)">⚡ Optimisation DTC670-DTC671</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
         <li><a href="#captures" onclick="showTab('captures', this)">📷 Captures</a></li>
@@ -9312,13 +9313,217 @@ ORDER BY NB_ACCES DESC;</pre>
 </div>
 <!-- ==================== FIN ONGLET INSTRUMENTATION ==================== -->
 
-<!-- ==================== ONGLET ROLLBACK FICHIER ==================== -->
+<!-- ==================== ONGLET ROLLBACK FICHIER GENERIQUE ==================== -->
 <div id="rollback-fichier" class="tab-content">
 
+    <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
+        <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
+        <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
+        <p style="color: #1565c0;"><strong>Version : 1.0 - 08/03/2026</strong></p>
+    </section>
+
+    <!-- PARAMETRES -->
+    <section>
+        <h2>⚙️ Parametres a Remplacer</h2>
+        <table>
+            <tr>
+                <th>Parametre</th>
+                <th>Description</th>
+                <th>Exemple</th>
+            </tr>
+            <tr>
+                <td><code>:ACCT_ID</code></td>
+                <td>ID du compte dans BR_DATA/BR_AUDIT</td>
+                <td>1906</td>
+            </tr>
+            <tr>
+                <td><code>:DATE_ROLLBACK</code></td>
+                <td>Date du rollback (format YYYY-MM-DD)</td>
+                <td>2026-02-25</td>
+            </tr>
+            <tr>
+                <td><code>:LOAD_ID</code></td>
+                <td>ID du chargement rollbacke (WHICHONE dans BR_AUDIT)</td>
+                <td>346241</td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- ETAPE 1 -->
+    <section>
+        <h2>📋 Etape 1 : Identifier les Rollbacks</h2>
+        <p>Trouver tous les rollbacks (TYPE=16/18) pour un compte a une date donnee :</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Lister les rollbacks</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :DATE_ROLLBACK
+SELECT
+    type,
+    CASE type WHEN 18 THEN 'DEBUT_ROLLBACK' WHEN 16 THEN 'EXEC_ROLLBACK' END as action,
+    WHICHONE as LOAD_ID,
+    TO_CHAR(timestamp, 'DD/MM/YYYY HH24:MI:SS') as date_heure
+FROM BR_AUDIT
+WHERE acct_id = :ACCT_ID
+  AND type IN (16, 18)
+  AND TRUNC(timestamp) = TO_DATE(':DATE_ROLLBACK', 'YYYY-MM-DD')
+ORDER BY timestamp;</pre>
+        </div>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Note :</strong> TYPE=18 (debut) et TYPE=16 (execution) vont toujours ensemble avec le meme WHICHONE (= LOAD_ID)
+            </div>
+        </div>
+    </section>
+
+    <!-- ETAPE 2 -->
+    <section>
+        <h2>📊 Etape 2 : Analyser l'Impact sur le Solde</h2>
+        <p>Voir comment le solde a evolue (TYPE=15) :</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Evolution du solde</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :DATE_ROLLBACK
+SELECT
+    WHICHONE as LOAD_ID,
+    cs_flag,
+    bfr_amt as SOLDE_AVANT,
+    aft_amt as SOLDE_APRES,
+    (aft_amt - bfr_amt) as ECART,
+    TO_CHAR(timestamp, 'HH24:MI:SS') as heure
+FROM BR_AUDIT
+WHERE acct_id = :ACCT_ID
+  AND type = 15
+  AND TRUNC(timestamp) = TO_DATE(':DATE_ROLLBACK', 'YYYY-MM-DD')
+ORDER BY timestamp;</pre>
+        </div>
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Important :</strong> La colonne ECART correspond souvent a l'ecart de la Balance Carree !
+            </div>
+        </div>
+    </section>
+
+    <!-- ETAPE 3 -->
+    <section>
+        <h2>🔍 Etape 3 : Verifier les Records Orphelins</h2>
+        <p>Verifier si des records du load rollbacke existent encore dans BR_DATA :</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Records orphelins</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :LOAD_ID
+SELECT
+    record_id,
+    state,
+    CASE state WHEN 3 THEN 'SUSPENS' WHEN 4 THEN 'RECONCILED' ELSE TO_CHAR(state) END as state_desc,
+    amount,
+    cs_flag,
+    trans_date,
+    load_id
+FROM BR_DATA
+WHERE acct_id = :ACCT_ID
+  AND load_id = :LOAD_ID;
+
+-- Compter et totaliser
+SELECT
+    COUNT(*) as NB_RECORDS,
+    SUM(amount) as TOTAL_AMOUNT
+FROM BR_DATA
+WHERE acct_id = :ACCT_ID
+  AND load_id = :LOAD_ID;</pre>
+        </div>
+    </section>
+
+    <!-- ETAPE 4 -->
+    <section>
+        <h2>🗑️ Etape 4 : Supprimer les Records Orphelins</h2>
+        <div class="alert alert-danger">
+            <span class="alert-icon">🚨</span>
+            <div>
+                <strong>ATTENTION :</strong> Verifier avec l'Etape 3 AVANT de supprimer !
+            </div>
+        </div>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Suppression</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :LOAD_ID
+DELETE FROM BR_DATA
+WHERE acct_id = :ACCT_ID
+  AND load_id = :LOAD_ID;
+
+-- Verification
+SELECT 'Records supprimes' AS statut,
+       (SELECT COUNT(*) FROM BR_DATA WHERE acct_id = :ACCT_ID AND load_id = :LOAD_ID) as nb_restant;
+
+COMMIT;</pre>
+        </div>
+    </section>
+
+    <!-- ETAPE 5 -->
+    <section>
+        <h2>↩️ Etape 5 : Script de Retour Arriere (Template)</h2>
+        <p>Generer les INSERT pour restaurer les records supprimes :</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Generer script de restauration</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Executer AVANT la suppression pour generer le script de rollback
+-- Remplacer :ACCT_ID et :LOAD_ID
+SELECT
+    'INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id) VALUES (' ||
+    record_id || ', ' ||
+    acct_id || ', ' ||
+    state || ', ' ||
+    amount || ', ''' ||
+    cs_flag || ''', TO_DATE(''' ||
+    TO_CHAR(trans_date, 'YYYY-MM-DD') || ''', ''YYYY-MM-DD''), ' ||
+    load_id || ');' as SCRIPT_INSERT
+FROM BR_DATA
+WHERE acct_id = :ACCT_ID
+  AND load_id = :LOAD_ID;</pre>
+        </div>
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Conseil :</strong> Copier le resultat de cette requete AVANT de faire le DELETE pour pouvoir restaurer si necessaire.
+            </div>
+        </div>
+    </section>
+
+    <!-- RESUME -->
+    <section style="background: #e8f5e9; border-left: 4px solid #4caf50;">
+        <h2>✅ Checklist Rapide</h2>
+        <ol style="margin: 15px 0; padding-left: 25px; line-height: 2;">
+            <li>Obtenir <strong>ACCT_ID</strong> et <strong>DATE_ROLLBACK</strong></li>
+            <li>Executer Etape 1 → Noter le <strong>LOAD_ID</strong> (WHICHONE)</li>
+            <li>Executer Etape 2 → Verifier l'<strong>ECART</strong> sur le solde</li>
+            <li>Executer Etape 3 → Verifier les <strong>records orphelins</strong></li>
+            <li>Executer Etape 5 → <strong>Sauvegarder</strong> le script de restauration</li>
+            <li>Executer Etape 4 → <strong>Supprimer</strong> les records</li>
+            <li><strong>Relancer</strong> le calcul de la Balance Carree</li>
+        </ol>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET ROLLBACK FICHIER GENERIQUE ==================== -->
+
+<!-- ==================== ONGLET ROLLBACK FICHIER ECART 2.66 ==================== -->
+<div id="rollback-fichier-2.66" class="tab-content">
+
     <section style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; margin-top: 20px;">
-        <h2>🔄 Guide : Identifier et Corriger les Rollbacks de Fichiers</h2>
-        <p style="margin: 15px 0;"><strong>Objectif :</strong> Identifier les chargements de fichiers annules (rollback) qui causent des ecarts dans la Balance Carree</p>
-        <p style="color: #e65100;"><strong>Date : 07/03/2026</strong></p>
+        <h2>🔄 Exemple Resolu : Compte 1906 - Ecart 2,66€</h2>
+        <p style="margin: 15px 0;"><strong>Objectif :</strong> Documentation complete de l'investigation et resolution de l'ecart de 2,66€ sur le compte 1906</p>
+        <p style="color: #e65100;"><strong>Date : 25/02/2026 | Resolution : 08/03/2026</strong></p>
     </section>
 
     <!-- CONTEXTE -->
@@ -9796,7 +10001,7 @@ GROUP BY d.load_id;</pre>
     </section>
 
 </div>
-<!-- ==================== FIN ONGLET ROLLBACK FICHIER ==================== -->
+<!-- ==================== FIN ONGLET ROLLBACK FICHIER ECART 2.66 ==================== -->
 
 <!-- ==================== ONGLET OPTIMISATION DTC670-DTC671 ==================== -->
 <div id="dtc670" class="tab-content">
