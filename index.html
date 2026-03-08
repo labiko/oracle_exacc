@@ -10615,7 +10615,12 @@ function showTab(tabId, clickedLink) {
 
 function copyCode(button) {
     const codeContainer = button.closest('.code-container');
-    const code = codeContainer.querySelector('pre code').innerText;
+    // Cherche d'abord pre > code, sinon pre directement
+    let codeElement = codeContainer.querySelector('pre code');
+    if (!codeElement) {
+        codeElement = codeContainer.querySelector('pre');
+    }
+    const code = codeElement.innerText;
 
     navigator.clipboard.writeText(code).then(() => {
         const originalText = button.innerHTML;
