@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 1.3 - 08/03/2026</strong> - Multi-loads + filtre ecart</p>
+        <p style="color: #1565c0;"><strong>Version : 1.4 - 08/03/2026</strong> - Workflow simplifie (Etapes 2 et 3 optionnelles)</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9529,7 +9529,7 @@ ORDER BY ECART_NET DESC;</pre>
             <span class="alert-icon">✅</span>
             <div>
                 <strong>Resultat :</strong> Le(s) load(s) avec l'ECART_NET correspondant a l'ecart de la Balance Carree sont les coupables !<br>
-                Notez les LOAD_ID pour l'Etape 3.
+                Notez les LOAD_ID pour l'Etape 5 (rollback) puis Etape 4 (suppression).
             </div>
         </div>
 
@@ -9630,8 +9630,9 @@ ORDER BY timestamp;</pre>
     </section>
 
     <!-- ETAPE 3 -->
-    <section>
-        <h2>🔍 Etape 3 : Verifier les Records Orphelins</h2>
+    <section style="opacity: 0.85; border-left: 4px solid #9e9e9e;">
+        <h2>🔍 Etape 3 : Verifier les Records Orphelins <small style="color: #9e9e9e;">(Optionnel)</small></h2>
+        <p><em>Cette etape est optionnelle - L'Etape 1 bis donne deja les totaux par load. Utile uniquement pour voir le detail des records.</em></p>
         <p>Verifier les records des load(s) identifies a l'Etape 1 bis :</p>
         <div class="code-container">
             <div class="code-header">
@@ -9689,7 +9690,7 @@ WHERE acct_id = :ACCT_ID
         <div class="alert alert-danger">
             <span class="alert-icon">🚨</span>
             <div>
-                <strong>ATTENTION :</strong> Verifier avec l'Etape 3 AVANT de supprimer ! Generer le script de rollback (Etape 5) AVANT !
+                <strong>ATTENTION :</strong> Generer le script de rollback (Etape 5) AVANT de supprimer !
             </div>
         </div>
         <div class="code-container">
@@ -9749,12 +9750,11 @@ ORDER BY load_id, record_id;</pre>
     <section style="background: #e8f5e9; border-left: 4px solid #4caf50;">
         <h2>✅ Checklist Rapide</h2>
         <ol style="margin: 15px 0; padding-left: 25px; line-height: 2;">
-            <li>Obtenir <strong>ACCT_ID</strong> et <strong>DATE_ROLLBACK</strong></li>
-            <li>Executer Etape 1 → Noter le <strong>LOAD_ID</strong> (WHICHONE)</li>
-            <li>Executer Etape 2 → Verifier l'<strong>ECART</strong> sur le solde</li>
-            <li>Executer Etape 3 → Verifier les <strong>records orphelins</strong></li>
-            <li>Executer Etape 5 → <strong>Sauvegarder</strong> le script de restauration</li>
-            <li>Executer Etape 4 → <strong>Supprimer</strong> les records</li>
+            <li>Obtenir <strong>ACCT_ID</strong> (via Etape 0 ou BS_ACCTS)</li>
+            <li>Executer <strong>Etape 1 bis</strong> → Filtrer par <strong>:ECART_RECHERCHE</strong> = ecart Balance Carree</li>
+            <li>Noter les <strong>LOAD_ID</strong> trouves</li>
+            <li>Executer <strong>Etape 5</strong> → <strong>Sauvegarder</strong> le script de restauration</li>
+            <li>Executer <strong>Etape 4</strong> → <strong>Supprimer</strong> les records orphelins</li>
             <li><strong>Relancer</strong> le calcul de la Balance Carree</li>
         </ol>
     </section>
