@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 1.0 - 08/03/2026</strong></p>
+        <p style="color: #1565c0;"><strong>Version : 1.1 - 08/03/2026</strong> - Date rollback automatique</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9410,32 +9410,70 @@ ORDER BY a.timestamp DESC;</pre>
                 <th>Parametre</th>
                 <th>Description</th>
                 <th>Exemple</th>
+                <th>Requis</th>
             </tr>
             <tr>
                 <td><code>:ACCT_ID</code></td>
                 <td>ID du compte dans BR_DATA/BR_AUDIT</td>
                 <td>1906</td>
-            </tr>
-            <tr>
-                <td><code>:DATE_ROLLBACK</code></td>
-                <td>Date du rollback (format YYYY-MM-DD)</td>
-                <td>2026-02-25</td>
+                <td>✅ Oui</td>
             </tr>
             <tr>
                 <td><code>:LOAD_ID</code></td>
-                <td>ID du chargement rollbacke (WHICHONE dans BR_AUDIT)</td>
+                <td>ID du chargement rollbacke (trouve automatiquement via Etape 1)</td>
                 <td>346241</td>
+                <td>✅ Oui (auto)</td>
+            </tr>
+            <tr>
+                <td><code>:DATE_ROLLBACK</code></td>
+                <td>Date du rollback - <strong>detectee automatiquement</strong> par Etape 1</td>
+                <td>2026-02-25</td>
+                <td>❌ Optionnel</td>
             </tr>
         </table>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Nouveau :</strong> Utilisez l'Etape 0 ou l'Etape 1 pour identifier automatiquement le LOAD_ID et la DATE_ROLLBACK !
+            </div>
+        </div>
     </section>
 
     <!-- ETAPE 1 -->
     <section>
-        <h2>📋 Etape 1 : Identifier les Rollbacks</h2>
-        <p>Trouver tous les rollbacks (TYPE=16/18) pour un compte a une date donnee :</p>
+        <h2>📋 Etape 1 : Identifier les Rollbacks (Date Automatique)</h2>
+        <p>Trouver <strong>automatiquement</strong> tous les rollbacks d'un compte avec les dates et l'ecart potentiel :</p>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Lister les rollbacks</span>
+                <span>SQL - Tous les rollbacks d'un compte (date auto + ecart)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer UNIQUEMENT :ACCT_ID (pas besoin de date !)
+SELECT
+    a.WHICHONE as LOAD_ID,
+    TO_CHAR(MIN(CASE WHEN a.type = 18 THEN a.timestamp END), 'DD/MM/YYYY HH24:MI:SS') as DEBUT_ROLLBACK,
+    TO_CHAR(MAX(CASE WHEN a.type = 16 THEN a.timestamp END), 'DD/MM/YYYY HH24:MI:SS') as EXEC_ROLLBACK,
+    (SELECT COUNT(*) FROM BR_DATA d WHERE d.acct_id = :ACCT_ID AND d.load_id = a.WHICHONE) as NB_ORPHELINS,
+    (SELECT MAX(amount) - MIN(amount) FROM BR_DATA d WHERE d.acct_id = :ACCT_ID AND d.load_id = a.WHICHONE) as ECART_POTENTIEL
+FROM BR_AUDIT a
+WHERE a.acct_id = :ACCT_ID
+  AND a.type IN (16, 18)
+GROUP BY a.acct_id, a.WHICHONE
+HAVING (SELECT COUNT(*) FROM BR_DATA d WHERE d.acct_id = :ACCT_ID AND d.load_id = a.WHICHONE) > 0
+ORDER BY EXEC_ROLLBACK DESC;</pre>
+        </div>
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Resultat :</strong> Affiche TOUS les rollbacks avec records orphelins, leur date exacte et l'ecart potentiel.<br>
+                Utilisez le LOAD_ID trouve pour les etapes suivantes.
+            </div>
+        </div>
+
+        <h3>Variante : Avec une date specifique</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Rollbacks a une date donnee</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre>-- Remplacer :ACCT_ID et :DATE_ROLLBACK
