@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 1.2 - 08/03/2026</strong> - Etape 1bis: Ecart NET par load</p>
+        <p style="color: #1565c0;"><strong>Version : 1.3 - 08/03/2026</strong> - Multi-loads + filtre ecart</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9528,8 +9528,41 @@ ORDER BY ECART_NET DESC;</pre>
         <div class="alert alert-success">
             <span class="alert-icon">✅</span>
             <div>
-                <strong>Resultat :</strong> Le load avec l'ECART_NET correspondant a l'ecart de la Balance Carree est le coupable !<br>
-                Exemple : Si Balance Carree = 207.995,00 €, cherchez le load avec ECART_NET = 207995
+                <strong>Resultat :</strong> Le(s) load(s) avec l'ECART_NET correspondant a l'ecart de la Balance Carree sont les coupables !<br>
+                Notez les LOAD_ID pour l'Etape 3.
+            </div>
+        </div>
+
+        <h3>Variante : Filtrer par l'ecart recherche</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Trouver les loads qui correspondent a l'ecart</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :ECART_RECHERCHE (ex: 207995)
+-- Trouve automatiquement les loads dont l'ecart = ecart Balance Carree
+SELECT
+    load_id,
+    COUNT(*) as NB_RECORDS,
+    SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) as TOTAL_COTE_C,
+    SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END) as TOTAL_COTE_S,
+    ABS(SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) -
+        SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END)) as ECART_NET
+FROM BR_DATA d
+WHERE d.acct_id = :ACCT_ID
+  AND d.load_id IN (
+      SELECT DISTINCT a.WHICHONE FROM BR_AUDIT a
+      WHERE a.acct_id = :ACCT_ID AND a.type = 16
+  )
+GROUP BY load_id
+HAVING ABS(SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) -
+           SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END)) = :ECART_RECHERCHE;</pre>
+        </div>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Astuce :</strong> Utilisez l'ecart de la Balance Carree (sans decimales) comme :ECART_RECHERCHE.<br>
+                Ex: Balance Carree = 207.995,00 € → :ECART_RECHERCHE = 207995
             </div>
         </div>
 
@@ -9565,8 +9598,9 @@ WHERE d.acct_id = :ACCT_ID
     </section>
 
     <!-- ETAPE 2 -->
-    <section>
-        <h2>📊 Etape 2 : Analyser l'Impact sur le Solde</h2>
+    <section style="opacity: 0.85; border-left: 4px solid #9e9e9e;">
+        <h2>📊 Etape 2 : Analyser l'Impact sur le Solde <small style="color: #9e9e9e;">(Optionnel)</small></h2>
+        <p><em>Cette etape est optionnelle - L'Etape 1 bis suffit generalement a identifier les loads coupables.</em></p>
         <p>Voir comment le solde a evolue (TYPE=15) :</p>
         <div class="code-container">
             <div class="code-header">
@@ -9598,32 +9632,54 @@ ORDER BY timestamp;</pre>
     <!-- ETAPE 3 -->
     <section>
         <h2>🔍 Etape 3 : Verifier les Records Orphelins</h2>
-        <p>Verifier si des records du load rollbacke existent encore dans BR_DATA :</p>
+        <p>Verifier les records des load(s) identifies a l'Etape 1 bis :</p>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Records orphelins</span>
+                <span>SQL - Records orphelins (plusieurs loads)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre>-- Remplacer :ACCT_ID et :LOAD_ID
+            <pre>-- Remplacer :ACCT_ID et les LOAD_ID (ajouter autant que necessaire)
 SELECT
+    load_id,
     record_id,
     state,
     CASE state WHEN 3 THEN 'SUSPENS' WHEN 4 THEN 'RECONCILED' ELSE TO_CHAR(state) END as state_desc,
     amount,
     cs_flag,
-    trans_date,
-    load_id
+    trans_date
 FROM BR_DATA
 WHERE acct_id = :ACCT_ID
-  AND load_id = :LOAD_ID;
+  AND load_id IN (:LOAD_ID1, :LOAD_ID2)  -- Ajouter d'autres si besoin
+ORDER BY load_id, record_id;</pre>
+        </div>
 
--- Compter et totaliser
+        <h3>Totaliser par load</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Totaux par load</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et les LOAD_ID
 SELECT
+    load_id,
     COUNT(*) as NB_RECORDS,
-    SUM(amount) as TOTAL_AMOUNT
+    SUM(amount) as TOTAL_AMOUNT,
+    SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) as TOTAL_C,
+    SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END) as TOTAL_S
 FROM BR_DATA
 WHERE acct_id = :ACCT_ID
-  AND load_id = :LOAD_ID;</pre>
+  AND load_id IN (:LOAD_ID1, :LOAD_ID2)
+GROUP BY load_id
+UNION ALL
+SELECT
+    'TOTAL' as load_id,
+    COUNT(*) as NB_RECORDS,
+    SUM(amount) as TOTAL_AMOUNT,
+    SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) as TOTAL_C,
+    SUM(CASE WHEN cs_flag = 'S' THEN amount ELSE 0 END) as TOTAL_S
+FROM BR_DATA
+WHERE acct_id = :ACCT_ID
+  AND load_id IN (:LOAD_ID1, :LOAD_ID2);</pre>
         </div>
     </section>
 
@@ -9633,22 +9689,24 @@ WHERE acct_id = :ACCT_ID
         <div class="alert alert-danger">
             <span class="alert-icon">🚨</span>
             <div>
-                <strong>ATTENTION :</strong> Verifier avec l'Etape 3 AVANT de supprimer !
+                <strong>ATTENTION :</strong> Verifier avec l'Etape 3 AVANT de supprimer ! Generer le script de rollback (Etape 5) AVANT !
             </div>
         </div>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Suppression</span>
+                <span>SQL - Suppression (plusieurs loads)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre>-- Remplacer :ACCT_ID et :LOAD_ID
+            <pre>-- Remplacer :ACCT_ID et les LOAD_ID
 DELETE FROM BR_DATA
 WHERE acct_id = :ACCT_ID
-  AND load_id = :LOAD_ID;
+  AND load_id IN (:LOAD_ID1, :LOAD_ID2);
 
 -- Verification
 SELECT 'Records supprimes' AS statut,
-       (SELECT COUNT(*) FROM BR_DATA WHERE acct_id = :ACCT_ID AND load_id = :LOAD_ID) as nb_restant;
+       (SELECT COUNT(*) FROM BR_DATA
+        WHERE acct_id = :ACCT_ID
+        AND load_id IN (:LOAD_ID1, :LOAD_ID2)) as nb_restant;
 
 COMMIT;</pre>
         </div>
@@ -9657,14 +9715,14 @@ COMMIT;</pre>
     <!-- ETAPE 5 -->
     <section>
         <h2>↩️ Etape 5 : Script de Retour Arriere (Template)</h2>
-        <p>Generer les INSERT pour restaurer les records supprimes :</p>
+        <p>Generer les INSERT pour restaurer les records supprimes <strong>AVANT de supprimer</strong> :</p>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Generer script de restauration</span>
+                <span>SQL - Generer script de restauration (plusieurs loads)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre>-- Executer AVANT la suppression pour generer le script de rollback
--- Remplacer :ACCT_ID et :LOAD_ID
+-- Remplacer :ACCT_ID et les LOAD_ID
 SELECT
     'INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id) VALUES (' ||
     record_id || ', ' ||
@@ -9676,7 +9734,8 @@ SELECT
     load_id || ');' as SCRIPT_INSERT
 FROM BR_DATA
 WHERE acct_id = :ACCT_ID
-  AND load_id = :LOAD_ID;</pre>
+  AND load_id IN (:LOAD_ID1, :LOAD_ID2)
+ORDER BY load_id, record_id;</pre>
         </div>
         <div class="alert alert-success">
             <span class="alert-icon">✅</span>
