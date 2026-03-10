@@ -1096,7 +1096,7 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.2.1</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.2.2</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
         <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier (Générique)</a></li>
@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 1.4 - 08/03/2026</strong> - Workflow simplifie (Etapes 2 et 3 optionnelles)</p>
+        <p style="color: #1565c0;"><strong>Version : 1.5 - 10/03/2026</strong> - Ajout variante recherche par impact solde (BR_AUDIT type=15)</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9563,6 +9563,48 @@ HAVING ABS(SUM(CASE WHEN cs_flag = 'C' THEN amount ELSE 0 END) -
             <div>
                 <strong>Astuce :</strong> Utilisez l'ecart de la Balance Carree (sans decimales) comme :ECART_RECHERCHE.<br>
                 Ex: Balance Carree = 207.995,00 € → :ECART_RECHERCHE = 207995
+            </div>
+        </div>
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Limitation :</strong> Cette requete calcule C - S. Si les records orphelins sont TOUS du meme cote (ex: 2 records S), utilisez la variante ci-dessous.
+            </div>
+        </div>
+
+        <h3>Variante : Recherche par impact sur le solde (RECOMMANDEE)</h3>
+        <p>Cette variante utilise <strong>BR_AUDIT type=15</strong> qui contient l'impact REEL sur le solde. Elle fonctionne dans TOUS les cas (records C, S, ou mixtes).</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Trouver le load par ecart Balance Carree (via impact solde)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- VARIANTE RECOMMANDEE : Utilise l'impact reel sur le solde
+-- Remplacer :ACCT_ID et :ECART_RECHERCHE (ex: 2.66)
+-- Tolerance de +/- 0.01 pour les decimales
+SELECT
+    WHICHONE as LOAD_ID,
+    cs_flag,
+    bfr_amt as SOLDE_AVANT,
+    aft_amt as SOLDE_APRES,
+    ABS(aft_amt - bfr_amt) as ECART,
+    TO_CHAR(timestamp, 'DD/MM/YYYY HH24:MI:SS') as DATE_HEURE
+FROM BR_AUDIT
+WHERE acct_id = :ACCT_ID
+  AND type = 15
+  AND WHICHONE IN (
+      SELECT DISTINCT a.WHICHONE
+      FROM BR_AUDIT a
+      WHERE a.acct_id = :ACCT_ID AND a.type = 16
+  )
+  AND ABS(aft_amt - bfr_amt) BETWEEN :ECART_RECHERCHE - 0.01 AND :ECART_RECHERCHE + 0.01
+ORDER BY timestamp;</pre>
+        </div>
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Avantage :</strong> Cette requete fonctionne meme si les records orphelins sont tous du meme cote (C ou S).<br>
+                Ex: 2 records S avec montants 248802.91 et 248800.25 → ecart reel = 2.66€
             </div>
         </div>
 
