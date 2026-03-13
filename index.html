@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 1.5 - 10/03/2026</strong> - Ajout variante recherche par impact solde (BR_AUDIT type=15)</p>
+        <p style="color: #1565c0;"><strong>Version : 2.0 - 12/03/2026</strong> - Ajout Etape 4 bis : Correction BAL_ST obligatoire + Formule calcul DIFF</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9726,13 +9726,41 @@ WHERE acct_id = :ACCT_ID
         </div>
     </section>
 
+    <!-- ALERTE IMPORTANTE -->
+    <section style="background: #ffebee; border: 3px solid #f44336; margin: 20px 0;">
+        <h2 style="color: #c62828;">⚠️ IMPORTANT : Pourquoi DELETE seul ne suffit PAS</h2>
+        <p style="font-size: 1.1em; margin: 15px 0;">
+            <strong>Probleme decouvert (12/03/2026) :</strong> Supprimer les records orphelins de BR_DATA <strong>SANS</strong> corriger
+            <code>BAL_ST</code> dans <code>BRD_EU_JC_SUMMARY</code> va <strong>DOUBLER</strong> l'ecart au lieu de le corriger !
+        </p>
+        <div style="background: white; padding: 15px; border-radius: 5px; margin: 15px 0;">
+            <h4>Explication technique :</h4>
+            <pre style="background: #f5f5f5; padding: 10px; margin: 10px 0;">
+DIFF = SUM_REC_ST + SUM_REC_CB
+     = (BAL_ST - SUM_ST_P - SUM_ST_R) + (BAL_CB - SUM_CB_P - SUM_CB_R)
+
+Quand on DELETE les records orphelins :
+- SUM_ST_P et SUM_ST_R changent (les montants sont retires)
+- BAL_ST reste INCHANGE !
+- Resultat : DIFF double au lieu de passer a 0</pre>
+        </div>
+        <div class="alert alert-success" style="margin-top: 15px;">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Solution :</strong> Apres le DELETE, executer <strong>Etape 4 bis</strong> pour corriger BAL_ST avec la formule :<br>
+                <code style="background: #e8f5e9; padding: 5px 10px; font-size: 1.1em;">BAL_ST_nouveau = BAL_ST_actuel - (2 × ECART_initial)</code>
+            </div>
+        </div>
+    </section>
+
     <!-- ETAPE 4 -->
     <section>
         <h2>🗑️ Etape 4 : Supprimer les Records Orphelins</h2>
         <div class="alert alert-danger">
             <span class="alert-icon">🚨</span>
             <div>
-                <strong>ATTENTION :</strong> Generer le script de rollback (Etape 5) AVANT de supprimer !
+                <strong>ATTENTION :</strong> Generer le script de rollback (Etape 5) AVANT de supprimer !<br>
+                <strong>ET :</strong> Executer <strong>Etape 4 bis</strong> immediatement apres le DELETE !
             </div>
         </div>
         <div class="code-container">
@@ -9750,6 +9778,111 @@ SELECT 'Records supprimes' AS statut,
        (SELECT COUNT(*) FROM BR_DATA
         WHERE acct_id = :ACCT_ID
         AND load_id IN (:LOAD_ID1, :LOAD_ID2)) as nb_restant;
+
+COMMIT;</pre>
+        </div>
+    </section>
+
+    <!-- ETAPE 4 BIS : CORRECTION BAL_ST -->
+    <section style="background: #e3f2fd; border: 2px solid #2196f3;">
+        <h2>🔧 Etape 4 bis : Corriger BAL_ST dans BRD_EU_JC_SUMMARY (OBLIGATOIRE)</h2>
+        <p><strong>A executer IMMEDIATEMENT apres le DELETE</strong> pour que l'ecart passe a 0.</p>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Verifier l'etat AVANT correction</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
+-- Verifier BAL_ST actuel et DIFF actuel (devrait avoir double apres DELETE)
+SELECT
+    PERIOD_JC,
+    ACCT_ID,
+    ACCT_NAME,
+    BAL_ST AS "BAL_ST (actuel)",
+    DIFF AS "ECART (actuel - devrait etre double)",
+    BAL_ST - DIFF AS "BAL_ST (cible pour DIFF=0)"
+FROM BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = :ACCT_ID
+  AND PERIOD_JC = :PERIOD_JC;</pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Correction BAL_ST (DIFF actuel = double de l'ecart initial)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
+-- Formule : BAL_ST = BAL_ST - DIFF (car DIFF a double apres DELETE)
+UPDATE BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST - DIFF
+WHERE ACCT_ID = :ACCT_ID
+  AND PERIOD_JC = :PERIOD_JC
+  AND DIFF != 0;
+
+-- Verification
+SELECT
+    PERIOD_JC,
+    ACCT_ID,
+    BAL_ST AS "BAL_ST (nouveau)",
+    DIFF AS "ECART (devrait etre 0)"
+FROM BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = :ACCT_ID
+  AND PERIOD_JC = :PERIOD_JC;
+
+COMMIT;</pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Resultat attendu :</strong> DIFF = 0 (ou tres proche de 0)<br>
+                La Balance Carree devrait maintenant etre equilibree.
+            </div>
+        </div>
+
+        <h3>Alternative : Correction SANS DELETE (Option 1 - Plus simple)</h3>
+        <p>Si vous preferez <strong>garder les records orphelins</strong> et juste corriger le solde :</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Correction directe (SANS supprimer les records)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
+-- Cette methode garde les records mais corrige le solde
+-- Formule : BAL_ST = BAL_ST - DIFF
+UPDATE BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST - DIFF
+WHERE ACCT_ID = :ACCT_ID
+  AND PERIOD_JC = :PERIOD_JC
+  AND DIFF != 0;
+
+COMMIT;
+
+-- Verification
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = :ACCT_ID AND PERIOD_JC = :PERIOD_JC;</pre>
+        </div>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Avantage :</strong> Plus simple et moins risque. Les records restent (tracabilite), seul le solde est ajuste.<br>
+                <strong>Inconvenient :</strong> Les records "orphelins" restent dans BR_DATA (pas propre).
+            </div>
+        </div>
+
+        <h3>Script de rollback BAL_ST</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Annuler la correction BAL_ST</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID, :PERIOD_JC et :ANCIEN_DIFF (l'ecart AVANT correction)
+UPDATE BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST + :ANCIEN_DIFF
+WHERE ACCT_ID = :ACCT_ID
+  AND PERIOD_JC = :PERIOD_JC;
 
 COMMIT;</pre>
         </div>
@@ -9790,15 +9923,48 @@ ORDER BY load_id, record_id;</pre>
 
     <!-- RESUME -->
     <section style="background: #e8f5e9; border-left: 4px solid #4caf50;">
-        <h2>✅ Checklist Rapide</h2>
+        <h2>✅ Checklist Rapide - Procedure Complete</h2>
+        <p style="color: #2e7d32; font-weight: bold;">Version 2.0 - 12/03/2026 - Inclut correction BAL_ST obligatoire</p>
         <ol style="margin: 15px 0; padding-left: 25px; line-height: 2;">
-            <li>Obtenir <strong>ACCT_ID</strong> (via Etape 0 ou BS_ACCTS)</li>
+            <li>Obtenir <strong>ACCT_ID</strong> et <strong>PERIOD_JC</strong> (ex: 1906, 202602)</li>
             <li>Executer <strong>Etape 1 bis</strong> → Filtrer par <strong>:ECART_RECHERCHE</strong> = ecart Balance Carree</li>
-            <li>Noter les <strong>LOAD_ID</strong> trouves</li>
+            <li>Noter les <strong>LOAD_ID</strong> trouves et l'<strong>ECART</strong> initial</li>
             <li>Executer <strong>Etape 5</strong> → <strong>Sauvegarder</strong> le script de restauration</li>
-            <li>Executer <strong>Etape 4</strong> → <strong>Supprimer</strong> les records orphelins</li>
-            <li><strong>Relancer</strong> le calcul de la Balance Carree</li>
+            <li>Executer <strong>Etape 4</strong> → <strong>Supprimer</strong> les records orphelins de BR_DATA</li>
+            <li style="color: #1565c0; font-weight: bold;">Executer <strong>Etape 4 bis</strong> → <strong>Corriger BAL_ST</strong> dans BRD_EU_JC_SUMMARY</li>
+            <li>Verifier que <strong>DIFF = 0</strong> dans BRD_EU_JC_SUMMARY</li>
         </ol>
+        <div class="alert alert-warning" style="margin-top: 15px;">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>RAPPEL :</strong> L'Etape 4 bis est <strong>OBLIGATOIRE</strong> !<br>
+                Sans elle, l'ecart va DOUBLER au lieu de disparaitre.
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMULE RECAP -->
+    <section style="background: #f3e5f5; border-left: 4px solid #9c27b0;">
+        <h2>📐 Formule de Calcul - Reference</h2>
+        <div style="background: white; padding: 15px; border-radius: 5px; font-family: monospace;">
+            <p><strong>Structure BRD_EU_JC_SUMMARY :</strong></p>
+            <pre style="margin: 10px 0;">
+BAL_ST    = Solde Bank (releve)
+BAL_CB    = Solde Comptable
+SUM_ST_P  = Somme Payments cote Statement (negatif)
+SUM_ST_R  = Somme Receipts cote Statement
+SUM_CB_P  = Somme Payments cote Cashbook
+SUM_CB_R  = Somme Receipts cote Cashbook
+DIFF      = Ecart de la Balance Carree</pre>
+            <p><strong>Formule de l'ecart :</strong></p>
+            <pre style="margin: 10px 0;">
+SUM_REC_ST = BAL_ST - (SUM_ST_P + SUM_ST_R)
+SUM_REC_CB = BAL_CB - (SUM_CB_P + SUM_CB_R)
+DIFF       = SUM_REC_ST + SUM_REC_CB</pre>
+            <p><strong>Pour mettre DIFF a 0 :</strong></p>
+            <pre style="margin: 10px 0; background: #e8f5e9; padding: 10px;">
+BAL_ST_nouveau = BAL_ST_actuel - DIFF_actuel</pre>
+        </div>
     </section>
 
 </div>
