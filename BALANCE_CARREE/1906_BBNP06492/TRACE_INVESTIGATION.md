@@ -146,7 +146,8 @@ Restauration des records via Data Pump pour revenir a l'etat initial (ecart 2,66
 
 ```sql
 UPDATE BRD_EU_JC_SUMMARY
-SET BAL_ST = 2.55
+SET BAL_ST = 2.55,
+    DIFF = 0
 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 COMMIT;
 ```

@@ -9827,9 +9827,10 @@ SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF,
 FROM BRD_EU_JC_SUMMARY
 WHERE ACCT_ID = :ACCT_ID AND PERIOD_JC = :PERIOD_JC;
 
--- CORRECTION
+-- CORRECTION (BAL_ST + DIFF en une seule requete)
 UPDATE BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST - DIFF
+SET BAL_ST = BAL_ST - DIFF,
+    DIFF = 0
 WHERE ACCT_ID = :ACCT_ID
   AND PERIOD_JC = :PERIOD_JC
   AND DIFF != 0;
@@ -9845,7 +9846,7 @@ COMMIT;</pre>
             <span class="alert-icon">✅</span>
             <div>
                 <strong>Resultat attendu :</strong> DIFF = 0<br>
-                <strong>Rollback si besoin :</strong> <code>UPDATE ... SET BAL_ST = BAL_ST + :ANCIEN_DIFF</code>
+                <strong>Rollback si besoin :</strong> <code>UPDATE ... SET BAL_ST = BAL_ST + :ANCIEN_DIFF, DIFF = :ANCIEN_DIFF</code>
             </div>
         </div>
     </section>
@@ -9923,9 +9924,10 @@ WHERE ACCT_ID = :ACCT_ID
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
--- Formule : BAL_ST = BAL_ST - DIFF (car DIFF a double apres DELETE)
+-- Formule : BAL_ST = BAL_ST - DIFF, DIFF = 0
 UPDATE BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST - DIFF
+SET BAL_ST = BAL_ST - DIFF,
+    DIFF = 0
 WHERE ACCT_ID = :ACCT_ID
   AND PERIOD_JC = :PERIOD_JC
   AND DIFF != 0;
@@ -9959,7 +9961,8 @@ COMMIT;</pre>
             </div>
             <pre>-- Remplacer :ACCT_ID, :PERIOD_JC et :ANCIEN_DIFF (l'ecart AVANT correction)
 UPDATE BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST + :ANCIEN_DIFF
+SET BAL_ST = BAL_ST + :ANCIEN_DIFF,
+    DIFF = :ANCIEN_DIFF
 WHERE ACCT_ID = :ACCT_ID
   AND PERIOD_JC = :PERIOD_JC;
 
@@ -10547,9 +10550,10 @@ DELETE FROM BANKREC.BRD_EU_JC_ITEMS
 WHERE acct_id = 1906
   AND load_id = 346241;
 
--- 3. Corriger BAL_ST (OBLIGATOIRE apres DELETE)
+-- 3. Corriger BAL_ST + DIFF (OBLIGATOIRE apres DELETE)
 UPDATE BANKREC.BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST - DIFF
+SET BAL_ST = BAL_ST - DIFF,
+    DIFF = 0
 WHERE ACCT_ID = 1906
   AND PERIOD_JC = '202602'
   AND DIFF != 0;
@@ -10599,9 +10603,10 @@ VALUES ('202603', 1906, 878, 3, 'S', 'P', 248800.25, 346241);
 INSERT INTO BANKREC.BRD_EU_JC_ITEMS (period_jc, acct_id, record_id, state, cs_flag, pr_flag, amount, load_id)
 VALUES ('202603', 1906, 879, 3, 'S', 'R', 248802.91, 346241);
 
--- 3. Restaurer BAL_ST dans BRD_EU_JC_SUMMARY
+-- 3. Restaurer BAL_ST + DIFF dans BRD_EU_JC_SUMMARY
 UPDATE BANKREC.BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST + 2.66  -- Ajouter l'ecart qui avait ete soustrait
+SET BAL_ST = BAL_ST + 2.66,
+    DIFF = 2.66
 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 
 COMMIT;
@@ -10853,9 +10858,10 @@ SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF,
 FROM BANKREC.BRD_EU_JC_SUMMARY
 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 
--- CORRECTION
+-- CORRECTION (BAL_ST + DIFF en une seule requete)
 UPDATE BANKREC.BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST - DIFF
+SET BAL_ST = BAL_ST - DIFF,
+    DIFF = 0
 WHERE ACCT_ID = 1906
   AND PERIOD_JC = '202602'
   AND DIFF != 0;
@@ -10872,7 +10878,7 @@ COMMIT;</pre>
             <span class="alert-icon">✅</span>
             <div>
                 <strong>Resultat attendu :</strong> DIFF = 0<br>
-                <strong>Rollback :</strong> <code>UPDATE ... SET BAL_ST = BAL_ST + 2.66 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';</code>
+                <strong>Rollback :</strong> <code>UPDATE ... SET BAL_ST = BAL_ST + 2.66, DIFF = 2.66 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';</code>
             </div>
         </div>
 
@@ -10938,9 +10944,10 @@ DELETE FROM BANKREC.BRD_EU_JC_ITEMS
 WHERE acct_id = 1906
   AND load_id = 346241;
 
--- ETAPE 3 : Corriger BAL_ST (OBLIGATOIRE apres DELETE)
+-- ETAPE 3 : Corriger BAL_ST + DIFF (OBLIGATOIRE apres DELETE)
 UPDATE BANKREC.BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST - DIFF
+SET BAL_ST = BAL_ST - DIFF,
+    DIFF = 0
 WHERE ACCT_ID = 1906
   AND PERIOD_JC = '202602'
   AND DIFF != 0;
@@ -11013,9 +11020,10 @@ SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
 FROM BANKREC.BRD_EU_JC_SUMMARY
 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 
--- ROLLBACK : Ajouter l'ancien DIFF (2.66)
+-- ROLLBACK : Restaurer BAL_ST + DIFF
 UPDATE BANKREC.BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST + 2.66
+SET BAL_ST = BAL_ST + 2.66,
+    DIFF = 2.66
 WHERE ACCT_ID = 1906
   AND PERIOD_JC = '202602';
 

@@ -37,13 +37,14 @@ FROM BANKREC.BRD_EU_JC_SUMMARY
 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 
 -- =====================================================
--- ETAPE 2 : ROLLBACK BAL_ST
+-- ETAPE 2 : ROLLBACK BAL_ST + DIFF
 -- =====================================================
 PROMPT
-PROMPT ===== ROLLBACK BAL_ST : Retour a 5,21 =====
+PROMPT ===== ROLLBACK BAL_ST + DIFF : Retour a 5,21 et 2,66 =====
 
 UPDATE BANKREC.BRD_EU_JC_SUMMARY
-SET BAL_ST = 5.21
+SET BAL_ST = 5.21,
+    DIFF = 2.66
 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 
 COMMIT;
