@@ -1096,7 +1096,7 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v1.2.2</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v2.1.0</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
         <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier (Générique)</a></li>
@@ -10988,6 +10988,135 @@ COMMIT;</pre>
             <li><code>rollback_ecart_solde.sql</code> - Genere INSERT pour tables JC</li>
             <li><code>delete_ecart_solde.sql</code> - Script DELETE (Option 2)</li>
         </ul>
+    </section>
+
+    <!-- SCRIPTS DE ROLLBACK COMPLETS -->
+    <section style="background: #fff3e0; border: 2px solid #ff9800; margin-top: 20px;">
+        <h2>↩️ Scripts de Rollback Complets</h2>
+        <p>Scripts pour annuler la correction si necessaire.</p>
+
+        <!-- ROLLBACK OPTION 1 -->
+        <h3 style="color: #2e7d32;">🔄 Rollback Option 1 (UPDATE BAL_ST)</h3>
+        <p>Simple : annuler la modification de BAL_ST</p>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Rollback Option 1 - Compte 1906</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- =====================================================
+-- ROLLBACK OPTION 1 - Compte 1906, Periode 202602
+-- Annule : UPDATE BAL_ST = BAL_ST - DIFF
+-- =====================================================
+
+-- VERIFICATION AVANT ROLLBACK
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+-- ROLLBACK : Ajouter l'ancien DIFF (2.66)
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST + 2.66
+WHERE ACCT_ID = 1906
+  AND PERIOD_JC = '202602';
+
+-- VERIFICATION APRES ROLLBACK
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+-- Resultat attendu : BAL_ST = 5.21, DIFF = 2.66
+COMMIT;</pre>
+        </div>
+
+        <!-- ROLLBACK OPTION 2 -->
+        <h3 style="color: #757575;">🔄 Rollback Option 2 (DELETE + UPDATE)</h3>
+        <p style="color: #757575;">Plus complexe : restaurer les records supprimes + annuler BAL_ST</p>
+
+        <h4 style="color: #757575;">Etape 1 : Restaurer BR_DATA (Data Pump)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>Bash - Import Data Pump BR_DATA</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre># Prerequis : avoir exporte AVANT le DELETE avec datapump_export.sh
+# Fichier : /home/oracle/BALANCE_CARRE_ECART/1906_BBNP06492/datapump/br_data_1906_346241.dmp
+
+impdp "'/ as sysdba'" \
+  directory=BALANCE_CARREE_DIR \
+  dumpfile=br_data_1906_346241.dmp \
+  logfile=br_data_1906_346241_import.log \
+  table_exists_action=APPEND</pre>
+        </div>
+
+        <h4 style="color: #757575;">Etape 2 : Restaurer BRD_EU_JC_ITEMS (INSERT)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - INSERT BRD_EU_JC_ITEMS - Compte 1906</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- =====================================================
+-- ROLLBACK BRD_EU_JC_ITEMS - Compte 1906, Load 346241
+-- Records 878 et 879 pour periodes 202602 et 202603
+-- =====================================================
+-- Ces INSERT sont generes par rollback_ecart_solde.sql
+-- Executer AVANT le DELETE pour capturer les valeurs exactes
+-- =====================================================
+
+-- Periode 202602
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS
+(PERIOD_JC,ACCT_ID,RECORD_ID,STATE,LOAD_ID,REC_GROUP,NUM_IN_GROUP,CS_FLAG,PR_FLAG,AMOUNT,REC_TIME,ORIG_ID,REFER_DATE)
+VALUES ('202602',1906,878,3,346241,NULL,NULL,'S','P',248800.25,NULL,NULL,NULL);
+
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS
+(PERIOD_JC,ACCT_ID,RECORD_ID,STATE,LOAD_ID,REC_GROUP,NUM_IN_GROUP,CS_FLAG,PR_FLAG,AMOUNT,REC_TIME,ORIG_ID,REFER_DATE)
+VALUES ('202602',1906,879,3,346241,NULL,NULL,'S','R',248802.91,NULL,NULL,NULL);
+
+-- Periode 202603
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS
+(PERIOD_JC,ACCT_ID,RECORD_ID,STATE,LOAD_ID,REC_GROUP,NUM_IN_GROUP,CS_FLAG,PR_FLAG,AMOUNT,REC_TIME,ORIG_ID,REFER_DATE)
+VALUES ('202603',1906,878,3,346241,NULL,NULL,'S','P',248800.25,NULL,NULL,NULL);
+
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS
+(PERIOD_JC,ACCT_ID,RECORD_ID,STATE,LOAD_ID,REC_GROUP,NUM_IN_GROUP,CS_FLAG,PR_FLAG,AMOUNT,REC_TIME,ORIG_ID,REFER_DATE)
+VALUES ('202603',1906,879,3,346241,NULL,NULL,'S','R',248802.91,NULL,NULL,NULL);
+
+COMMIT;</pre>
+        </div>
+
+        <h4 style="color: #757575;">Etape 3 : Restaurer BAL_ST (UPDATE)</h4>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Restaurer BAL_ST - Compte 1906</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- =====================================================
+-- ROLLBACK BAL_ST - Compte 1906, Periode 202602
+-- Apres restauration des records, remettre BAL_ST a 5.21
+-- =====================================================
+
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = 5.21
+WHERE ACCT_ID = 1906
+  AND PERIOD_JC = '202602';
+
+-- VERIFICATION
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+-- Resultat attendu : BAL_ST = 5.21, DIFF = 2.66
+COMMIT;</pre>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Ordre d'execution Rollback Option 2 :</strong><br>
+                1. Data Pump import (BR_DATA)<br>
+                2. INSERT INTO BRD_EU_JC_ITEMS<br>
+                3. UPDATE BAL_ST dans BRD_EU_JC_SUMMARY
+            </div>
+        </div>
     </section>
 
 </div>
