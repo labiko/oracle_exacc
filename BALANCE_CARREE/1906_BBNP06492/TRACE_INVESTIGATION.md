@@ -245,7 +245,72 @@ sqlplus -S / as sysdba @/home/oracle/BALANCE_CARRE_ECART/1906_BBNP06492/correcti
 
 ---
 
-## 10. REQUETES DE DIAGNOSTIC
+## 10. RESULTATS REQUETES (13/03/2026)
+
+### 10.1 BRD_EU_JC_SUMMARY - Valeurs actuelles
+
+| Colonne | Valeur |
+|---------|--------|
+| PERIOD_JC | 202602 |
+| ACCT_ID | 1906 |
+| BAL_ST | 5,21 |
+| BAL_CB | 61441758,04 |
+| SUM_ST_P | -369160,25 |
+| SUM_ST_R | 31748341,91 |
+| SUM_CB_P | 30062578,93 |
+| SUM_CB_R | 0 |
+| **DIFF** | **2,66** |
+| SUM_ST_P + SUM_ST_R | 31379181,66 |
+| SUM_CB_P + SUM_CB_R | 30062578,93 |
+| SUM_REC_ST (calcule) | -31379176,45 |
+| SUM_REC_CB (calcule) | 31379179,11 |
+| DIFF (recalcule) | 2,66 ✓ |
+
+### 10.2 BRD_EU_JC_ITEMS - Records orphelins (load_id=346241)
+
+⚠️ **ATTENTION : Records presents dans 2 periodes !**
+
+| PERIOD_JC | RECORD_ID | STATE | CS_FLAG | PR_FLAG | AMOUNT | LOAD_ID |
+|-----------|-----------|-------|---------|---------|--------|---------|
+| **202602** | 878 | 3 | S | P | 248800,25 | 346241 |
+| **202602** | 879 | 3 | S | R | 248802,91 | 346241 |
+| **202603** | 878 | 3 | S | P | 248800,25 | 346241 |
+| **202603** | 879 | 3 | S | R | 248802,91 | 346241 |
+
+**NET par periode** : 248802,91 - 248800,25 = **2,66 EUR**
+
+### 10.3 Calcul du doublement de DIFF apres DELETE
+
+```
+AVANT DELETE (periode 202602):
+  SUM_ST_P = -369160,25  (inclut -248800,25 du record 878)
+  SUM_ST_R = 31748341,91 (inclut +248802,91 du record 879)
+
+  SUM_ST_P + SUM_ST_R = 31379181,66
+  SUM_REC_ST = BAL_ST - 31379181,66 = 5,21 - 31379181,66 = -31379176,45
+  SUM_REC_CB = 31379179,11
+  DIFF = -31379176,45 + 31379179,11 = 2,66 ✓
+
+APRES DELETE des records 878/879:
+  SUM_ST_P_new = -369160,25 + 248800,25 = -120360,00
+  SUM_ST_R_new = 31748341,91 - 248802,91 = 31499539,00
+
+  SUM_ST_P + SUM_ST_R = 31379179,00  (change de -2,66)
+  SUM_REC_ST = 5,21 - 31379179,00 = -31379173,79  (augmente de +2,66)
+  SUM_REC_CB = 31379179,11 (inchange)
+  DIFF = -31379173,79 + 31379179,11 = 5,32 ✓
+
+EXPLICATION:
+  - Les records orphelins ont un NET de 2,66 sur les sommes
+  - Quand on les supprime, ce NET disparait des sommes
+  - Mais BAL_ST reste inchange (5,21)
+  - Donc DIFF augmente de 2,66 (passe de 2,66 a 5,32)
+  - Formule: DIFF_apres = DIFF_avant + NET_orphelins = 2,66 + 2,66 = 5,32
+```
+
+---
+
+## 11. REQUETES DE DIAGNOSTIC
 
 ### 10.1 Valeurs BRD_EU_JC_SUMMARY avec calculs intermediaires
 
