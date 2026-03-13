@@ -1096,11 +1096,12 @@
         <li><a href="#postmigration" onclick="showTab('postmigration', this)">✅ Post-Migration</a></li>
         <li><a href="#modesconnexion" onclick="showTab('modesconnexion', this)">🔌 Modes Connexion</a></li>
         <li><a href="#jira" onclick="showTab('jira', this)">🎫 Tickets JIRA</a></li>
-        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v2.1.0</small></a></li>
+        <li><a href="#scripts" onclick="showTab('scripts', this)">📜 Scripts <small style="opacity:0.7">v2.3.0</small></a></li>
         <li><a href="#remediation" onclick="showTab('remediation', this)">🔧 Remédiation PARNA</a></li>
         <li><a href="#instrumentation" onclick="showTab('instrumentation', this)">🔍 Instrumentation Code Mort</a></li>
         <li><a href="#rollback-fichier" onclick="showTab('rollback-fichier', this)">🔄 Rollback Fichier (Générique)</a></li>
         <li><a href="#rollback-fichier-2.66" onclick="showTab('rollback-fichier-2.66', this)">🔄 Rollback Fichier_Ecart_2.66</a></li>
+        <li><a href="#rollback-braudit" onclick="showTab('rollback-braudit', this)">🔍 BR_AUDIT Root Cause</a></li>
         <li><a href="#dtc670" onclick="showTab('dtc670', this)">⚡ Optimisation DTC670-DTC671</a></li>
         <!-- Masque temporairement - necessite Firebase Storage (plan Blaze)
         <li><a href="#captures" onclick="showTab('captures', this)">📷 Captures</a></li>
@@ -11129,6 +11130,376 @@ COMMIT;</pre>
 
 </div>
 <!-- ==================== FIN ONGLET ROLLBACK FICHIER ECART 2.66 ==================== -->
+
+<!-- ==================== ONGLET BR_AUDIT ROOT CAUSE ==================== -->
+<div id="rollback-braudit" class="tab-content">
+
+    <section style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); border: 2px solid #e91e63; margin-top: 20px;">
+        <h2>🔍 BR_AUDIT Root Cause - Compte 1906</h2>
+        <p style="margin: 15px 0;"><strong>Objectif :</strong> Comprendre POURQUOI le batch recalcule BAL_ST depuis BR_AUDIT et comment corriger a la source</p>
+        <p style="color: #c2185b;"><strong>Investigation : 13/03/2026 | Root Cause : Rollback 346241 echoue</strong></p>
+    </section>
+
+    <!-- LE PROBLEME EN BREF -->
+    <section>
+        <h2>⚡ Le Probleme en 30 Secondes</h2>
+        <div class="alert alert-danger">
+            <span class="alert-icon">🔴</span>
+            <div>
+                <strong>Symptome :</strong> Apres avoir supprime les records orphelins 878/879, l'ecart passe de <strong>2,66€</strong> a <strong>5,32€</strong> (double !)<br><br>
+                <strong>Cause :</strong> Le batch "Recalculer" ne recalcule PAS BAL_ST - il le <strong>lit depuis BR_AUDIT type=15</strong><br><br>
+                <strong>Root Cause :</strong> Le rollback du load 346241 a <strong>echoue partiellement</strong> - les entries BR_AUDIT restent avec des valeurs fausses
+            </div>
+        </div>
+    </section>
+
+    <!-- DONNEES BR_AUDIT CLES -->
+    <section>
+        <h2>🗃️ Donnees BR_AUDIT - La Chaine des Soldes</h2>
+
+        <h3>Entries BR_AUDIT pour les loads 346241 et 346285</h3>
+        <table>
+            <tr>
+                <th>audit_id</th>
+                <th>type</th>
+                <th>timestamp</th>
+                <th>load_id</th>
+                <th>bfr_amt</th>
+                <th>aft_amt</th>
+                <th>cs_flag</th>
+                <th>Description</th>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td>3259</td>
+                <td><strong>18</strong></td>
+                <td>25/02/26 15:57</td>
+                <td>346241</td>
+                <td>0</td>
+                <td>0</td>
+                <td>N</td>
+                <td>DEBUT_ROLLBACK</td>
+            </tr>
+            <tr style="background: #ffebee;">
+                <td>3262</td>
+                <td><strong style="color: #c62828;">15</strong></td>
+                <td>25/02/26 15:57</td>
+                <td>346241</td>
+                <td><strong style="color: #2e7d32;">-0,11</strong></td>
+                <td><strong style="color: #c62828;">2,55</strong></td>
+                <td>S</td>
+                <td><strong style="color: #c62828;">BALANCE_UPDATE (problematique)</strong></td>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td>3263</td>
+                <td><strong>16</strong></td>
+                <td>25/02/26 15:58</td>
+                <td>346241</td>
+                <td>0</td>
+                <td>0</td>
+                <td>N</td>
+                <td>EXEC_ROLLBACK</td>
+            </tr>
+            <tr style="background: #fff9c4;">
+                <td>3276</td>
+                <td><strong style="color: #1565c0;">15</strong></td>
+                <td>25/02/26 22:39</td>
+                <td>346285</td>
+                <td><strong style="color: #c62828;">2,55</strong></td>
+                <td><strong style="color: #c62828;">5,21</strong></td>
+                <td>S</td>
+                <td><strong style="color: #1565c0;">BALANCE_UPDATE (base fausse!)</strong></td>
+            </tr>
+        </table>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Le probleme :</strong> Le load 346285 a pris <code>bfr_amt = 2,55</code> comme base, alors qu'apres le rollback de 346241, la base aurait du etre <code>-0,11</code>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHRONOLOGIE VISUELLE -->
+    <section>
+        <h2>📊 Chronologie Visuelle</h2>
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 0.95rem;">
+            <pre style="margin: 0; white-space: pre-wrap;">
+CHRONOLOGIE DES SOLDES (25/02/2026) :
+
+  [AVANT LOAD 346241]
+  BAL_ST = <span style="color: #2e7d32; font-weight: bold;">-0,11 EUR</span> ✓ CORRECT
+
+  │
+  ▼ LOAD 346241 (15:57:11)
+
+  [APRES LOAD 346241]
+  BAL_ST = <span style="color: #1565c0; font-weight: bold;">2,55 EUR</span> (+2,66 EUR = records 878/879)
+  BR_AUDIT 3262: bfr_amt=-0,11, aft_amt=2,55
+
+  │
+  ▼ ROLLBACK 346241 (15:58:24) - <span style="color: #c62828; font-weight: bold;">*** ECHEC PARTIEL ***</span>
+
+  BR_AUDIT 3259: type=18 DEBUT_ROLLBACK
+  BR_AUDIT 3263: type=16 EXEC_ROLLBACK
+
+  <span style="color: #c62828;">*** MAIS les records 878/879 restent dans BR_DATA ***</span>
+  <span style="color: #c62828;">*** ET le solde reste a 2,55 (pas reinitialise a -0,11) ***</span>
+
+  │
+  ▼ LOAD 346285 (22:39:56)
+
+  [APRES LOAD 346285]
+  BAL_ST = <span style="color: #c62828; font-weight: bold;">5,21 EUR</span> (+2,66 EUR)
+  BR_AUDIT 3276: bfr_amt=<span style="color: #c62828;">2,55</span>, aft_amt=5,21
+
+  <span style="color: #c62828; font-weight: bold;">*** Le load 346285 a pris comme base 2,55 (FAUX) au lieu de -0,11 ***</span>
+            </pre>
+        </div>
+    </section>
+
+    <!-- COMPORTEMENT DU BATCH -->
+    <section>
+        <h2>🔄 Comportement du Batch "Recalculer"</h2>
+
+        <table>
+            <tr>
+                <th>Element</th>
+                <th>Recalcule par le batch ?</th>
+                <th>Source</th>
+            </tr>
+            <tr>
+                <td><strong>SUM_ST_P</strong></td>
+                <td style="color: #2e7d32;">✅ OUI</td>
+                <td>Depuis BRD_EU_JC_ITEMS</td>
+            </tr>
+            <tr>
+                <td><strong>SUM_ST_R</strong></td>
+                <td style="color: #2e7d32;">✅ OUI</td>
+                <td>Depuis BRD_EU_JC_ITEMS</td>
+            </tr>
+            <tr>
+                <td><strong>DIFF</strong></td>
+                <td style="color: #2e7d32;">✅ OUI</td>
+                <td>Calcule = SUM_REC_ST + SUM_REC_CB</td>
+            </tr>
+            <tr style="background: #ffebee;">
+                <td><strong>BAL_ST</strong></td>
+                <td style="color: #c62828;"><strong>❌ NON</strong></td>
+                <td><strong>Lit depuis BR_AUDIT type=15 (aft_amt du dernier load)</strong></td>
+            </tr>
+        </table>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Le batch fait probablement :</strong>
+                <div class="code-container" style="margin-top: 10px;">
+                    <div class="code-header">
+                        <span>SQL - Lecture BAL_ST depuis BR_AUDIT</span>
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+                    </div>
+                    <pre>SELECT AFT_AMT INTO v_BAL_ST
+FROM BR_AUDIT
+WHERE ACCT_ID = 1906
+  AND TYPE = 15
+  AND CS_FLAG = 'S'
+ORDER BY TIMESTAMP DESC
+FETCH FIRST 1 ROW ONLY;
+
+-- Resultat : AFT_AMT = 5,21 (de audit_id 3276, load 346285)</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SOLUTIONS -->
+    <section>
+        <h2>🔧 Solutions de Correction</h2>
+
+        <div class="alert alert-danger" style="margin-bottom: 20px;">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>IMPORTANT :</strong> Des fichiers sont charges QUOTIDIENNEMENT sur ce compte.<br>
+                La correction SUMMARY seule serait <strong>ecrasee au prochain load</strong> !<br>
+                <strong>→ La Solution 1 (BR_AUDIT) est OBLIGATOIRE.</strong>
+            </div>
+        </div>
+
+        <h3 style="color: #2e7d32;">✅ Solution 1 : Corriger BR_AUDIT + SUMMARY (RECOMMANDEE)</h3>
+        <p>Corriger la chaine des soldes a la source pour une solution <strong>permanente</strong> :</p>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Correction DEFINITIVE BR_AUDIT + SUMMARY</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- =====================================================
+-- CORRECTION DEFINITIVE - Compte 1906, Periode 202602
+-- =====================================================
+-- ETAPE 1 : Corriger BR_AUDIT (source permanente)
+UPDATE BANKREC.BR_AUDIT
+SET BFR_AMT = -0.11,
+    AFT_AMT = 2.55
+WHERE ACCT_ID = 1906
+  AND AUDIT_ID = 3276
+  AND TYPE = 15;
+
+-- ETAPE 2 : Corriger SUMMARY (effet immediat)
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = -0.11,
+    DIFF = 0
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+COMMIT;
+
+-- Verification
+SELECT PERIOD_JC, BAL_ST, DIFF
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+-- Resultat attendu : BAL_ST = -0,11, DIFF = 0</pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Avantages :</strong><br>
+                • Solution <strong>PERMANENTE</strong> - le prochain load utilisera la bonne base<br>
+                • Corrige la chaine des soldes a la source<br>
+                • Les prochains fichiers charges seront corrects<br>
+                • L'ecart ne reapparaitra JAMAIS
+            </div>
+        </div>
+
+        <h3 style="color: #9e9e9e;">❌ Solution 2 : Corriger uniquement SUMMARY (NON VIABLE)</h3>
+        <p style="color: #757575;"><strong>NON VIABLE</strong> car la correction sera ecrasee au prochain chargement de fichier.</p>
+
+        <div class="code-container" style="opacity: 0.6;">
+            <div class="code-header">
+                <span>SQL - Correction SUMMARY seule (NON VIABLE)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- *** NON VIABLE SI LOADS QUOTIDIENS ***
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = -0.11,
+    DIFF = 0
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+-- PROBLEME : Au prochain load, le systeme lira aft_amt = 5.21 depuis BR_AUDIT
+-- et ECRASERA notre correction !</pre>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Pourquoi non viable :</strong><br>
+                • Le systeme lit BAL_ST depuis BR_AUDIT (aft_amt du dernier type=15)<br>
+                • Au prochain load, il utilisera aft_amt = 5.21 comme base<br>
+                • Notre correction sera ecrasee en moins de 24h
+            </div>
+        </div>
+    </section>
+
+    <!-- VERIFICATION POST-CORRECTION -->
+    <section>
+        <h2>✅ Verification Post-Correction</h2>
+
+        <h3>Calcul attendu apres correction BAL_ST = -0,11</h3>
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; font-family: monospace;">
+            <pre style="margin: 0;">
+SUM_ST_P = -120360,00 (sans record 878)
+SUM_ST_R = 31499539,00 (sans record 879)
+SUM_ST_P + SUM_ST_R = 31379179,00
+
+SUM_REC_ST = BAL_ST - (SUM_ST_P + SUM_ST_R)
+           = -0,11 - 31379179,00
+           = -31379179,11
+
+SUM_REC_CB = 31379179,11 (inchange)
+
+DIFF = SUM_REC_ST + SUM_REC_CB
+     = -31379179,11 + 31379179,11
+     = <span style="color: #2e7d32; font-weight: bold;">0 EUR ✓</span>
+            </pre>
+        </div>
+
+        <h3>Resultat attendu</h3>
+        <table>
+            <tr>
+                <th>Colonne</th>
+                <th>Avant</th>
+                <th>Apres</th>
+            </tr>
+            <tr>
+                <td><strong>BAL_ST</strong></td>
+                <td style="color: #c62828;">5,21</td>
+                <td style="color: #2e7d32;"><strong>-0,11</strong></td>
+            </tr>
+            <tr>
+                <td><strong>DIFF</strong></td>
+                <td style="color: #c62828;">5,32</td>
+                <td style="color: #2e7d32;"><strong>0</strong></td>
+            </tr>
+            <tr>
+                <td><strong>Application</strong></td>
+                <td style="color: #c62828;">Ecart 5,32€</td>
+                <td style="color: #2e7d32;"><strong>Ecart 0€</strong></td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- SCRIPTS DISPONIBLES -->
+    <section>
+        <h2>📁 Scripts Disponibles</h2>
+        <table>
+            <tr>
+                <th>Fichier</th>
+                <th>Description</th>
+                <th>Statut</th>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td><code><strong>correction_BR_AUDIT_DEFINITIVE.sql</strong></code></td>
+                <td><strong>✅ SCRIPT PRINCIPAL</strong> - Corrige BR_AUDIT + SUMMARY</td>
+                <td style="color: #2e7d32;"><strong>RECOMMANDE</strong></td>
+            </tr>
+            <tr style="opacity: 0.6;">
+                <td><code>correction_finale_BAL_ST.sql</code></td>
+                <td>Correction SUMMARY seule (NON VIABLE si loads quotidiens)</td>
+                <td style="color: #9e9e9e;">Obsolete</td>
+            </tr>
+            <tr>
+                <td><code>TRACE_INVESTIGATION.md</code></td>
+                <td>Documentation complete (sections 19-21)</td>
+                <td>-</td>
+            </tr>
+        </table>
+
+        <h3>Commande d'execution</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>Bash - Execution du script DEFINITIF</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>sesu - oracle
+sqlplus -S / as sysdba @/home/oracle/BALANCE_CARRE_ECART/1906_BBNP06492/correction_BR_AUDIT_DEFINITIVE.sql</pre>
+        </div>
+    </section>
+
+    <!-- LECONS APPRISES -->
+    <section style="background: #e3f2fd; border-left: 4px solid #1565c0;">
+        <h2>📚 Lecons Apprises</h2>
+        <ol style="padding-left: 25px;">
+            <li style="margin: 10px 0;"><strong>DIFF est STOCKE, pas calcule</strong> - Toujours mettre a jour DIFF = 0 en meme temps que BAL_ST</li>
+            <li style="margin: 10px 0;"><strong>BAL_ST provient de BR_AUDIT type=15</strong> - Le batch ne le recalcule pas, il le lit</li>
+            <li style="margin: 10px 0;"><strong>Rollback peut echouer partiellement</strong> - Les entries BR_AUDIT peuvent rester meme si le rollback est suppose etre fait</li>
+            <li style="margin: 10px 0;"><strong>Supprimer les records sans ajuster BAL_ST = ecart double</strong> - Les SUM changent mais BAL_ST reste</li>
+            <li style="margin: 10px 0;"><strong style="color: #c62828;">Si loads quotidiens : corriger BR_AUDIT est OBLIGATOIRE</strong> - La correction SUMMARY seule sera ecrasee</li>
+            <li style="margin: 10px 0;"><strong>Script DEFINITIF = BR_AUDIT + SUMMARY</strong> - Pour une solution permanente</li>
+        </ol>
+    </section>
+
+</div>
+<!-- ==================== FIN ONGLET BR_AUDIT ROOT CAUSE ==================== -->
 
 <!-- ==================== ONGLET OPTIMISATION DTC670-DTC671 ==================== -->
 <div id="dtc670" class="tab-content">
