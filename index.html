@@ -9319,7 +9319,7 @@ ORDER BY NB_ACCES DESC;</pre>
     <section style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; margin-top: 20px;">
         <h2>🔄 Rollback Fichier - Diagnostic Generique</h2>
         <p style="margin: 15px 0;"><strong>Objectif :</strong> Scripts parametres pour diagnostiquer et corriger les rollbacks de fichiers sur N'IMPORTE QUEL compte</p>
-        <p style="color: #1565c0;"><strong>Version : 2.0 - 12/03/2026</strong> - Ajout Etape 4 bis : Correction BAL_ST obligatoire + Formule calcul DIFF</p>
+        <p style="color: #1565c0;"><strong>Version : 3.0 - 13/03/2026</strong> - 3 tables (BR_DATA + BRD_EU_JC_ITEMS + BRD_EU_JC_SUMMARY) + Data Pump</p>
     </section>
 
     <!-- ETAPE 0 : DECOUVERTE -->
@@ -9765,21 +9765,34 @@ Quand on DELETE les records orphelins :
         </div>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Suppression (plusieurs loads)</span>
+                <span>SQL - Suppression BR_DATA + BRD_EU_JC_ITEMS (plusieurs loads)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre>-- Remplacer :ACCT_ID et les LOAD_ID
+-- 1. Supprimer les records orphelins de BR_DATA
 DELETE FROM BR_DATA
 WHERE acct_id = :ACCT_ID
   AND load_id IN (:LOAD_ID1, :LOAD_ID2);
 
--- Verification
-SELECT 'Records supprimes' AS statut,
-       (SELECT COUNT(*) FROM BR_DATA
-        WHERE acct_id = :ACCT_ID
-        AND load_id IN (:LOAD_ID1, :LOAD_ID2)) as nb_restant;
+-- 2. Supprimer les lignes correspondantes dans BRD_EU_JC_ITEMS
+DELETE FROM BRD_EU_JC_ITEMS
+WHERE acct_id = :ACCT_ID
+  AND load_id IN (:LOAD_ID1, :LOAD_ID2);
 
-COMMIT;</pre>
+-- Verification
+SELECT 'BR_DATA' AS "TABLE",
+       (SELECT COUNT(*) FROM BR_DATA WHERE acct_id = :ACCT_ID AND load_id IN (:LOAD_ID1, :LOAD_ID2)) as nb_restant
+UNION ALL
+SELECT 'BRD_EU_JC_ITEMS',
+       (SELECT COUNT(*) FROM BRD_EU_JC_ITEMS WHERE acct_id = :ACCT_ID AND load_id IN (:LOAD_ID1, :LOAD_ID2));
+
+-- NE PAS COMMIT ! Executer d'abord Etape 4 bis</pre>
+        </div>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Note :</strong> Les 2 tables doivent etre nettoyees : <code>BR_DATA</code> (records) ET <code>BRD_EU_JC_ITEMS</code> (Balance Carree).
+            </div>
         </div>
     </section>
 
@@ -9890,33 +9903,74 @@ COMMIT;</pre>
 
     <!-- ETAPE 5 -->
     <section>
-        <h2>↩️ Etape 5 : Script de Retour Arriere (Template)</h2>
-        <p>Generer les INSERT pour restaurer les records supprimes <strong>AVANT de supprimer</strong> :</p>
+        <h2>↩️ Etape 5 : Script de Retour Arriere (3 Tables)</h2>
+        <p>Generer les INSERT pour restaurer les donnees <strong>AVANT de supprimer</strong>. Il faut sauvegarder <strong>3 tables</strong> :</p>
+
+        <h3>5.1 - BR_DATA (via Data Pump - recommande)</h3>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Generer script de restauration (plusieurs loads)</span>
+                <span>Bash - Export Data Pump BR_DATA</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre>-- Executer AVANT la suppression pour generer le script de rollback
--- Remplacer :ACCT_ID et les LOAD_ID
-SELECT
-    'INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id) VALUES (' ||
-    record_id || ', ' ||
-    acct_id || ', ' ||
-    state || ', ' ||
-    amount || ', ''' ||
-    cs_flag || ''', TO_DATE(''' ||
-    TO_CHAR(trans_date, 'YYYY-MM-DD') || ''', ''YYYY-MM-DD''), ' ||
-    load_id || ');' as SCRIPT_INSERT
-FROM BR_DATA
-WHERE acct_id = :ACCT_ID
-  AND load_id IN (:LOAD_ID1, :LOAD_ID2)
-ORDER BY load_id, record_id;</pre>
+            <pre># Remplacer ACCT_ID et LOAD_ID
+expdp "'/ as sysdba'" \
+  directory=BALANCE_CARREE_DIR \
+  dumpfile=br_data_:ACCT_ID_:LOAD_ID.dmp \
+  tables=BANKREC.BR_DATA \
+  query="\"WHERE acct_id=:ACCT_ID AND load_id=:LOAD_ID\""</pre>
         </div>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Alternative SQL :</strong> Voir script complet dans <code>rollback_ecart_solde.sql</code> du dossier compte.
+            </div>
+        </div>
+
+        <h3>5.2 - BRD_EU_JC_ITEMS (via SQL)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Generer INSERT BRD_EU_JC_ITEMS</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :LOAD_ID
+SELECT
+  'INSERT INTO BRD_EU_JC_ITEMS (PERIOD_JC,ACCT_ID,RECORD_ID,STATE,LOAD_ID,REC_GROUP,NUM_IN_GROUP,CS_FLAG,PR_FLAG,AMOUNT,REC_TIME,ORIG_ID,REFER_DATE) VALUES ('
+  || '''' || PERIOD_JC || ''','
+  || ACCT_ID || ',' || RECORD_ID || ',' || STATE || ',' || LOAD_ID || ','
+  || NVL(TO_CHAR(REC_GROUP), 'NULL') || ',' || NVL(TO_CHAR(NUM_IN_GROUP), 'NULL') || ','
+  || '''' || CS_FLAG || ''',''' || PR_FLAG || ''',' || AMOUNT || ','
+  || NVL2(REC_TIME, 'TO_DATE(''' || TO_CHAR(REC_TIME,'YYYY-MM-DD HH24:MI:SS') || ''',''YYYY-MM-DD HH24:MI:SS'')', 'NULL') || ','
+  || NVL(TO_CHAR(ORIG_ID), 'NULL') || ','
+  || NVL2(REFER_DATE, 'TO_DATE(''' || TO_CHAR(REFER_DATE,'YYYY-MM-DD HH24:MI:SS') || ''',''YYYY-MM-DD HH24:MI:SS'')', 'NULL')
+  || ');' AS insert_stmt
+FROM BRD_EU_JC_ITEMS
+WHERE acct_id = :ACCT_ID AND load_id = :LOAD_ID;</pre>
+        </div>
+
+        <h3>5.3 - BRD_EU_JC_SUMMARY (via SQL)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Generer INSERT BRD_EU_JC_SUMMARY</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
+-- NOTE : Cette table a une contrainte UNIQUE - faire DELETE avant INSERT
+SELECT
+  '-- DELETE existant avant INSERT :' || CHR(10) ||
+  'DELETE FROM BRD_EU_JC_SUMMARY WHERE ACCT_ID = ' || ACCT_ID || ' AND PERIOD_JC = ''' || PERIOD_JC || ''';' || CHR(10) ||
+  'INSERT INTO BRD_EU_JC_SUMMARY (PERIOD_JC,ACCT_ID,ACCT_NAME,BAL_ST,BAL_CB,SUM_ST_P,SUM_ST_R,SUM_CB_P,SUM_CB_R,DIFF) VALUES ('
+  || '''' || PERIOD_JC || ''',' || ACCT_ID || ','
+  || NVL2(ACCT_NAME, '''' || REPLACE(ACCT_NAME,'''','''''') || '''', 'NULL') || ','
+  || BAL_ST || ',' || BAL_CB || ',' || SUM_ST_P || ',' || SUM_ST_R || ','
+  || SUM_CB_P || ',' || SUM_CB_R || ',' || DIFF || ');' AS insert_stmt
+FROM BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = :ACCT_ID AND PERIOD_JC = :PERIOD_JC;</pre>
+        </div>
+
         <div class="alert alert-success">
             <span class="alert-icon">✅</span>
             <div>
-                <strong>Conseil :</strong> Copier le resultat de cette requete AVANT de faire le DELETE pour pouvoir restaurer si necessaire.
+                <strong>Conseil :</strong> Sauvegarder les 3 resultats dans un fichier <code>backup_compte_XXXX.sql</code> AVANT de faire les DELETE.
             </div>
         </div>
     </section>
@@ -9924,16 +9978,21 @@ ORDER BY load_id, record_id;</pre>
     <!-- RESUME -->
     <section style="background: #e8f5e9; border-left: 4px solid #4caf50;">
         <h2>✅ Checklist Rapide - Procedure Complete</h2>
-        <p style="color: #2e7d32; font-weight: bold;">Version 2.0 - 12/03/2026 - Inclut correction BAL_ST obligatoire</p>
+        <p style="color: #2e7d32; font-weight: bold;">Version 3.0 - 13/03/2026 - 3 tables (BR_DATA + JC_ITEMS + JC_SUMMARY)</p>
         <ol style="margin: 15px 0; padding-left: 25px; line-height: 2;">
-            <li>Obtenir <strong>ACCT_ID</strong> et <strong>PERIOD_JC</strong> (ex: 1906, 202602)</li>
-            <li>Executer <strong>Etape 1 bis</strong> → Filtrer par <strong>:ECART_RECHERCHE</strong> = ecart Balance Carree</li>
-            <li>Noter les <strong>LOAD_ID</strong> trouves et l'<strong>ECART</strong> initial</li>
-            <li>Executer <strong>Etape 5</strong> → <strong>Sauvegarder</strong> le script de restauration</li>
-            <li>Executer <strong>Etape 4</strong> → <strong>Supprimer</strong> les records orphelins de BR_DATA</li>
+            <li>Obtenir <strong>ACCT_ID</strong>, <strong>PERIOD_JC</strong> et <strong>LOAD_ID</strong></li>
+            <li>Executer <strong>Etape 1 bis</strong> → Identifier le load responsable de l'ecart</li>
+            <li>Executer <strong>Etape 5</strong> → <strong>Sauvegarder les 3 tables</strong> (BR_DATA, JC_ITEMS, JC_SUMMARY)</li>
+            <li>Executer <strong>Etape 4</strong> → <strong>Supprimer</strong> de BR_DATA <strong>ET</strong> BRD_EU_JC_ITEMS</li>
             <li style="color: #1565c0; font-weight: bold;">Executer <strong>Etape 4 bis</strong> → <strong>Corriger BAL_ST</strong> dans BRD_EU_JC_SUMMARY</li>
-            <li>Verifier que <strong>DIFF = 0</strong> dans BRD_EU_JC_SUMMARY</li>
+            <li>Verifier que <strong>DIFF = 0</strong> puis <strong>COMMIT</strong></li>
         </ol>
+        <table style="margin: 15px 0; font-size: 0.9em;">
+            <tr><th>Table</th><th>Action Correction</th><th>Action Rollback</th></tr>
+            <tr><td>BR_DATA</td><td>DELETE</td><td>Data Pump import</td></tr>
+            <tr><td>BRD_EU_JC_ITEMS</td><td>DELETE</td><td>INSERT (SQL)</td></tr>
+            <tr><td>BRD_EU_JC_SUMMARY</td><td>UPDATE BAL_ST</td><td>DELETE + INSERT (SQL)</td></tr>
+        </table>
         <div class="alert alert-warning" style="margin-top: 15px;">
             <span class="alert-icon">⚠️</span>
             <div>
