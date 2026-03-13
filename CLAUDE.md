@@ -2,7 +2,7 @@
 
 Ce fichier permet à Claude de retrouver le contexte des différents projets.
 
-**Derniere mise a jour : 08/03/2026**
+**Derniere mise a jour : 11/03/2026**
 
 ---
 
@@ -13,6 +13,7 @@ Ce fichier permet à Claude de retrouver le contexte des différents projets.
 3. [MIGRATION-EXACC - Migration UTL_FILE vers OCI](#projet-3--migration-exacc---migration-utl_file-vers-oci)
 4. [MICRO-ENTREPRISE ALPHA - Labico I.T Consulting](#projet-4--micro-entreprise-alpha---labico-it-consulting)
 5. [MICRO-ENTREPRISE KEITA - CFE VTC Uber](#projet-5--micro-entreprise-keita---cfe-vtc-uber)
+6. [BALANCE CARREE - Correction Ecarts Multi-Comptes](#projet-6--balance-carree---correction-ecarts-multi-comptes)
 
 ---
 
@@ -365,6 +366,68 @@ Aide à Mohamed KEITA pour remplir le **formulaire CFE (Cotisation Foncière des
 
 ---
 
+# PROJET 6 : BALANCE CARREE - Correction Ecarts Multi-Comptes
+
+## Statut : EN COURS (40 comptes a traiter)
+
+## Emplacement : `BALANCE_CARREE/`
+
+### Resume
+Correction des ecarts dans la Balance Carree causes par des records orphelins apres rollback de fichiers.
+
+### Strategie de Correction
+
+Pour chaque compte avec ecart :
+
+1. **Identifier le load_id responsable** via BR_AUDIT type=15/16
+2. **Creer 2 scripts SQL** :
+   - `delete_ecart_solde_JC_<NOM_COMPTE>.sql` → Suppression des records orphelins
+   - `rollback_ecart_solde_JC_<NOM_COMPTE>.sql` → Reinsertion si besoin d'annuler
+
+3. **Executer sur 2 schemas** : BANKREC et EXP_RNAPA
+4. **Valider** : Verifier que l'ecart est corrige dans la Balance Carree
+
+### Regle de Nommage des Comptes
+
+**IMPORTANT** : Dans les numeros de compte, toujours remplacer :
+- `AA` → `512000`
+- `xx` → `EUR`
+
+Exemple : `AA-233000431004-xx` → `512000-233000431004-EUR`
+
+### Structure des Scripts
+
+```
+BALANCE_CARREE/
+├── delete_ecart_solde_JC_BBNP_06492.sql    ← Compte 1906, ecart 2,66€
+├── rollback_ecart_solde_JC_BBNP_06492.sql
+├── delete_ecart_solde_JC_<COMPTE_2>.sql
+├── rollback_ecart_solde_JC_<COMPTE_2>.sql
+└── ...
+```
+
+### Commande d'Execution
+
+Chaque script DELETE contient ce commentaire a copier dans le ticket JIRA :
+
+```
+Please connect to the server with : sesu - oracle
+and run : sqlplus -S / as sysdba @/home/oracle/BALANCE_CARRE_ECART/<nom_script>.sql
+and give the all output in this ticket
+```
+
+### Comptes Traites
+
+| Compte | Ecart | Load ID | Statut | Date |
+|--------|-------|---------|--------|------|
+| 1906 (BBNP06492-EUR) | 2,66 € | 346241 | EN ATTENTE GO | 11/03/2026 |
+
+### Pour reprendre ce contexte
+> "On continue sur les ecarts Balance Carree"
+> "Nouveau compte a traiter pour Balance Carree"
+
+---
+
 # COMMANDES POUR CHANGER DE CONTEXTE
 
 | Projet | Commande |
@@ -374,6 +437,7 @@ Aide à Mohamed KEITA pour remplir le **formulaire CFE (Cotisation Foncière des
 | Migration ExaCC | "On continue sur la migration ExaCC" |
 | Micro-entreprise Alpha | "On parle de ma micro-entreprise Alpha" |
 | CFE Keita | "On parle du CFE de Keita" |
+| Balance Carree | "On continue sur les ecarts Balance Carree" |
 
 ---
 
@@ -384,11 +448,12 @@ Aide à Mohamed KEITA pour remplir le **formulaire CFE (Cotisation Foncière des
 sqlplus RNAPPL/****@P08449A  # Production PARNA
 ```
 
-## Dossiers Clés
+## Dossiers Cles
 ```
 BNNP_SQL/                    → Scripts SQL BNPP + Investigation 2817
 BNNP_POWER_SHELL/            → Scripts PowerShell PAIN + Migration comptes
 MIGRATION-EXACC/             → Migration UTL_FILE vers OCI
+BALANCE_CARREE/              → Scripts correction ecarts Balance Carree (40 comptes)
 index.html                   → Interface web principale (GitHub Pages)
 C:\Users\diall\Documents\MICRO-ENTREPRISE\ALPHA\  → Labico I.T Consulting
 C:\Users\diall\Documents\MICRO-ENTREPRISE\KEITA\  → CFE VTC Uber
@@ -454,6 +519,41 @@ Retourne un rapport avec :
 ```
 
 **Objectif** : Garantir que l'instrumentation pour la migration ExaCC n'introduit aucune régression fonctionnelle.
+
+---
+
+## Conservation des Données et Requêtes
+
+**RÈGLE OBLIGATOIRE** : À chaque fois que l'utilisateur fournit des données (résultats SQL, valeurs, formules), Claude DOIT :
+
+1. **Sauvegarder dans un fichier TRACE** :
+   - Créer/mettre à jour `TRACE_INVESTIGATION.md` dans le dossier du projet concerné
+   - Inclure : la requête SQL utilisée, les résultats obtenus, la date, les formules de calcul
+
+2. **Format du fichier TRACE** :
+   ```markdown
+   ## [DATE] - Description de l'action
+
+   ### Requête SQL
+   ```sql
+   SELECT ...
+   ```
+
+   ### Résultats
+   | Colonne | Valeur |
+   |---------|--------|
+   | ... | ... |
+
+   ### Formules / Calculs
+   - FORMULE = ...
+   ```
+
+3. **Ne JAMAIS oublier** :
+   - Les formules de calcul (ex: DIFF = SUM_REC_ST + SUM_REC_CB)
+   - Les valeurs avant/après une opération
+   - Les requêtes de diagnostic
+
+**Objectif** : Permettre de reprendre le contexte même après une longue interruption.
 
 ---
 

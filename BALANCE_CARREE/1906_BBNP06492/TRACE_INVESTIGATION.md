@@ -1,7 +1,7 @@
 # TRACE INVESTIGATION - Compte 1906 (BBNP06492-EUR)
 
 **Date debut investigation** : 07/03/2026
-**Date mise a jour** : 12/03/2026
+**Date mise a jour** : 13/03/2026
 **Statut** : SOLUTION IDENTIFIEE - EN ATTENTE EXECUTION
 
 ---
@@ -245,10 +245,66 @@ sqlplus -S / as sysdba @/home/oracle/BALANCE_CARRE_ECART/1906_BBNP06492/correcti
 
 ---
 
-## 10. CONTACTS
+## 10. REQUETES DE DIAGNOSTIC
+
+### 10.1 Valeurs BRD_EU_JC_SUMMARY avec calculs intermediaires
+
+```sql
+-- =====================================================
+-- VALEURS BRD_EU_JC_SUMMARY - Compte 1906, Periode 202602
+-- =====================================================
+-- FORMULES DE CALCUL :
+--   SUM_REC_ST = BAL_ST - (SUM_ST_P + SUM_ST_R)
+--   SUM_REC_CB = BAL_CB - (SUM_CB_P + SUM_CB_R)
+--   DIFF       = SUM_REC_ST + SUM_REC_CB
+-- =====================================================
+
+SELECT
+    PERIOD_JC,
+    ACCT_ID,
+    ACCT_NAME,
+    '--- VALEURS STOCKEES ---' AS section1,
+    BAL_ST,
+    BAL_CB,
+    SUM_ST_P,
+    SUM_ST_R,
+    SUM_CB_P,
+    SUM_CB_R,
+    DIFF,
+    '--- CALCULS INTERMEDIAIRES ---' AS section2,
+    (SUM_ST_P + SUM_ST_R) AS "SUM_ST_P + SUM_ST_R",
+    (SUM_CB_P + SUM_CB_R) AS "SUM_CB_P + SUM_CB_R",
+    BAL_ST - (SUM_ST_P + SUM_ST_R) AS "SUM_REC_ST (calcule)",
+    BAL_CB - (SUM_CB_P + SUM_CB_R) AS "SUM_REC_CB (calcule)",
+    '--- VERIFICATION ---' AS section3,
+    (BAL_ST - (SUM_ST_P + SUM_ST_R)) + (BAL_CB - (SUM_CB_P + SUM_CB_R)) AS "DIFF (recalcule)"
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906
+  AND PERIOD_JC = '202602';
+```
+
+### 10.2 Records orphelins BR_DATA
+
+```sql
+SELECT record_id, state, amount, cs_flag, pr_flag, trans_date, load_id
+FROM BANKREC.BR_DATA
+WHERE acct_id = 1906 AND load_id = 346241;
+```
+
+### 10.3 Records BRD_EU_JC_ITEMS
+
+```sql
+SELECT period_jc, record_id, state, amount, cs_flag, pr_flag, load_id
+FROM BANKREC.BRD_EU_JC_ITEMS
+WHERE acct_id = 1906 AND load_id = 346241;
+```
+
+---
+
+## 11. CONTACTS
 
 Pour toute question sur ce dossier, contacter l'equipe DBA.
 
 ---
 
-*Derniere mise a jour : 12/03/2026*
+*Derniere mise a jour : 13/03/2026*
