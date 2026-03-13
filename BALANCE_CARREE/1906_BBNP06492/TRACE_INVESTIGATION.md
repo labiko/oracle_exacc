@@ -2,7 +2,7 @@
 
 **Date debut investigation** : 07/03/2026
 **Date mise a jour** : 13/03/2026
-**Statut** : SOLUTION IDENTIFIEE - EN ATTENTE EXECUTION
+**Statut** : OPTION 1 RETENUE - EN ATTENTE EXECUTION
 
 ---
 
@@ -140,7 +140,7 @@ Restauration des records via Data Pump pour revenir a l'etat initial (ecart 2,66
 
 ## 6. SOLUTION DEFINITIVE
 
-### 6.1 Option 1 : Corriger uniquement BAL_ST (RECOMMANDEE)
+### 6.1 Option 1 : Corriger uniquement BAL_ST (RETENUE ✅)
 
 **Principe** : Garder les records orphelins, corriger le solde pour compenser.
 
@@ -163,7 +163,7 @@ DIFF = -31379179,11 + 31379179,11 = 0 EUR
 - Pas de risque de perte de donnees
 - Tracabilite conservee
 
-### 6.2 Option 2 : Supprimer les records ET corriger BAL_ST
+### 6.2 Option 2 : Supprimer les records ET corriger BAL_ST (NON RETENUE)
 
 **Principe** : Nettoyer les donnees orphelines et ajuster le solde.
 
@@ -187,6 +187,24 @@ COMMIT;
 **Inconvenients** :
 - Plus risque
 - Necessite sauvegarde prealable
+
+### 6.3 Justification du choix (Option 1)
+
+| Critere | Option 1 | Option 2 |
+|---------|----------|----------|
+| Complexite | 1 UPDATE | DELETE + UPDATE |
+| Risque | Faible | Moyen |
+| Reversibilite | Facile (`BAL_ST + DIFF`) | Necessite Data Pump |
+| Tracabilite | Records conserves | Records supprimes |
+
+**Formule appliquee** :
+```
+BAL_ST_nouveau = BAL_ST_actuel - DIFF
+               = 5,21 - 2,66
+               = 2,55
+```
+
+**Script** : `CORRECTION_GENERIQUE.sql` ou `correction_definitive.sql`
 
 ---
 
@@ -366,10 +384,93 @@ WHERE acct_id = 1906 AND load_id = 346241;
 
 ---
 
-## 11. CONTACTS
+## 12. CAPTURE ECRAN INTERFACE BALANCE CARREE (13/03/2026)
+
+### 12.1 Vue Resume
+
+| Colonne | BANQUE | COMPTABILITE |
+|---------|--------|--------------|
+| **Solde** | 5,21 C | 61 441 758,04 C |
+| **Ecritures en suspens (D)** | 369 160,25 (3 items) | 0,00 |
+| **Ecritures en suspens (C)** | 31 748 341,91 (4 items) | 30 062 578,93 (1 item) |
+| **Solde de rapprochement** | 31 379 176,45 D | 31 379 179,11 C |
+
+**Difference** : **2,66 C** ✓
+
+### 12.2 Correspondance avec BRD_EU_JC_SUMMARY
+
+| Interface | Colonne SQL | Valeur |
+|-----------|-------------|--------|
+| Solde BANQUE | BAL_ST | 5,21 |
+| Solde COMPTABILITE | BAL_CB | 61 441 758,04 |
+| Ecritures suspens D (BANQUE) | SUM_ST_P | -369 160,25 |
+| Ecritures suspens C (BANQUE) | SUM_ST_R | 31 748 341,91 |
+| Ecritures suspens C (COMPTA) | SUM_CB_P | 30 062 578,93 |
+| Ecritures suspens D (COMPTA) | SUM_CB_R | 0 |
+| Difference | DIFF | 2,66 |
+
+✅ **Toutes les valeurs correspondent** entre l'interface et la table SQL.
+
+### 12.3 Detail des Ecritures en Suspens (BANQUE)
+
+**Ecritures D (3 items = 369 160,25)** :
+- Dont records orphelins load_id 346241 : record 878 = 248 800,25 (25/02/2026)
+
+**Ecritures C (4 items = 31 748 341,91)** :
+- Dont records orphelins load_id 346241 : record 879 = 248 802,91 (25/02/2026)
+
+### 12.4 Calcul Solde de Rapprochement
+
+```
+BANQUE:
+  Solde de rapprochement = Solde - Ecritures D + Ecritures C
+                        = 5,21 - 369160,25 + 31748341,91
+                        = 31379176,87 (arrondi interface: 31379176,45 D)
+
+  Formule SQL: SUM_REC_ST = BAL_ST - (SUM_ST_P + SUM_ST_R)
+             = 5,21 - (-369160,25 + 31748341,91)
+             = 5,21 - 31379181,66
+             = -31379176,45 (le signe D indique debit)
+
+COMPTABILITE:
+  Solde de rapprochement = Solde - Ecritures C + Ecritures D
+                        = 61441758,04 - 30062578,93 + 0
+                        = 31379179,11 C
+
+  Formule SQL: SUM_REC_CB = BAL_CB - (SUM_CB_P + SUM_CB_R)
+             = 61441758,04 - (30062578,93 + 0)
+             = 31379179,11
+```
+
+### 12.5 Synthese Visuelle
+
+```
+BANQUE                          COMPTABILITE
+┌─────────────────────┐         ┌─────────────────────┐
+│ Solde: 5,21 C       │         │ Solde: 61441758,04 C│
+│                     │         │                     │
+│ Suspens D: 369160,25│         │ Suspens D: 0        │
+│   (3 items)         │         │                     │
+│   ├─ 248800,25 ←────┼─────────┼─── Record 878      │
+│   └─ autres...      │         │                     │
+│                     │         │                     │
+│ Suspens C:31748341,91         │ Suspens C:30062578,93
+│   (4 items)         │         │   (1 item)          │
+│   ├─ 248802,91 ←────┼─────────┼─── Record 879      │
+│   └─ autres...      │         │                     │
+│                     │         │                     │
+│ Rappro: 31379176,45D│         │ Rappro: 31379179,11C│
+└─────────────────────┘         └─────────────────────┘
+                │                         │
+                └────── DIFF = 2,66 C ────┘
+```
+
+---
+
+## 13. CONTACTS
 
 Pour toute question sur ce dossier, contacter l'equipe DBA.
 
 ---
 
-*Derniere mise a jour : 13/03/2026*
+*Derniere mise a jour : 13/03/2026 - Ajout captures ecran interface Balance Carree*

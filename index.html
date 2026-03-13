@@ -9775,14 +9775,89 @@ Quand on DELETE les records orphelins :
         </div>
     </section>
 
-    <!-- ETAPE 4 -->
-    <section>
-        <h2>🗑️ Etape 4 : Supprimer les Records Orphelins</h2>
-        <div class="alert alert-danger">
-            <span class="alert-icon">🚨</span>
+    <!-- CHOIX DE CORRECTION -->
+    <section style="background: #e8f5e9; border: 3px solid #4caf50; margin-bottom: 20px;">
+        <h2>⚖️ Choix de la Methode de Correction</h2>
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+            <tr style="background: #c8e6c9;">
+                <th style="padding: 10px; border: 1px solid #81c784; width: 15%;">Option</th>
+                <th style="padding: 10px; border: 1px solid #81c784; width: 35%;">Methode</th>
+                <th style="padding: 10px; border: 1px solid #81c784; width: 35%;">Description</th>
+                <th style="padding: 10px; border: 1px solid #81c784; width: 15%;">Statut</th>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td style="padding: 10px; border: 1px solid #81c784; text-align: center;"><strong>Option 1</strong></td>
+                <td style="padding: 10px; border: 1px solid #81c784;"><code>UPDATE BAL_ST</code> uniquement</td>
+                <td style="padding: 10px; border: 1px solid #81c784;">Garder les records, corriger le solde</td>
+                <td style="padding: 10px; border: 1px solid #81c784; text-align: center;"><span style="background: #4caf50; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold;">✅ RETENUE</span></td>
+            </tr>
+            <tr style="background: #ffebee;">
+                <td style="padding: 10px; border: 1px solid #81c784; text-align: center; color: #9e9e9e;"><strong>Option 2</strong></td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #9e9e9e;"><code>DELETE</code> + <code>UPDATE BAL_ST</code></td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #9e9e9e;">Supprimer records puis corriger solde</td>
+                <td style="padding: 10px; border: 1px solid #81c784; text-align: center;"><span style="background: #9e9e9e; color: white; padding: 5px 10px; border-radius: 4px;">NON RETENUE</span></td>
+            </tr>
+        </table>
+        <div class="alert alert-success">
+            <span class="alert-icon">💡</span>
             <div>
-                <strong>ATTENTION :</strong> Generer le script de rollback (Etape 5) AVANT de supprimer !<br>
-                <strong>ET :</strong> Executer <strong>Etape 4 bis</strong> immediatement apres le DELETE !
+                <strong>Justification Option 1 :</strong><br>
+                • Simple (1 seule UPDATE)<br>
+                • Risque faible<br>
+                • Reversible facilement (<code>BAL_ST + DIFF</code>)<br>
+                • Tracabilite conservee (records restent)
+            </div>
+        </div>
+    </section>
+
+    <!-- ETAPE 4 - OPTION 1 (RETENUE) -->
+    <section style="background: #e8f5e9; border: 2px solid #4caf50;">
+        <h2>✅ Etape 4 - Option 1 (RETENUE) : Corriger BAL_ST Uniquement</h2>
+        <p><strong>Formule :</strong> <code style="background: #c8e6c9; padding: 5px 10px; font-size: 1.1em;">BAL_ST_nouveau = BAL_ST_actuel - DIFF</code></p>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Correction directe (RECOMMANDE)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
+-- Verification AVANT
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF,
+       BAL_ST - DIFF AS "BAL_ST_cible"
+FROM BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = :ACCT_ID AND PERIOD_JC = :PERIOD_JC;
+
+-- CORRECTION
+UPDATE BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST - DIFF
+WHERE ACCT_ID = :ACCT_ID
+  AND PERIOD_JC = :PERIOD_JC
+  AND DIFF != 0;
+
+-- Verification APRES
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = :ACCT_ID AND PERIOD_JC = :PERIOD_JC;
+
+COMMIT;</pre>
+        </div>
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Resultat attendu :</strong> DIFF = 0<br>
+                <strong>Rollback si besoin :</strong> <code>UPDATE ... SET BAL_ST = BAL_ST + :ANCIEN_DIFF</code>
+            </div>
+        </div>
+    </section>
+
+    <!-- ETAPE 4 - OPTION 2 (NON RETENUE) -->
+    <section style="background: #f5f5f5; border: 2px dashed #9e9e9e; opacity: 0.7;">
+        <h2 style="color: #757575;">❌ Etape 4 - Option 2 (NON RETENUE) : DELETE + Corriger BAL_ST</h2>
+        <div class="alert alert-warning" style="background: #fff3e0;">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Option NON RETENUE</strong> - Plus complexe et plus risquee.<br>
+                Conservee pour reference uniquement.
             </div>
         </div>
         <div class="code-container">
@@ -9818,10 +9893,10 @@ SELECT 'BRD_EU_JC_ITEMS',
         </div>
     </section>
 
-    <!-- ETAPE 4 BIS : CORRECTION BAL_ST -->
-    <section style="background: #e3f2fd; border: 2px solid #2196f3;">
-        <h2>🔧 Etape 4 bis : Corriger BAL_ST dans BRD_EU_JC_SUMMARY (OBLIGATOIRE)</h2>
-        <p><strong>A executer IMMEDIATEMENT apres le DELETE</strong> pour que l'ecart passe a 0.</p>
+    <!-- ETAPE 4 BIS : CORRECTION BAL_ST (pour Option 2 uniquement) -->
+    <section style="background: #f5f5f5; border: 2px dashed #9e9e9e; opacity: 0.7;">
+        <h2 style="color: #757575;">🔧 Etape 4 bis (Option 2) : Corriger BAL_ST apres DELETE</h2>
+        <p style="color: #757575;"><strong>Uniquement si Option 2 choisie</strong> - A executer IMMEDIATEMENT apres le DELETE.</p>
 
         <div class="code-container">
             <div class="code-header">
@@ -9876,37 +9951,6 @@ COMMIT;</pre>
             </div>
         </div>
 
-        <h3>Alternative : Correction SANS DELETE (Option 1 - Plus simple)</h3>
-        <p>Si vous preferez <strong>garder les records orphelins</strong> et juste corriger le solde :</p>
-        <div class="code-container">
-            <div class="code-header">
-                <span>SQL - Correction directe (SANS supprimer les records)</span>
-                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
-            </div>
-            <pre>-- Remplacer :ACCT_ID et :PERIOD_JC
--- Cette methode garde les records mais corrige le solde
--- Formule : BAL_ST = BAL_ST - DIFF
-UPDATE BRD_EU_JC_SUMMARY
-SET BAL_ST = BAL_ST - DIFF
-WHERE ACCT_ID = :ACCT_ID
-  AND PERIOD_JC = :PERIOD_JC
-  AND DIFF != 0;
-
-COMMIT;
-
--- Verification
-SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
-FROM BRD_EU_JC_SUMMARY
-WHERE ACCT_ID = :ACCT_ID AND PERIOD_JC = :PERIOD_JC;</pre>
-        </div>
-        <div class="alert alert-info">
-            <span class="alert-icon">💡</span>
-            <div>
-                <strong>Avantage :</strong> Plus simple et moins risque. Les records restent (tracabilite), seul le solde est ajuste.<br>
-                <strong>Inconvenient :</strong> Les records "orphelins" restent dans BR_DATA (pas propre).
-            </div>
-        </div>
-
         <h3>Script de rollback BAL_ST</h3>
         <div class="code-container">
             <div class="code-header">
@@ -9923,10 +9967,10 @@ COMMIT;</pre>
         </div>
     </section>
 
-    <!-- ETAPE 5 -->
-    <section>
-        <h2>↩️ Etape 5 : Script de Retour Arriere (3 Tables)</h2>
-        <p>Generer les INSERT pour restaurer les donnees <strong>AVANT de supprimer</strong>. Il faut sauvegarder <strong>3 tables</strong> :</p>
+    <!-- ETAPE 5 (Option 2 uniquement) -->
+    <section style="background: #f5f5f5; border: 2px dashed #9e9e9e; opacity: 0.7;">
+        <h2 style="color: #757575;">↩️ Etape 5 (Option 2) : Script de Retour Arriere (3 Tables)</h2>
+        <p style="color: #757575;"><strong>Uniquement si Option 2 choisie</strong> - Generer les INSERT pour restaurer les donnees <strong>AVANT de supprimer</strong>.</p>
 
         <h3>5.1 - BR_DATA (via Data Pump - recommande)</h3>
         <div class="code-container">
@@ -10099,8 +10143,13 @@ BAL_ST_nouveau = BAL_ST_actuel - DIFF_actuel</pre>
             </tr>
             <tr>
                 <td><strong>BRD_EU_JC_ITEMS</strong></td>
-                <td>Balance Carree (JC)</td>
-                <td>period_JC, acct_id, record_id, amount</td>
+                <td>Balance Carree - Ecritures en suspens</td>
+                <td>period_jc, acct_id, record_id, state, cs_flag, pr_flag, amount, load_id</td>
+            </tr>
+            <tr>
+                <td><strong>BRD_EU_JC_SUMMARY</strong></td>
+                <td>Balance Carree - Resume (DIFF calcule)</td>
+                <td>period_jc, acct_id, bal_st, bal_cb, sum_st_p, sum_st_r, sum_cb_p, sum_cb_r, diff</td>
             </tr>
         </table>
     </section>
@@ -10349,30 +10398,69 @@ ORDER BY timestamp;</pre>
             </div>
         </div>
 
-        <h3>Records orphelins trouves dans BR_DATA</h3>
+        <h3>Records orphelins trouves (BR_DATA + BRD_EU_JC_ITEMS)</h3>
         <p>En executant la requete de verification sur le load_id 346241 :</p>
+
+        <h4>BR_DATA</h4>
         <table>
             <tr>
                 <th>record_id</th>
                 <th>state</th>
                 <th>amount</th>
                 <th>cs_flag</th>
+                <th>pr_flag</th>
             </tr>
             <tr>
                 <td>878</td>
                 <td>3 (SUSPENS)</td>
                 <td>248 800,25</td>
                 <td>S (Statement)</td>
+                <td>P (Payment)</td>
             </tr>
             <tr>
                 <td>879</td>
                 <td>3 (SUSPENS)</td>
                 <td>248 802,91</td>
                 <td>S (Statement)</td>
+                <td>R (Receipt)</td>
             </tr>
         </table>
 
-        <p><strong>Total des 2 records :</strong> 497 603,16 €</p>
+        <h4>BRD_EU_JC_ITEMS (2 periodes!)</h4>
+        <table>
+            <tr>
+                <th>period_jc</th>
+                <th>record_id</th>
+                <th>amount</th>
+                <th>pr_flag</th>
+            </tr>
+            <tr>
+                <td><strong>202602</strong></td>
+                <td>878</td>
+                <td>248 800,25</td>
+                <td>P</td>
+            </tr>
+            <tr>
+                <td><strong>202602</strong></td>
+                <td>879</td>
+                <td>248 802,91</td>
+                <td>R</td>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td><strong>202603</strong></td>
+                <td>878</td>
+                <td>248 800,25</td>
+                <td>P</td>
+            </tr>
+            <tr style="background: #fff3e0;">
+                <td><strong>202603</strong></td>
+                <td>879</td>
+                <td>248 802,91</td>
+                <td>R</td>
+            </tr>
+        </table>
+
+        <p><strong>NET par periode :</strong> 248 802,91 - 248 800,25 = <strong>+2,66€</strong></p>
 
         <div class="alert alert-info">
             <span class="alert-icon">💡</span>
@@ -10388,8 +10476,9 @@ ORDER BY timestamp;</pre>
             <span class="alert-icon">✅</span>
             <div>
                 <strong>Confirmation :</strong> L'effet NET de +2,66€ = exactement l'ecart de la Balance Carree<br>
-                Ces 2 records appartiennent au load rollbacke (346241) mais sont restes dans BR_DATA.<br>
-                <strong>Solution :</strong> DELETE FROM BR_DATA WHERE acct_id = 1906 AND load_id = 346241;
+                Ces 2 records appartiennent au load rollbacke (346241) mais sont restes dans BR_DATA et BRD_EU_JC_ITEMS.<br>
+                <strong>Solution Option 1 :</strong> UPDATE BAL_ST dans BRD_EU_JC_SUMMARY (garder les records)<br>
+                <strong>Solution Option 2 :</strong> DELETE BR_DATA + BRD_EU_JC_ITEMS + UPDATE BAL_ST
             </div>
         </div>
     </section>
@@ -10401,62 +10490,126 @@ ORDER BY timestamp;</pre>
         <h3>Verifier si des records du load rollbacke existent encore</h3>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Verification avant suppression</span>
+                <span>SQL - Verification dans les 3 tables (BR_DATA + JC)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre>-- Remplacer LOAD_ID par celui identifie
-SELECT record_id, state, amount, cs_flag, trans_date, load_id
-FROM BR_DATA
-WHERE acct_id = 1906
-  AND load_id = 346241;  -- LOAD_ID rollbacke
+            <pre>-- =====================================================
+-- VERIFICATION COMPTE 1906 - LOAD_ID 346241
+-- Verifier les 3 tables avant suppression
+-- =====================================================
 
--- Compter les records
-SELECT COUNT(*) as nb_records, SUM(amount) as total_amount
-FROM BR_DATA
-WHERE acct_id = 1906
-  AND load_id = 346241;</pre>
+-- 1. Records dans BR_DATA
+SELECT 'BR_DATA' AS "TABLE", record_id, state, amount, cs_flag, pr_flag, load_id
+FROM BANKREC.BR_DATA
+WHERE acct_id = 1906 AND load_id = 346241;
+
+-- 2. Records dans BRD_EU_JC_ITEMS (peut etre dans plusieurs periodes!)
+SELECT 'BRD_EU_JC_ITEMS' AS "TABLE", period_jc, record_id, state, cs_flag, pr_flag, amount, load_id
+FROM BANKREC.BRD_EU_JC_ITEMS
+WHERE acct_id = 1906 AND load_id = 346241
+ORDER BY period_jc;
+
+-- 3. DIFF dans BRD_EU_JC_SUMMARY
+SELECT 'BRD_EU_JC_SUMMARY' AS "TABLE", period_jc, bal_st, diff,
+       bal_st - diff AS "BAL_ST_cible"
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE acct_id = 1906 AND diff != 0;
+
+-- Resume : Comptage par table
+SELECT 'BR_DATA' AS "TABLE", COUNT(*) AS nb_records FROM BANKREC.BR_DATA WHERE acct_id = 1906 AND load_id = 346241
+UNION ALL
+SELECT 'BRD_EU_JC_ITEMS', COUNT(*) FROM BANKREC.BRD_EU_JC_ITEMS WHERE acct_id = 1906 AND load_id = 346241
+UNION ALL
+SELECT 'BRD_EU_JC_SUMMARY (DIFF!=0)', COUNT(*) FROM BANKREC.BRD_EU_JC_SUMMARY WHERE acct_id = 1906 AND diff != 0;</pre>
         </div>
 
-        <h3>Supprimer les records du mauvais chargement</h3>
+        <h3>Option 2 : Supprimer les records (NON RETENUE)</h3>
+        <div class="alert alert-warning" style="background: #fff3e0;">
+            <span class="alert-icon">⚠️</span>
+            <div><strong>Option NON RETENUE</strong> - Conservee pour reference. Voir Option 1 ci-dessous.</div>
+        </div>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Suppression (A EXECUTER AVEC PRUDENCE)</span>
+                <span>SQL - DELETE Compte 1906 (Option 2 - NON RETENUE)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
-            <pre>-- ATTENTION : Verifier d'abord avec le SELECT ci-dessus !
-DELETE FROM BR_DATA
+            <pre>-- =====================================================
+-- OPTION 2 (NON RETENUE) - Compte 1906, Load 346241
+-- =====================================================
+
+-- 1. Supprimer de BR_DATA
+DELETE FROM BANKREC.BR_DATA
 WHERE acct_id = 1906
-  AND load_id = 346241;  -- LOAD_ID rollbacke
+  AND load_id = 346241;
+
+-- 2. Supprimer de BRD_EU_JC_ITEMS
+DELETE FROM BANKREC.BRD_EU_JC_ITEMS
+WHERE acct_id = 1906
+  AND load_id = 346241;
+
+-- 3. Corriger BAL_ST (OBLIGATOIRE apres DELETE)
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST - DIFF
+WHERE ACCT_ID = 1906
+  AND PERIOD_JC = '202602'
+  AND DIFF != 0;
 
 -- Verification
-SELECT 'Records supprimes' AS statut,
-       (SELECT COUNT(*) FROM BR_DATA WHERE acct_id = 1906 AND load_id = 346241) as nb_restant;
+SELECT 'BR_DATA' AS "TABLE", COUNT(*) AS nb FROM BANKREC.BR_DATA WHERE acct_id = 1906 AND load_id = 346241
+UNION ALL
+SELECT 'BRD_EU_JC_ITEMS', COUNT(*) FROM BANKREC.BRD_EU_JC_ITEMS WHERE acct_id = 1906 AND load_id = 346241
+UNION ALL
+SELECT 'DIFF', diff FROM BANKREC.BRD_EU_JC_SUMMARY WHERE acct_id = 1906 AND period_jc = '202602';
 
 COMMIT;</pre>
         </div>
 
         <h3>Script de retour arriere (si besoin)</h3>
+        <div class="alert alert-info">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Methode de rollback par table :</strong><br>
+                • <strong>BR_DATA</strong> : Data Pump (<code>datapump_import.sh</code>)<br>
+                • <strong>BRD_EU_JC_ITEMS</strong> : INSERT INTO (<code>rollback_ecart_solde.sql</code>)<br>
+                • <strong>BRD_EU_JC_SUMMARY</strong> : UPDATE BAL_ST + DIFF
+            </div>
+        </div>
         <div class="code-container">
             <div class="code-header">
-                <span>SQL - Restauration des records supprimes</span>
+                <span>SQL - Restauration BRD_EU_JC_ITEMS (genere par rollback_ecart_solde.sql)</span>
                 <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
             </div>
             <pre>-- ============================================================
--- SCRIPT RETOUR ARRIERE - A executer UNIQUEMENT si besoin
+-- SCRIPT RETOUR ARRIERE - Compte 1906
+-- ============================================================
+-- BR_DATA : utiliser datapump_import.sh (pas de script SQL)
 -- ============================================================
 
-INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id)
-VALUES (878, 1906, 3, 248800.25, 'S', TO_DATE('2026-02-25', 'YYYY-MM-DD'), 346241);
+-- 1. Restaurer BRD_EU_JC_ITEMS (periode 202602)
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS (period_jc, acct_id, record_id, state, cs_flag, pr_flag, amount, load_id)
+VALUES ('202602', 1906, 878, 3, 'S', 'P', 248800.25, 346241);
 
-INSERT INTO BR_DATA (record_id, acct_id, state, amount, cs_flag, trans_date, load_id)
-VALUES (879, 1906, 3, 248802.91, 'S', TO_DATE('2026-02-25', 'YYYY-MM-DD'), 346241);
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS (period_jc, acct_id, record_id, state, cs_flag, pr_flag, amount, load_id)
+VALUES ('202602', 1906, 879, 3, 'S', 'R', 248802.91, 346241);
+
+-- 2. Restaurer BRD_EU_JC_ITEMS (periode 202603 si supprime)
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS (period_jc, acct_id, record_id, state, cs_flag, pr_flag, amount, load_id)
+VALUES ('202603', 1906, 878, 3, 'S', 'P', 248800.25, 346241);
+
+INSERT INTO BANKREC.BRD_EU_JC_ITEMS (period_jc, acct_id, record_id, state, cs_flag, pr_flag, amount, load_id)
+VALUES ('202603', 1906, 879, 3, 'S', 'R', 248802.91, 346241);
+
+-- 3. Restaurer BAL_ST dans BRD_EU_JC_SUMMARY
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST + 2.66  -- Ajouter l'ecart qui avait ete soustrait
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
 
 COMMIT;
 
 -- Verification
-SELECT record_id, state, amount, cs_flag, trans_date, load_id
-FROM BR_DATA
-WHERE acct_id = 1906 AND load_id = 346241;</pre>
+SELECT 'BRD_EU_JC_ITEMS' AS "TABLE", COUNT(*) AS nb FROM BANKREC.BRD_EU_JC_ITEMS WHERE acct_id = 1906 AND load_id = 346241
+UNION ALL
+SELECT 'DIFF', diff FROM BANKREC.BRD_EU_JC_SUMMARY WHERE acct_id = 1906 AND period_jc = '202602';</pre>
         </div>
 
         <h3>Relancer le calcul de la Balance Carree</h3>
@@ -10467,14 +10620,20 @@ WHERE acct_id = 1906 AND load_id = 346241;</pre>
     <section style="background: #e8f5e9; border-left: 4px solid #4caf50;">
         <h2>✅ Resume : Checklist Rapide</h2>
         <ol style="margin: 15px 0; padding-left: 25px; line-height: 2;">
-            <li><strong>Symptome</strong> : Ecart inexplique dans la Balance Carree</li>
+            <li><strong>Symptome</strong> : Ecart inexplique dans la Balance Carree (DIFF != 0)</li>
             <li><strong>Obtenir la date</strong> du rollback (demander a l'utilisateur)</li>
             <li><strong>Chercher TYPE=16</strong> dans BR_AUDIT pour cette date</li>
             <li><strong>Noter le LOAD_ID</strong> du fichier rollbacke</li>
+            <li><strong>Verifier les 3 tables</strong> : BR_DATA, BRD_EU_JC_ITEMS, BRD_EU_JC_SUMMARY</li>
+            <li><strong>Choisir l'option</strong> :
+                <ul>
+                    <li><strong>Option 1 (RETENUE)</strong> : UPDATE BAL_ST uniquement</li>
+                    <li><strong>Option 2</strong> : DELETE BR_DATA + JC_ITEMS + UPDATE BAL_ST</li>
+                </ul>
+            </li>
             <li><strong>Verifier TYPE=15</strong> pour voir l'impact sur le solde</li>
-            <li><strong>Verifier BR_DATA</strong> si des records de ce LOAD_ID existent encore</li>
-            <li><strong>Supprimer les records</strong> orphelins si necessaire</li>
-            <li><strong>Relancer le calcul</strong> de la Balance Carree</li>
+            <li><strong>Executer</strong> la correction choisie</li>
+            <li><strong>Verifier DIFF = 0</strong> dans BRD_EU_JC_SUMMARY</li>
         </ol>
     </section>
 
@@ -10530,8 +10689,305 @@ WHERE d.acct_id = :acct_id
         AND type = 16
         AND TRUNC(timestamp) = TO_DATE(:date_rollback, 'YYYY-MM-DD')
   )
-GROUP BY d.load_id;</pre>
+GROUP BY d.load_id;
+
+-- 4. Records orphelins dans BRD_EU_JC_ITEMS (IMPORTANT: peut etre dans plusieurs periodes!)
+SELECT 'BRD_EU_JC_ITEMS' as section,
+       period_jc,
+       record_id,
+       state,
+       cs_flag,
+       pr_flag,
+       amount,
+       load_id
+FROM BANKREC.BRD_EU_JC_ITEMS
+WHERE acct_id = :acct_id
+  AND load_id = :load_id
+ORDER BY period_jc, record_id;
+
+-- 5. Valeurs BRD_EU_JC_SUMMARY avec DIFF
+SELECT 'BRD_EU_JC_SUMMARY' as section,
+       period_jc,
+       acct_id,
+       bal_st,
+       bal_cb,
+       sum_st_p,
+       sum_st_r,
+       sum_cb_p,
+       sum_cb_r,
+       diff,
+       bal_st - diff AS "BAL_ST_cible"
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE acct_id = :acct_id
+  AND diff != 0
+ORDER BY period_jc;</pre>
         </div>
+    </section>
+
+    <!-- ALERTE PERIODES MULTIPLES -->
+    <section style="background: #fff3e0; border: 3px solid #ff9800; margin-top: 20px;">
+        <h2>⚠️ Decouverte : Records dans PLUSIEURS Periodes</h2>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">🚨</span>
+            <div>
+                <strong>IMPORTANT :</strong> Les records orphelins peuvent etre presents dans <strong>PLUSIEURS periodes</strong> de BRD_EU_JC_ITEMS !<br>
+                Exemple compte 1906 : records 878/879 presents dans <strong>202602 ET 202603</strong>.
+            </div>
+        </div>
+
+        <h3>Donnees Compte 1906</h3>
+        <table style="margin: 15px 0;">
+            <tr style="background: #ffe0b2;">
+                <th style="padding: 10px; border: 1px solid #ffb74d;">PERIOD_JC</th>
+                <th style="padding: 10px; border: 1px solid #ffb74d;">RECORD_ID</th>
+                <th style="padding: 10px; border: 1px solid #ffb74d;">PR_FLAG</th>
+                <th style="padding: 10px; border: 1px solid #ffb74d;">AMOUNT</th>
+                <th style="padding: 10px; border: 1px solid #ffb74d;">LOAD_ID</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>202602</strong></td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">878</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">P</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">248 800,25</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">346241</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>202602</strong></td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">879</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">R</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">248 802,91</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">346241</td>
+            </tr>
+            <tr style="background: #ffecb3;">
+                <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>202603</strong></td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">878</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">P</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">248 800,25</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">346241</td>
+            </tr>
+            <tr style="background: #ffecb3;">
+                <td style="padding: 10px; border: 1px solid #ffb74d;"><strong>202603</strong></td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">879</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">R</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">248 802,91</td>
+                <td style="padding: 10px; border: 1px solid #ffb74d;">346241</td>
+            </tr>
+        </table>
+        <p><strong>NET par periode :</strong> 248 802,91 - 248 800,25 = <strong style="color: #e65100;">2,66 EUR</strong></p>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Consequence :</strong> Il faut verifier et corriger DIFF dans <strong>TOUTES les periodes</strong> concernees !<br>
+                La correction BAL_ST doit etre faite pour chaque periode avec DIFF != 0.
+            </div>
+        </div>
+    </section>
+
+    <!-- SOLUTION RETENUE -->
+    <section style="background: #e8f5e9; border: 3px solid #4caf50; margin-top: 20px;">
+        <h2>✅ Solution Retenue : Option 1 - Corriger BAL_ST Uniquement</h2>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">💡</span>
+            <div>
+                <strong>Principe :</strong> Garder les records orphelins, corriger uniquement le solde BAL_ST.<br>
+                <strong>Formule :</strong> <code style="background: #c8e6c9; padding: 3px 8px;">BAL_ST_nouveau = BAL_ST_actuel - DIFF</code>
+            </div>
+        </div>
+
+        <h3>Exemple Compte 1906 (Periode 202602)</h3>
+        <table style="margin: 15px 0;">
+            <tr style="background: #c8e6c9;">
+                <th style="padding: 10px; border: 1px solid #81c784;">Element</th>
+                <th style="padding: 10px; border: 1px solid #81c784;">Valeur</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">ACCT_ID</td>
+                <td style="padding: 10px; border: 1px solid #81c784;"><strong>1906</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">PERIOD_JC</td>
+                <td style="padding: 10px; border: 1px solid #81c784;"><strong>202602</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">LOAD_ID orphelin</td>
+                <td style="padding: 10px; border: 1px solid #81c784;"><strong>346241</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">Records orphelins</td>
+                <td style="padding: 10px; border: 1px solid #81c784;">878 (P: 248800,25) + 879 (R: 248802,91)</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">NET orphelins</td>
+                <td style="padding: 10px; border: 1px solid #81c784;">248802,91 - 248800,25 = <strong>+2,66</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">BAL_ST actuel</td>
+                <td style="padding: 10px; border: 1px solid #81c784;">5,21</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">DIFF actuel</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #e65100;"><strong>2,66</strong></td>
+            </tr>
+            <tr style="background: #c8e6c9;">
+                <td style="padding: 10px; border: 1px solid #81c784;">BAL_ST cible</td>
+                <td style="padding: 10px; border: 1px solid #81c784;"><strong>5,21 - 2,66 = 2,55</strong></td>
+            </tr>
+        </table>
+
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - Correction Compte 1906 Periode 202602 (Option 1)</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- =====================================================
+-- CORRECTION COMPTE 1906 - PERIODE 202602
+-- Option 1 : Corriger BAL_ST uniquement
+-- =====================================================
+
+-- VERIFICATION AVANT
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF,
+       BAL_ST - DIFF AS "BAL_ST_cible"
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+-- CORRECTION
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST - DIFF
+WHERE ACCT_ID = 1906
+  AND PERIOD_JC = '202602'
+  AND DIFF != 0;
+
+-- VERIFICATION APRES
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+COMMIT;</pre>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">✅</span>
+            <div>
+                <strong>Resultat attendu :</strong> DIFF = 0<br>
+                <strong>Rollback :</strong> <code>UPDATE ... SET BAL_ST = BAL_ST + 2.66 WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';</code>
+            </div>
+        </div>
+
+        <h3>Justification du Choix</h3>
+        <table style="margin: 15px 0;">
+            <tr style="background: #e8f5e9;">
+                <th style="padding: 10px; border: 1px solid #81c784;">Critere</th>
+                <th style="padding: 10px; border: 1px solid #81c784;">Option 1 ✅</th>
+                <th style="padding: 10px; border: 1px solid #81c784; background: #f5f5f5; color: #9e9e9e;">Option 2 ❌</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">Complexite</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">1 UPDATE</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #9e9e9e;">DELETE + UPDATE</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">Risque</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">Faible</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #9e9e9e;">Moyen</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">Reversibilite</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">BAL_ST + DIFF</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #9e9e9e;">Data Pump requis</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #81c784;">Tracabilite</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #2e7d32;">Records conserves</td>
+                <td style="padding: 10px; border: 1px solid #81c784; color: #9e9e9e;">Records supprimes</td>
+            </tr>
+        </table>
+    </section>
+
+    <!-- OPTION 2 (NON RETENUE) - Pour reference -->
+    <section style="background: #f5f5f5; border: 2px dashed #9e9e9e; opacity: 0.8; margin-top: 20px;">
+        <h2 style="color: #757575;">❌ Option 2 (NON RETENUE) : DELETE + Corriger BAL_ST</h2>
+
+        <div class="alert alert-warning" style="background: #fff3e0;">
+            <span class="alert-icon">⚠️</span>
+            <div>
+                <strong>Option NON RETENUE</strong> - Conservee pour reference uniquement.
+            </div>
+        </div>
+
+        <h3 style="color: #757575;">Scripts de suppression (3 tables)</h3>
+        <div class="code-container">
+            <div class="code-header">
+                <span>SQL - DELETE sur BR_DATA + BRD_EU_JC_ITEMS</span>
+                <button class="copy-btn" onclick="copyCode(this)">📋 Copier</button>
+            </div>
+            <pre>-- =====================================================
+-- OPTION 2 (NON RETENUE) : DELETE + UPDATE BAL_ST
+-- Compte 1906, Load 346241, Periode 202602
+-- =====================================================
+
+-- ETAPE 1 : Supprimer les records orphelins de BR_DATA
+DELETE FROM BANKREC.BR_DATA
+WHERE acct_id = 1906
+  AND load_id = 346241;
+
+-- ETAPE 2 : Supprimer les records orphelins de BRD_EU_JC_ITEMS
+DELETE FROM BANKREC.BRD_EU_JC_ITEMS
+WHERE acct_id = 1906
+  AND load_id = 346241;
+
+-- ETAPE 3 : Corriger BAL_ST (OBLIGATOIRE apres DELETE)
+UPDATE BANKREC.BRD_EU_JC_SUMMARY
+SET BAL_ST = BAL_ST - DIFF
+WHERE ACCT_ID = 1906
+  AND PERIOD_JC = '202602'
+  AND DIFF != 0;
+
+-- VERIFICATION
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = 1906 AND PERIOD_JC = '202602';
+
+COMMIT;</pre>
+        </div>
+
+        <h3 style="color: #757575;">Scripts de rollback (retour arriere)</h3>
+        <table style="margin: 15px 0;">
+            <tr style="background: #e0e0e0;">
+                <th style="padding: 10px; border: 1px solid #bdbdbd;">Table</th>
+                <th style="padding: 10px; border: 1px solid #bdbdbd;">Methode Rollback</th>
+                <th style="padding: 10px; border: 1px solid #bdbdbd;">Script</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;"><strong>BR_DATA</strong></td>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;">Data Pump (impdp)</td>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;">
+                    <code>datapump_export.sh</code> (avant DELETE)<br>
+                    <code>datapump_import.sh</code> (pour restaurer)
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;"><strong>BRD_EU_JC_ITEMS</strong></td>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;">INSERT INTO (SQL)</td>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;"><code>rollback_ecart_solde.sql</code></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;"><strong>BRD_EU_JC_SUMMARY</strong></td>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;">UPDATE BAL_ST + DIFF</td>
+                <td style="padding: 10px; border: 1px solid #bdbdbd;"><code>rollback_ecart_solde.sql</code></td>
+            </tr>
+        </table>
+
+        <h3 style="color: #757575;">Emplacement des scripts</h3>
+        <p style="color: #757575;">Dossier : <code>BALANCE_CARREE/1906_BBNP06492/</code></p>
+        <ul style="color: #757575;">
+            <li><code>datapump_export.sh</code> - Export BR_DATA avant suppression</li>
+            <li><code>datapump_import.sh</code> - Import BR_DATA pour restaurer</li>
+            <li><code>rollback_ecart_solde.sql</code> - Genere INSERT pour tables JC</li>
+            <li><code>delete_ecart_solde.sql</code> - Script DELETE (Option 2)</li>
+        </ul>
     </section>
 
 </div>
