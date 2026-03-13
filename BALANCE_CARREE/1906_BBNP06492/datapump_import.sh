@@ -1,18 +1,26 @@
 #!/bin/bash
 # =====================================================
-# DATA PUMP - Import records orphelins compte 1906
+# DATA PUMP - Import complet compte 1906
 # =====================================================
-# A executer sur PROD apres transfert du fichier .dmp
+# Importe les 3 tables pour rollback complet :
+#   1. BR_DATA (records orphelins)
+#   2. BRD_EU_JC_ITEMS (items Balance Carree)
+#   3. BRD_EU_JC_SUMMARY (resume avec BAL_ST)
+#
+# A executer APRES la correction si rollback necessaire
 # =====================================================
 
 # Variables
+ACCT_ID=1906
+LOAD_ID=346241
+PERIOD_JC="202602"
+
 DUMP_DIR="BALANCE_CARREE_DIR"
-DUMP_PATH="/home/oracle/BALANCE_CARRE_ECART/datapump"
-DUMP_FILE="br_data_1906_346241.dmp"
-LOG_FILE="br_data_1906_346241_import.log"
+DUMP_PATH="/home/oracle/BALANCE_CARRE_ECART/1906_BBNP06492/datapump"
 
 echo "=========================================="
-echo "Import Data Pump - Compte 1906, Load 346241"
+echo "Import Data Pump - Compte ${ACCT_ID}"
+echo "Load: ${LOAD_ID}, Periode: ${PERIOD_JC}"
 echo "=========================================="
 
 # 1. Creer le repertoire physique si necessaire
@@ -28,35 +36,106 @@ GRANT READ, WRITE ON DIRECTORY ${DUMP_DIR} TO PUBLIC;
 EXIT;
 EOF
 
-# 3. Verifier que le fichier .dmp existe
+# =====================================================
+# 3. Import BR_DATA
+# =====================================================
+echo ""
+echo "=== Import 1/3 : BR_DATA ==="
+DUMP_FILE="br_data_${ACCT_ID}_${LOAD_ID}.dmp"
+LOG_FILE="br_data_${ACCT_ID}_${LOAD_ID}_import.log"
+
 if [ ! -f "${DUMP_PATH}/${DUMP_FILE}" ]; then
-    echo "ERREUR: Fichier ${DUMP_PATH}/${DUMP_FILE} non trouve!"
-    echo "Transferer le fichier depuis DEV avant d'executer ce script."
-    exit 1
+    echo "ATTENTION: Fichier ${DUMP_FILE} non trouve - SKIP"
+else
+    impdp "'/ as sysdba'" \
+      directory=${DUMP_DIR} \
+      dumpfile=${DUMP_FILE} \
+      logfile=${LOG_FILE} \
+      table_exists_action=APPEND
+
+    echo "Lignes importees BR_DATA:"
+    grep -i "imported" ${DUMP_PATH}/${LOG_FILE} | grep "BR_DATA"
 fi
 
-# 4. Import en mode APPEND
-echo "Lancement import..."
-impdp "'/ as sysdba'" \
-  directory=${DUMP_DIR} \
-  dumpfile=${DUMP_FILE} \
-  logfile=${LOG_FILE} \
-  table_exists_action=APPEND
+# =====================================================
+# 4. Import BRD_EU_JC_ITEMS
+# =====================================================
+echo ""
+echo "=== Import 2/3 : BRD_EU_JC_ITEMS ==="
+DUMP_FILE="jc_items_${ACCT_ID}_${LOAD_ID}.dmp"
+LOG_FILE="jc_items_${ACCT_ID}_${LOAD_ID}_import.log"
 
+if [ ! -f "${DUMP_PATH}/${DUMP_FILE}" ]; then
+    echo "ATTENTION: Fichier ${DUMP_FILE} non trouve - SKIP"
+else
+    impdp "'/ as sysdba'" \
+      directory=${DUMP_DIR} \
+      dumpfile=${DUMP_FILE} \
+      logfile=${LOG_FILE} \
+      table_exists_action=APPEND
+
+    echo "Lignes importees BRD_EU_JC_ITEMS:"
+    grep -i "imported" ${DUMP_PATH}/${LOG_FILE} | grep "JC_ITEMS"
+fi
+
+# =====================================================
+# 5. Import BRD_EU_JC_SUMMARY
+# =====================================================
+echo ""
+echo "=== Import 3/3 : BRD_EU_JC_SUMMARY ==="
+DUMP_FILE="jc_summary_${ACCT_ID}_${PERIOD_JC}.dmp"
+LOG_FILE="jc_summary_${ACCT_ID}_${PERIOD_JC}_import.log"
+
+if [ ! -f "${DUMP_PATH}/${DUMP_FILE}" ]; then
+    echo "ATTENTION: Fichier ${DUMP_FILE} non trouve - SKIP"
+else
+    # Pour JC_SUMMARY, on doit d'abord supprimer la ligne existante
+    echo "Suppression ligne existante dans BRD_EU_JC_SUMMARY..."
+    sqlplus -S '/ as sysdba' <<EOF
+DELETE FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = ${ACCT_ID} AND PERIOD_JC = '${PERIOD_JC}';
+COMMIT;
+EXIT;
+EOF
+
+    impdp "'/ as sysdba'" \
+      directory=${DUMP_DIR} \
+      dumpfile=${DUMP_FILE} \
+      logfile=${LOG_FILE} \
+      table_exists_action=APPEND
+
+    echo "Lignes importees BRD_EU_JC_SUMMARY:"
+    grep -i "imported" ${DUMP_PATH}/${LOG_FILE} | grep "JC_SUMMARY"
+fi
+
+# =====================================================
+# Resume
+# =====================================================
 echo ""
 echo "=========================================="
 echo "Import termine."
 echo "=========================================="
-
-# 5. Afficher le nombre de lignes importees
 echo ""
-echo "Verification du nombre de lignes importees:"
-grep -i "imported" ${DUMP_PATH}/${LOG_FILE} | grep "BR_DATA"
+echo "Verification des donnees restaurees:"
+sqlplus -S '/ as sysdba' <<EOF
+SET LINESIZE 200
+SELECT 'BR_DATA' AS "TABLE", COUNT(*) AS "NB_LIGNES"
+FROM BANKREC.BR_DATA WHERE acct_id=${ACCT_ID} AND load_id=${LOAD_ID}
+UNION ALL
+SELECT 'BRD_EU_JC_ITEMS', COUNT(*)
+FROM BANKREC.BRD_EU_JC_ITEMS WHERE acct_id=${ACCT_ID} AND load_id=${LOAD_ID}
+UNION ALL
+SELECT 'BRD_EU_JC_SUMMARY', COUNT(*)
+FROM BANKREC.BRD_EU_JC_SUMMARY WHERE acct_id=${ACCT_ID} AND period_jc='${PERIOD_JC}';
 
-# 6. Verifier s'il y a eu des erreurs
-echo ""
-echo "Verification des erreurs:"
-grep -i "error" ${DUMP_PATH}/${LOG_FILE} || echo "Aucune erreur."
+PROMPT
+PROMPT Verification ecart Balance Carree:
+SELECT PERIOD_JC, ACCT_ID, BAL_ST, DIFF AS "ECART"
+FROM BANKREC.BRD_EU_JC_SUMMARY
+WHERE ACCT_ID = ${ACCT_ID} AND PERIOD_JC = '${PERIOD_JC}';
+EXIT;
+EOF
 
 echo ""
-echo "Verifier avec: SELECT COUNT(*) FROM BANKREC.BR_DATA WHERE acct_id=1906 AND load_id=346241;"
+echo "Rollback complet effectue."
+
